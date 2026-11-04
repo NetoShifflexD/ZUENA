@@ -1,7 +1,7 @@
 // Versiones de ZUENA: la app y cada función. Sirve para saber en qué nivel quedó cada parte y priorizar
 // la actualización de las más viejas. Regla: al cambiar una función, subir su versión (mayor = rediseño,
 // menor = mejora, parche = arreglo), poner la fecha de hoy y reflejarlo en Wiki/Registro/Versiones.md.
-export const APP_VERSION = '0.31.0';
+export const APP_VERSION = '0.32.0';
 
 // [id, nombre, versión, última actualización]
 export const FEATURES = [

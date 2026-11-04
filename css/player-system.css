@@ -99,6 +99,60 @@
 @media (min-width: 861px) {
   .np .np-body { align-items: center; align-content: safe center; overflow-y: auto; padding-block: 12px 28px; }
   .np .np-stage { width: min(100%, calc(100dvh - 210px), 480px); max-width: 100%; aspect-ratio: 1; margin-inline: auto; }
+  .np[data-tab="lyrics"] .np-body,
+  .np[data-tab="queue"] .np-body,
+  .np[data-tab="credits"] .np-body {
+    height: calc(100dvh - 100px);
+    overflow: hidden;
+    align-items: stretch;
+  }
+  .np[data-tab="lyrics"] .np-side,
+  .np[data-tab="queue"] .np-side,
+  .np[data-tab="credits"] .np-side {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .np[data-tab="lyrics"] .np-titles,
+  .np[data-tab="queue"] .np-titles,
+  .np[data-tab="credits"] .np-titles {
+    flex: 0 0 auto;
+    margin-bottom: 4px;
+  }
+  .np[data-tab="lyrics"] .np-title-row .js-title,
+  .np[data-tab="queue"] .np-title-row .js-title,
+  .np[data-tab="credits"] .np-title-row .js-title {
+    font-size: clamp(20px, 2.2vw, 25px) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .np[data-tab="lyrics"] #np-pane,
+  .np[data-tab="queue"] #np-pane,
+  .np[data-tab="credits"] #np-pane {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-block: 6px;
+  }
+  .np[data-tab="lyrics"] .np-lyrics,
+  .np[data-tab="queue"] .np-queue,
+  .np[data-tab="credits"] .np-credits {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    max-height: none !important;
+    overflow-y: auto;
+  }
+  .np[data-tab="lyrics"] :is(.np-scrub, .controls.big, .volume.wide),
+  .np[data-tab="queue"] :is(.np-scrub, .controls.big, .volume.wide),
+  .np[data-tab="credits"] :is(.np-scrub, .controls.big, .volume.wide) {
+    flex: 0 0 auto;
+  }
 }
 @media (max-width: 860px) {
   .floatbar .island-np.mini-player { width: 310px; max-width: 55vw; }
@@ -112,6 +166,71 @@
   .np .controls.big { justify-content: center; gap: 12px; margin: 2px 0; }
   .np .volume.wide { width: 100%; max-width: 100%; align-items: center; gap: 8px; }
   .np[data-tab]:not([data-tab="now"]) :is(.np-stage, .np-next) { display: none; }
+  .np[data-tab="lyrics"] .np-body,
+  .np[data-tab="queue"] .np-body,
+  .np[data-tab="credits"] .np-body {
+    height: calc(100dvh - 84px - var(--sat, 0px));
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: calc(18px + var(--sab, 0px));
+  }
+  .np[data-tab="lyrics"] .np-side,
+  .np[data-tab="queue"] .np-side,
+  .np[data-tab="credits"] .np-side {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .np[data-tab="lyrics"] .np-titles,
+  .np[data-tab="queue"] .np-titles,
+  .np[data-tab="credits"] .np-titles {
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+  .np[data-tab="lyrics"] .np-title-row .js-title,
+  .np[data-tab="queue"] .np-title-row .js-title,
+  .np[data-tab="credits"] .np-title-row .js-title {
+    font-size: 20px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    -webkit-line-clamp: 1 !important;
+  }
+  .np[data-tab="lyrics"] #np-pane,
+  .np[data-tab="queue"] #np-pane,
+  .np[data-tab="credits"] #np-pane {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .np[data-tab="lyrics"] .np-lyrics,
+  .np[data-tab="queue"] .np-queue,
+  .np[data-tab="credits"] .np-credits {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    max-height: none !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .np[data-tab="lyrics"] .np-lyrics {
+    padding: clamp(18px, 4vh, 36px) 4px;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+  }
+  .np[data-tab="lyrics"] :is(.np-scrub, .controls.big),
+  .np[data-tab="queue"] :is(.np-scrub, .controls.big),
+  .np[data-tab="credits"] :is(.np-scrub, .controls.big) {
+    flex: 0 0 auto;
+  }
 }
 @media (max-width: 760px) {
   .np .np-top { position: relative; grid-template-columns: 44px 1fr; gap: 10px; }

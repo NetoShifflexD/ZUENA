@@ -114,27 +114,27 @@ export async function viewArtistDashboard() {
         <div class="glass-soft form-card geo-card">
           <div class="geo-bars">
             <div class="geo-bar-row">
-              <span class="geo-country">🇦🇷 Argentina</span>
+              <span class="geo-country"><b class="geo-tag">AR</b> Argentina</span>
               <div class="geo-track"><i style="width: 38%"></i></div>
               <span class="geo-pct">38%</span>
             </div>
             <div class="geo-bar-row">
-              <span class="geo-country">🇪🇸 España</span>
+              <span class="geo-country"><b class="geo-tag">ES</b> España</span>
               <div class="geo-track"><i style="width: 24%"></i></div>
               <span class="geo-pct">24%</span>
             </div>
             <div class="geo-bar-row">
-              <span class="geo-country">🇲🇽 México</span>
+              <span class="geo-country"><b class="geo-tag">MX</b> México</span>
               <div class="geo-track"><i style="width: 18%"></i></div>
               <span class="geo-pct">18%</span>
             </div>
             <div class="geo-bar-row">
-              <span class="geo-country">🇨🇴 Colombia</span>
+              <span class="geo-country"><b class="geo-tag">CO</b> Colombia</span>
               <div class="geo-track"><i style="width: 12%"></i></div>
               <span class="geo-pct">12%</span>
             </div>
             <div class="geo-bar-row">
-              <span class="geo-country">🇺🇸 Estados Unidos & Otros</span>
+              <span class="geo-country"><b class="geo-tag">US</b> Estados Unidos & Otros</span>
               <div class="geo-track"><i style="width: 8%"></i></div>
               <span class="geo-pct">8%</span>
             </div>

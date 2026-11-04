@@ -697,6 +697,18 @@ export class Auth extends EventTarget {
       this.user = this.localUser(saved);
       return;
     }
+    if (saved && !isGuest(saved)) {
+      this.user = this.localUser(saved);
+      return;
+    }
+    if (!saved) {
+      const zuAcc = await db.get('accounts', ZUENA_OFFICIAL_UID);
+      if (zuAcc) {
+        await db.kvSet('session', zuAcc.uid);
+        this.user = this.localUser(zuAcc);
+        return;
+      }
+    }
     if (this.mode === 'firebase') {
       try {
         await this.initFirebase();
@@ -799,7 +811,7 @@ export class Auth extends EventTarget {
 
   // devuelve null si el correo no está en la nube o aún no confirmó enlace pero existe cuenta local verificable
   async signInCloud(email, password) {
-    if (email === ZUENA_OFFICIAL_EMAIL.toLowerCase()) return null;
+    if (email === ZUENA_OFFICIAL_EMAIL.toLowerCase() || (OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase())) return null;
     let c;
     try { c = await this.supaClient(); } catch {
       if ((await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a))) return null;
@@ -980,11 +992,13 @@ export class Auth extends EventTarget {
 
   async signIn(email, password) {
     email = String(email || '').trim().toLowerCase();
-    const isZuenaAlias = ['zuena', '@zuena', 'equipo@zuena.app', 'zuena@zuena.app', 'zuena@zuena.com', 'zuena@gmail.com'].includes(email);
+    const isZuenaAlias = ['zuena', '@zuena', 'equipo@zuena.app', 'zuena@zuena.app', 'zuena@zuena.com', 'zuena@gmail.com', 'zuena.app', 'equipo'].includes(email) || email.startsWith('zuena') || email.startsWith('@zuena');
+    const isOwnerAlias = ['netostars', '@netostars', 'luciano', 'lucianoagustinbengolea@gmail.com'].includes(email);
     if (isZuenaAlias) {
       email = ZUENA_OFFICIAL_EMAIL.toLowerCase();
       await ensureZuenaAccount();
-    } else if (OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase()) {
+    } else if (isOwnerAlias || (OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase())) {
+      email = (OWNER_EMAIL || 'lucianoagustinbengolea@gmail.com').toLowerCase();
       await ensureOwnerAndInitialUsers();
     }
     if (!EMAIL_RE.test(email)) throw new AuthError('email', 'Ingresá un correo válido');
@@ -994,7 +1008,7 @@ export class Auth extends EventTarget {
       try { await this.fb.A.signInWithEmailAndPassword(this.fb.auth, email, password); } catch (err) { throw fbError(err); }
       return this.user;
     }
-    if (this.cloudAccounts && !isZuenaAlias) {
+    if (this.cloudAccounts && !isZuenaAlias && !isOwnerAlias) {
       const user = await this.signInCloud(email, password);
       if (user) return user;
     }
@@ -1002,6 +1016,10 @@ export class Auth extends EventTarget {
     if (!acc && isZuenaAlias) {
       await ensureZuenaAccount();
       acc = await db.get('accounts', ZUENA_OFFICIAL_UID);
+    }
+    if (!acc && isOwnerAlias) {
+      await ensureOwnerAndInitialUsers();
+      acc = await db.get('accounts', OWNER_UID);
     }
     if (!acc || isGuest(acc)) throw new AuthError('email', 'No hay ninguna cuenta con ese correo en este equipo');
     const { hash } = await hashPassword(password, acc.salt);

@@ -1,0 +1,362 @@
+/* ==========================================================================
+   ZUENA Dashboards: Administración & Artistas (Spotify for Artists style)
+   Diseño de Alta Fidelidad Point & Glass
+   ========================================================================== */
+
+/* ---------- Contenedores Principales ---------- */
+.admin-dashboard,
+.artist-dashboard {
+  width: min(100%, 1240px);
+  margin-inline: auto;
+  padding: clamp(16px, 3.5vw, 40px) clamp(16px, 4vw, 48px) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  color: var(--z-ink, #0f172a);
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.page-head h1 {
+  font-family: var(--font-display, 'Inter Tight', sans-serif);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin: 4px 0 6px;
+}
+
+/* ---------- Grid de Métricas ---------- */
+.admin-metrics-grid,
+.artist-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.admin-metrics-grid .stat,
+.artist-metrics-grid .stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--z-radius, 20px);
+  background: var(--z-surface, rgba(255, 255, 255, 0.6));
+  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.2));
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), border-color 0.25s ease;
+}
+
+.admin-metrics-grid .stat:hover,
+.artist-metrics-grid .stat:hover {
+  transform: translateY(-2px);
+  border-color: var(--z-accent, #3b82f6);
+}
+
+.metric-highlight {
+  border-color: color-mix(in srgb, var(--z-accent, #3b82f6) 40%, var(--z-line, rgba(255, 255, 255, 0.2))) !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--z-accent, #3b82f6) 8%, var(--z-surface, #fff)), var(--z-surface, #fff)) !important;
+}
+
+.metric-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stat-num,
+.admin-metrics-grid .stat b {
+  font-family: var(--font-display, 'Inter Tight', sans-serif);
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--z-ink, #0f172a);
+}
+
+/* ---------- Navegación por Pestañas (Admin) ---------- */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  border-radius: var(--z-radius-sm, 14px);
+  background: var(--z-surface, rgba(255, 255, 255, 0.4));
+  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(16px);
+}
+
+.admin-tabs .seg-btn {
+  flex: 1 1 180px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--z-muted, #64748b);
+  transition: all 0.2s ease;
+}
+
+.admin-tabs .seg-btn.on {
+  background: var(--z-action, #0f172a);
+  color: var(--z-on-action, #ffffff);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Tarjetas de Gestión de Administración ---------- */
+.admin-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-claim-card,
+.admin-release-card,
+.admin-post-card,
+.admin-user-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  border-radius: var(--z-radius-sm, 16px);
+  background: var(--z-surface, rgba(255, 255, 255, 0.65));
+  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.2));
+  backdrop-filter: blur(20px);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-claim-card:hover,
+.admin-release-card:hover,
+.admin-post-card:hover,
+.admin-user-card:hover {
+  border-color: var(--z-line-hover, rgba(59, 130, 246, 0.4));
+}
+
+.admin-card-info h3 {
+  font-size: 16.5px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.admin-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Dashboard de Artistas (Spotify style) ---------- */
+.artist-head-main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.artist-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.artist-tracks-card,
+.geo-breakdown,
+.payout-dashboard-card {
+  padding: 24px;
+  border-radius: var(--z-radius, 22px);
+  background: var(--z-surface, rgba(255, 255, 255, 0.65));
+  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.2));
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.08);
+}
+
+.artist-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.artist-card-head h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+/* Tabla de temas del Artista */
+.artist-track-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.artist-track-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--z-muted, #64748b);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--z-line, rgba(255, 255, 255, 0.15));
+}
+
+.artist-track-table td {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--z-line, rgba(255, 255, 255, 0.08));
+}
+
+.artist-track-table tr:hover td {
+  background: color-mix(in srgb, var(--z-accent, #3b82f6) 6%, transparent);
+}
+
+/* Barras Geográficas */
+.geo-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.geo-bar-row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 50px;
+  align-items: center;
+  gap: 14px;
+}
+
+.geo-country {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 550;
+  color: var(--z-ink);
+}
+
+.geo-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--z-raised);
+  border: 1px solid var(--z-line);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--z-ink);
+}
+
+.geo-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--z-line, rgba(0, 0, 0, 0.08));
+  overflow: hidden;
+}
+
+.geo-track i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--z-accent, #3b82f6), #06b6d4);
+  transition: width 0.6s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.geo-pct {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--z-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Módulo de Retiros y Stripe ---------- */
+.payout-balance-box {
+  padding: 22px;
+  border-radius: var(--z-radius-sm, 16px);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--z-accent, #3b82f6) 12%, var(--z-surface, #fff)), var(--z-surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--z-accent, #3b82f6) 30%, transparent);
+  margin-bottom: 20px;
+}
+
+.payout-balance-num {
+  font-family: var(--font-display, 'Inter Tight', sans-serif);
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--z-accent, #3b82f6);
+  margin: 6px 0 12px;
+}
+
+.payout-rule-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--z-accent, #3b82f6) 14%, transparent);
+  color: var(--z-accent, #3b82f6);
+}
+
+.payout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.payout-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.payout-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--z-surface, rgba(255, 255, 255, 0.4));
+  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.15));
+  font-size: 13.5px;
+}
+
+/* ---------- Responsive para Móviles ---------- */
+@media (max-width: 860px) {
+  .artist-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-claim-card,
+  .admin-release-card,
+  .admin-post-card,
+  .admin-user-card {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .admin-actions-row {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .admin-actions-row button {
+    flex: 1 1 auto;
+  }
+}

@@ -10,3 +10,19 @@
   .hc-nav { max-width: calc(100% - 28px); }
   .np-dur { min-height: 44px; min-width: 44px; margin: 0; padding: 8px; }
 }
+
+/* Inmersión: barras de scroll ocultas en vista principal y paneles interactivos */
+.view, .np-body, .panel-body, #np-pane, .np-lyrics, .np-queue, .admin-dashboard, .artist-dashboard {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.view::-webkit-scrollbar,
+.np-body::-webkit-scrollbar,
+.panel-body::-webkit-scrollbar,
+#np-pane::-webkit-scrollbar,
+.np-lyrics::-webkit-scrollbar,
+.np-queue::-webkit-scrollbar,
+.admin-dashboard::-webkit-scrollbar,
+.artist-dashboard::-webkit-scrollbar {
+  display: none !important;
+}
