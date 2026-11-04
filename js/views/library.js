@@ -13,8 +13,8 @@ function feature(ic, title, text, i) {
 
 export function libTabs(active) {
   const tabs = [['songs', 'Canciones'], ['albums', 'Álbumes'], ['artists', 'Artistas'], ['playlists', 'Playlists']];
-  return `<header class="page-head enter"><h1>Biblioteca</h1>
-    <div class="lib-tabs">${tabs.map(([v, l]) => `<button class="lib-tab lit ${active === v ? 'on' : ''}" data-action="nav" data-view="${v}">${l}</button>`).join('')}</div></header>`;
+  return `<header class="page-head enter library-heading"><div><p class="eyebrow">Tu colección</p><h1>Biblioteca</h1><p class="library-caption">Lo que guardás. Lo que vuelve a sonar.</p></div>
+    <nav class="lib-tabs" aria-label="Tu biblioteca">${tabs.map(([v, l]) => `<button class="lib-tab lit ${active === v ? 'on' : ''}" data-action="nav" data-view="${v}" ${active === v ? 'aria-current="page"' : ''}>${l}</button>`).join('')}</nav></header>`;
 }
 
 export function emptyState() {

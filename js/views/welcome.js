@@ -1,4 +1,4 @@
-// Landing pública v4 (2026-11-03): la misma ZUENA de adentro. Tema del usuario (claro por defecto), vidrio de
+// Landing editorial de marca: punto, escucha, Prisma y entrada. Tema del usuario y vidrio de
 // glass.css, luz iridiscente sólo como luz y la isla como hilo conductor: abre la página como la píldora de la app,
 // se estira hasta ser la navegación y se compacta al bajar. Requisito: bóveda, Salida/Requisitos/Landing v4 y acceso.
 // Se dibuja fuera de #app y se retira al entrar. Movimiento con Prisma Motion; las escenas ancladas (GSAP + Lenis)
@@ -70,21 +70,21 @@ export function showWelcome({ mode = 'signup' } = {}) {
       <main class="ld-main">
         <section class="ld-hero" id="top" aria-labelledby="ld-h1">
           <div class="ld-copy">
-            <p class="eyebrow ld-in">Música independiente</p>
-            <h1 id="ld-h1" class="ld-title">La música<br>que se siente.</h1>
+            <h1 id="ld-h1" class="ld-title" aria-label="La música que se siente. ZUENA"><span class="ld-title-copy">La música<br>que se siente</span><span class="ld-title-point" role="img" aria-label="ZUENA">${logo()}</span></h1>
             <p class="ld-sub ld-in">Sonido de estudio para quienes escuchan y un lugar propio para quienes crean. Gratis y sin publicidad.</p>
             <div class="ld-cta ld-in">
               <button type="button" class="btn-primary lit ld-big" data-wl="signup">Crear cuenta gratis</button>
               <button type="button" class="btn-glass lit ld-big" data-wl="signin">Ya tengo cuenta</button>
             </div>
           </div>
-          <div class="ld-mini ld-in-mini" aria-hidden="true">${miniAppHtml()}</div>
+          <a class="ld-scroll" href="#escenas">Todo empieza al escuchar ${icon('arrowRight')}</a>
         </section>
 
+        <div class="ld-point-passage" aria-hidden="true"><span class="ld-mark">${logo()}</span><span>Un punto de encuentro.</span></div>
         ${scenesHtml()}
 
         <section class="ld-sec" id="elegir" aria-labelledby="ld-el">
-          <header class="ld-head" data-reveal="fadeUp"><p class="eyebrow">Elegí cómo entrar</p><h2 id="ld-el">Un lugar para escuchar y otro para crear, en la misma casa.</h2></header>
+          <header class="ld-head" data-reveal="fadeUp"><p>Tu lugar en ZUENA</p><h2 id="ld-el">De este lado,<br>la música es tuya.</h2></header>
           <div class="ld-roles" data-reveal="fadeUp" data-reveal-children data-reveal-stagger="70">${Object.entries(ROLES).map(([k, r]) => roleCard(k, r)).join('')}</div>
           <p class="hint center ld-note">Podés empezar como oyente y pedir tu perfil de artista cuando quieras.</p>
         </section>
@@ -101,7 +101,7 @@ export function showWelcome({ mode = 'signup' } = {}) {
 
         <section class="ld-close" aria-labelledby="ld-fin" data-reveal="scaleIn">
           <div class="ld-close-isl" aria-hidden="true"><span class="ld-mark">${logo()}</span><span class="ld-word">ZUENA</span></div>
-          <h2 id="ld-fin">Empezá a escuchar hoy.</h2>
+          <h2 id="ld-fin">Ahora, a escuchar<span class="ld-title-point" role="img" aria-label="ZUENA">${logo()}</span></h2>
           <p>Creá tu cuenta gratis o probá ZUENA como invitado durante siete días.</p>
           <div class="ld-cta center"><button type="button" class="btn-primary lit ld-big" data-wl="signup">Crear cuenta gratis</button><button type="button" class="btn-glass lit ld-big" data-wl="signin">Iniciar sesión</button></div>
         </section>
@@ -182,7 +182,7 @@ export function showWelcome({ mode = 'signup' } = {}) {
       if (mobileSheet()) motion.animate(dialog, [{ transform: 'translateY(100%)' }, { transform: 'none' }], { spring: 'smooth' });
       else {
         motion.play('fadeIn', dialog);
-        motion.play('blurIn', sheet.querySelector('.ld-auth-quote'), { delay: 60 });
+        motion.play('fadeUp', sheet.querySelector('.ld-auth-quote'), { delay: 60 });
         motion.play('slideLeft', sheet.querySelector('.ld-auth-card'), { delay: 40 });
       }
     };
@@ -231,7 +231,6 @@ export function showWelcome({ mode = 'signup' } = {}) {
 
     // entrada de la portada y apariciones al desplazar (motor)
     motion.play('fadeUp', root.querySelectorAll('.ld-in'), { stagger: 70, delay: 200 });
-    motion.play('blurIn', root.querySelector('.ld-in-mini'), { delay: 260 });
     motion.reveal(root);
     import('./welcomeScenes.js').then((m) => m.mountScenes(root)).then((st) => { if (st) root.addEventListener('zuena-welcome-out', () => st.destroy(), { once: true }); }).catch((err) => console.warn('[landing]', err));
 
@@ -244,7 +243,7 @@ export function showWelcome({ mode = 'signup' } = {}) {
       const t = fmtCount(left);
       counters.forEach((c) => { c.textContent = t; });
     };
-    timer = setInterval(tick, 1000);
+    if (counters.length) timer = setInterval(tick, 1000);
   });
 }
 
@@ -258,7 +257,7 @@ function lightAndScroll(root, setNav) {
     if (!root.isConnected || document.hidden) return;
     const h = root.clientHeight || innerHeight;
     setNav(navMode(root.scrollTop, h));
-    if (!motion.enabled || root.classList.contains('sheet-open')) return;
+    if (document.documentElement.dataset.design === 'point' || !motion.enabled || root.classList.contains('sheet-open')) return;
     const s = Math.min(1, root.scrollTop / Math.max(1, root.scrollHeight - h));
     light.style.setProperty('--lx', px.toFixed(3));
     light.style.setProperty('--ly', py.toFixed(3));
@@ -266,7 +265,7 @@ function lightAndScroll(root, setNav) {
   };
   const queue = () => { if (!raf) raf = requestAnimationFrame(frame); };
   root.addEventListener('scroll', queue, { passive: true });
-  if (matchMedia('(pointer: fine)').matches) {
+  if (document.documentElement.dataset.design !== 'point' && matchMedia('(pointer: fine)').matches) {
     root.addEventListener('pointermove', (e) => { px = e.clientX / innerWidth; py = e.clientY / innerHeight; queue(); }, { passive: true });
   }
   frame();
@@ -279,7 +278,7 @@ function miniAppHtml() {
   return `
     <div class="ld-mini-app" data-tilt>
       <div class="island-live ld-mini-isl"><span class="il-art"><span class="ld-cover c1"></span></span>
-        <span class="il-text"><small>Ahora suena</small><b>Marea alta</b><span>Ciudad Satélite</span></span>
+        <span class="il-text"><small>Vista previa · Ahora suena</small><b>Marea alta</b><span>Ciudad Satélite</span></span>
         <span class="il-bars"><i></i><i></i><i></i><i></i></span></div>
       <div class="ld-np glass">
         <div class="ld-cover c1 lg"></div>
@@ -289,20 +288,20 @@ function miniAppHtml() {
         <div class="ld-np-ctl"><span>${icon('shuffle')}</span><span>${icon('prev')}</span><span class="ld-play">${icon('pause')}</span><span>${icon('next')}</span><span>${icon('repeat')}</span></div>
       </div>
       <div class="island-live ld-mini-isl ld-mini-isl2"><span class="il-ico">${icon('clock')}</span>
-        <span class="il-text"><small>Estreno</small><b>Bruma Norte</b><span data-ld-count>${fmtCount(COUNT_FROM)}</span></span></div>
+        <span class="il-text"><small>Vista previa · Estreno</small><b>Bruma Norte</b><span data-ld-count>${fmtCount(COUNT_FROM)}</span></span></div>
     </div>`;
 }
 
 function scenesHtml() {
   const visual = [
-    `<div class="ld-np glass sm"><div class="ld-cover c2 lg"></div><div class="ld-np-meta"><b>Luz de faro</b><span>Bruma Norte</span></div>
+    `<div class="ld-np glass sm"><span class="ld-preview-label">Vista previa</span><div class="ld-cover c2 lg"></div><div class="ld-np-meta"><b>Luz de faro</b><span>Bruma Norte</span></div>
       <div class="ld-spectrum">${Array.from({ length: 16 }, (_, i) => `<i style="--i:${i};--h:${(0.3 + 0.7 * Math.abs(Math.sin(i * 1.3))).toFixed(2)}"></i>`).join('')}</div>
       <div class="ld-chips"><span>Sin pérdida</span><span>Volumen parejo</span></div></div>`,
-    `<div class="ld-feedmini"><div class="island-live ld-mini-isl"><span class="il-ico">${icon('clock')}</span><span class="il-text"><small>Estreno</small><b>Ciudad Satélite</b><span data-ld-count>${fmtCount(COUNT_FROM)}</span></span></div>
-      ${[0, 1, 2].map((i) => `<div class="ld-post glass-soft" style="--k:${i}"><span class="ld-cover c${i + 1}"></span><span><b></b><i></i><i></i></span></div>`).join('')}</div>`,
+    `<div class="ld-mini ld-in-mini"><span class="ld-preview-label">Prisma · Vista previa de la interfaz</span>${miniAppHtml()}</div>`,
     `<div class="ld-tiers"><span class="ld-soon">Próximamente</span>${[['Supporter', 'Insignia y adelantos'], ['Fan', 'Lo anterior, más encuentros en vivo'], ['Superfan', 'Lo anterior, más lanzamientos exclusivos']].map(([n, d], i) => `<div class="ld-tier glass-soft ${i === 1 ? 'on' : ''}"><b>${n}</b><span>${d}</span></div>`).join('')}</div>`,
   ];
   return `<section class="ld-scenes" id="escenas" aria-label="Cómo funciona ZUENA">
+    <header class="ld-prisma-head"><p>Escucha. Encuentro. Prisma.</p><p>La música en primer plano.<br>Todo lo demás, cerca.</p></header>
     <div class="ld-scenes-pin">
       ${SCENES.map(([ic, t, d], i) => `<article class="ld-scene" data-i="${i}">
         <div class="ld-scene-text"><span class="ld-ico">${icon(ic)}</span><h2>${t}</h2><p>${d}</p></div>

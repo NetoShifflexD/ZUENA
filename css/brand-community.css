@@ -1,0 +1,303 @@
+/* Comunidad · hoja final Point. Cargar después de las hojas heredadas.
+   Las acciones, los permisos y las preferencias pertenecen a sus módulos. */
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor, .community-post) {
+  color: var(--z-ink);
+  font-family: var(--font);
+  min-width: 0;
+}
+html[data-design="point"] :is(.community-profile, .community-artist) { --z-accent: var(--accent); }
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) :is(h1, h2, h3, .section-title) {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -.04em;
+  text-shadow: none;
+}
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) .eyebrow {
+  color: var(--z-muted);
+  font: 500 11px/1.5 var(--font);
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  opacity: 1;
+}
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor, .community-post) :is(.muted, .hint, .row-sub) { color: var(--z-muted); }
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) :is(button, a.btn-glass, a.btn-primary, .attach-toggle, .theme-chip, .link) {
+  min-height: 44px;
+  min-width: 44px;
+}
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) :is(.btn-primary, .btn-glass, .btn-icon, .select) {
+  border-radius: var(--z-radius-sm);
+  box-shadow: none;
+  font-weight: 500;
+  transition: background var(--m-dur-fast) var(--m-ease-out), color var(--m-dur-fast) var(--m-ease-out), border-color var(--m-dur-fast) var(--m-ease-out);
+}
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) .btn-primary {
+  background: var(--z-action);
+  color: var(--z-on-action);
+  border: 1px solid var(--z-action);
+}
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) :is(.btn-glass, .btn-icon, .select) {
+  background: var(--z-surface);
+  color: var(--z-ink);
+  border: 1px solid var(--z-line);
+}
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) :is(.btn-glass, .btn-icon):hover { background: var(--z-raised); }
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor, .community-post) :focus-visible {
+  outline: 2px solid var(--z-ink);
+  outline-offset: 3px;
+}
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor) :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--font);
+  font-size: 16px;
+}
+
+/* Une de lejos; se lee de cerca. El lateral sigue disponible en móvil. */
+html[data-design="point"] .community-feed {
+  width: min(100%, 1200px);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 760px) minmax(240px, 300px);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: start;
+}
+html[data-design="point"] .community-feed .fx-main { margin: 0; overflow: visible; background: none; border-radius: 0; box-shadow: none; }
+html[data-design="point"] .community-feed .fx-head {
+  position: relative;
+  top: auto;
+  z-index: 1;
+  padding: 0;
+  margin: 0 0 24px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  gap: 24px;
+}
+html[data-design="point"] .community-feed-intro { display: grid; gap: 12px; padding-top: 24px; }
+html[data-design="point"] .community-feed-intro :is(h1, p) { margin: 0; padding: 0; }
+html[data-design="point"] .community-feed .fx-head h1 { font-size: clamp(44px, 6vw, 76px); line-height: 1.04; font-weight: 300; }
+html[data-design="point"] .community-feed .fx-tabs {
+  display: flex;
+  gap: 24px;
+  padding: 0;
+  overflow-x: auto;
+  border-radius: 0;
+  border-bottom: 1px solid var(--z-line);
+  background: none;
+  scrollbar-width: thin;
+}
+html[data-design="point"] .community-feed .fx-tab {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 48px;
+  padding: 8px 2px;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--z-muted);
+  background: none;
+  font-weight: 400;
+}
+html[data-design="point"] .community-feed .fx-tab.on { color: var(--z-ink); border-bottom-color: var(--z-ink); font-weight: 500; }
+html[data-design="point"] .community-feed :is(.fx-tab-ink, .fx-tab.on::after) { display: none; }
+html[data-design="point"] .community-feed .fx-stories { margin: 0 0 24px; padding: 0 0 16px; border-bottom: 1px solid var(--z-line); background: none; }
+html[data-design="point"] .community-feed .fx-story-ring { padding: 3px; background: none; border: 1px solid var(--z-line); box-shadow: none; }
+html[data-design="point"] .community-feed .fx-story-ring.new { border-color: var(--z-accent); }
+html[data-design="point"] .community-feed .fx-story-ring { transition: border-color var(--m-dur-fast) var(--m-ease-out); }
+html[data-design="point"] .community-feed .fx-story:hover .fx-story-ring { transform: none; }
+html[data-design="point"] .community-feed .fx-story-name { color: var(--z-ink); }
+html[data-design="point"] .community-feed .fx-list { display: grid; gap: 0; }
+html[data-design="point"] .community-feed .fx-new {
+  position: relative;
+  top: auto;
+  margin: 16px auto;
+  padding: 8px 16px;
+  max-width: 100%;
+  color: var(--z-on-action);
+  background: var(--z-action);
+  box-shadow: var(--z-shadow);
+  animation: none;
+}
+html[data-design="point"] .community-feed .fx-side { display: grid; position: static; gap: 32px; padding-top: 32px; min-width: 0; }
+html[data-design="point"] .community-feed .fx-card {
+  padding: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--z-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-design="point"] .community-feed .fx-card h2 { font-size: 24px; margin-bottom: 18px; }
+html[data-design="point"] .community-feed .fx-trend { margin: 0; padding: 12px 0; border-bottom: 1px solid var(--z-line); border-radius: 0; overflow-wrap: anywhere; }
+html[data-design="point"] .community-feed .fx-trend b { font-weight: 500; color: var(--z-ink); }
+html[data-design="point"] .community-feed .fx-who { flex-wrap: wrap; padding-block: 12px; }
+html[data-design="point"] .community-feed .fx-who .row-main { flex-basis: 80px; overflow-wrap: anywhere; }
+html[data-design="point"] .community-feed .fx-who .row-title { display: block; white-space: normal; }
+html[data-design="point"] .community-feed .regional-list a { min-height: 44px; }
+html[data-design="point"] .community-feed .fx-reader-note { margin: 0 0 24px; padding: 20px; border: 1px solid var(--z-line); border-radius: var(--z-radius-sm); color: var(--z-muted); background: var(--z-surface); }
+html[data-design="point"] .community-feed .fx-reader-note b { color: var(--z-ink); }
+
+/* Publicaciones y respuestas: borde editorial, adjunto contenido, acciones quietas. */
+html[data-design="point"] .community-post.post {
+  padding: 24px 0 16px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--z-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: none;
+  transition: none;
+}
+html[data-design="point"] .community-post.post:hover { background: none; box-shadow: none; transform: none; }
+html[data-design="point"] .community-post.post.pinned { border-top: 1px solid var(--z-line); }
+html[data-design="point"] .community-post.post.exclusive { border-left: 2px solid var(--z-accent); padding-left: 12px; }
+html[data-design="point"] .community-post.post.compact { margin-bottom: 0; border-bottom: 0; }
+html[data-design="point"] .community-post.compact::before { left: 21px; background: var(--z-line); }
+html[data-design="point"] .community-post .post-head { flex-wrap: wrap; gap: 4px 8px; }
+html[data-design="point"] .community-post .post-who { max-width: calc(100% - 52px); color: var(--z-ink); min-height: 44px; }
+html[data-design="point"] .community-post .post-name { font-weight: 500; }
+html[data-design="point"] .community-post :is(.post-handle, .post-time, .post-context, .post-replying, .post-when) { color: var(--z-muted); }
+html[data-design="point"] .community-post .post-handle { max-width: 100%; }
+html[data-design="point"] .community-post .post-more { width: 44px; height: 44px; min-width: 44px; color: var(--z-muted); }
+html[data-design="point"] .community-post .post-avatar .avatar { box-shadow: none; }
+html[data-design="point"] .community-post .post-text { font-size: 16px; line-height: 1.65; margin: 0 0 12px; overflow-wrap: anywhere; }
+html[data-design="point"] .community-post.detail .post-text { font-size: clamp(20px, 3vw, 28px); line-height: 1.5; }
+html[data-design="point"] .community-post .post-attach { min-width: 0; border: 1px solid var(--z-line); border-radius: var(--z-radius-sm); padding: 10px; gap: 10px; background: var(--z-surface); box-shadow: none; }
+html[data-design="point"] .community-post .post-attach .art { border-radius: var(--z-radius-sm); }
+html[data-design="point"] .community-post .post-play { min-width: 44px; min-height: 44px; background: var(--z-action); color: var(--z-on-action); box-shadow: none; }
+html[data-design="point"] .community-post .post-cat-foot { overflow-wrap: anywhere; color: var(--z-muted); }
+html[data-design="point"] .community-post .post-actions { gap: 0; margin: 4px 0 0; width: 100%; max-width: 400px; }
+html[data-design="point"] .community-post .post-actions .pa { min-height: 44px; min-width: 44px; padding-inline: 8px; color: var(--z-muted); transition: background var(--m-dur-fast) var(--m-ease-out), color var(--m-dur-fast) var(--m-ease-out); }
+html[data-design="point"] .community-post .post-actions .pa:hover { background: var(--z-raised); color: var(--z-ink); }
+html[data-design="point"] .community-post .post-actions .pa.on { color: var(--z-accent); background: var(--z-surface); }
+html[data-design="point"] .community-post .pa.pop .ico { animation: none; }
+html[data-design="point"] .community-post .post-sim { display: inline-flex; color: var(--z-muted); white-space: normal; }
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist) :is(.fx-empty, .notice) { padding: clamp(20px, 4vw, 40px); border: 1px solid var(--z-line); border-radius: var(--z-radius); background: var(--z-surface); box-shadow: none; overflow-wrap: anywhere; }
+html[data-design="point"] :is(.community-feed, .community-profile, .community-artist) .fx-empty h3 { font-size: 28px; line-height: 1.2; color: var(--z-ink); }
+
+html[data-design="point"] .community-composer.fx-composer { padding: 20px; margin: 0 0 24px; gap: 12px; background: var(--z-surface); border: 1px solid var(--z-line); border-radius: var(--z-radius); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+html[data-design="point"] .community-composer-title { margin: 0; color: var(--z-muted); font-size: 12px; line-height: 1.5; }
+html[data-design="point"] .community-composer .composer-input { font: 400 16px/1.6 var(--font); color: var(--z-ink); padding: 12px 0; }
+html[data-design="point"] .community-composer .composer-input::placeholder { color: var(--z-muted); }
+html[data-design="point"] .community-composer .composer-bar { flex-wrap: wrap; gap: 12px; border-color: var(--z-line); }
+html[data-design="point"] .community-composer .composer-tools { flex: 1 1 100%; flex-wrap: wrap; }
+html[data-design="point"] .community-composer .composer-audience { max-width: 100%; height: auto; min-height: 44px; }
+html[data-design="point"] .community-composer .attach-toggle span { height: auto; min-height: 44px; max-width: 100%; }
+html[data-design="point"] .community-composer .composer-ring { margin-left: auto; }
+html[data-design="point"] .community-composer .composer-ring .fg { stroke: var(--z-accent); transition: stroke var(--m-dur-fast) var(--m-ease-out); }
+html[data-design="point"] .community-composer .composer-ring :is(.fg.warn, .fg.over) { stroke: var(--z-ink); }
+
+/* Portadas a sangre: el desvanecido termina antes del texto. Sin baño de color. */
+html[data-design="point"] .community-artist::before { content: none; }
+html[data-design="point"] .community-artist .ap-hero {
+  min-height: 0;
+  margin-top: 0;
+  background: var(--z-paper);
+  color: var(--z-ink);
+}
+html[data-design="point"] .community-artist .ap-v2::after { content: none; }
+html[data-design="point"] .community-artist .ap-cover { height: clamp(240px, 40vw, 480px); mask-image: linear-gradient(var(--z-ink) 35%, transparent); -webkit-mask-image: linear-gradient(var(--z-ink) 35%, transparent); transform: none; opacity: 1; will-change: auto; }
+html[data-design="point"] .community-artist .ap-cover img { animation: none; transform: none; filter: none; }
+html[data-design="point"] .community-artist .ap-cover.none { background: linear-gradient(var(--z-raised), var(--z-paper)); mask-image: none; -webkit-mask-image: none; }
+html[data-design="point"] .community-artist .ap-head { grid-template-rows: auto; gap: 22px; padding: 20px var(--ap-px) 32px; }
+html[data-design="point"] .community-artist .ap-v2.kind-none .ap-head { padding-top: 20px; }
+html[data-design="point"] .community-artist .ap-v2.kind-cover .ap-row { margin-top: clamp(200px, 29vw, 360px); }
+html[data-design="point"] .community-artist .ap-row { justify-content: flex-start; text-align: left; margin-top: 0; }
+html[data-design="point"] .community-artist .ap-id { justify-items: start; max-width: 100%; gap: 10px; transform: none; opacity: 1; }
+html[data-design="point"] .community-artist .ap-id .eyebrow { justify-content: flex-start; }
+html[data-design="point"] .community-artist .ap-name { margin: 0; font: 300 clamp(44px, 7vw, 104px)/1.02 var(--font-display); letter-spacing: -.055em; text-shadow: none; color: var(--z-ink); background: none; -webkit-text-fill-color: currentColor; }
+html[data-design="point"] .community-artist .ap-sub { max-width: 64ch; line-height: 1.6; color: var(--z-muted); }
+html[data-design="point"] .community-artist .ap-photo { justify-self: start; width: clamp(112px, 15vw, 180px); margin-top: 20px; transform: none; opacity: 1; }
+html[data-design="point"] .community-artist .ap-photo img { border-radius: var(--z-radius); box-shadow: none; animation: none; }
+html[data-design="point"] .community-artist .hero-actions { justify-content: flex-start; gap: 10px; margin: 0; }
+html[data-design="point"] .community-artist .ap-shuffle { order: 3; }
+html[data-design="point"] .community-artist .support-btn { order: 2; }
+html[data-design="point"] .community-artist .ap-fcount { order: 4; flex-basis: 100%; justify-content: flex-start; text-align: left; color: var(--z-muted); }
+html[data-design="point"] .community-artist .ap-body { width: min(100%, 1200px); padding-top: 0; gap: 32px; }
+html[data-design="point"] .community-artist .ap-tabs { display: flex; justify-self: stretch; width: 100%; gap: 28px; overflow-x: auto; border-radius: 0; border-bottom: 1px solid var(--z-line); padding: 0; background: none; box-shadow: none; scrollbar-width: thin; }
+html[data-design="point"] .community-artist .ap-tab { flex: 0 0 auto; padding: 12px 0; border: 0; border-radius: 0; border-bottom: 2px solid transparent; background: none; color: var(--z-muted); font-weight: 400; box-shadow: none; }
+html[data-design="point"] .community-artist .ap-tab.on { color: var(--z-ink); border-bottom-color: var(--z-ink); font-weight: 500; }
+html[data-design="point"] .community-artist .ap-tab:hover { background: none; color: var(--z-ink); }
+html[data-design="point"] .community-artist .ap-tab::after { content: none; }
+html[data-design="point"] .community-artist .ap-panel:not([hidden]) { display: grid; gap: 36px; }
+html[data-design="point"] .community-artist .ap-panel:focus-visible { outline: 2px solid var(--z-ink); outline-offset: 3px; }
+html[data-design="point"] .community-artist .ap-sec .section-title { font-size: clamp(26px, 3vw, 38px); }
+html[data-design="point"] .community-artist .ap-sec .section-title::after { content: none; }
+html[data-design="point"] .community-artist :is(.ap-popular, .ap-more, .ap-charts, .support-panel, .tier, .donate) { background: var(--z-surface); border: 1px solid var(--z-line); border-radius: var(--z-radius); box-shadow: none; }
+html[data-design="point"] .community-artist .tier.featured { background: var(--z-raised); }
+html[data-design="point"] .community-artist .tier.current { border-color: var(--z-accent); }
+html[data-design="point"] .community-artist :is(.ap-about, .ap-note, .ap-state) { margin-inline: 0; text-align: left; max-width: 65ch; color: var(--z-muted); overflow-wrap: anywhere; }
+html[data-design="point"] .community-artist .ap-mini { color: var(--z-ink); background: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+html[data-design="point"] .community-artist .ap-mini::before { background: var(--z-paper); border-bottom: 1px solid var(--z-line); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; transition: opacity var(--m-dur-fast) var(--m-ease-out); }
+html[data-design="point"] .community-artist .ap-mini > * { transition: opacity var(--m-dur-fast) var(--m-ease-out), transform var(--m-dur-fast) var(--m-ease-out); }
+
+/* El perfil propio conserva su colección y sus estadísticas privadas. */
+html[data-design="point"] .community-profile .pv2-hero { justify-items: start; text-align: left; align-content: end; padding-bottom: 32px; gap: 24px; background: var(--z-paper); }
+html[data-design="point"] .community-profile .pv2-hero.kind-cover { padding-top: clamp(220px, 28vw, 360px); min-height: 0; }
+html[data-design="point"] .community-profile .pv2-media { height: clamp(240px, 40vw, 480px); mask-image: linear-gradient(var(--z-ink) 35%, transparent); -webkit-mask-image: linear-gradient(var(--z-ink) 35%, transparent); }
+html[data-design="point"] .community-profile .pv2-media.none { background: none; }
+html[data-design="point"] .community-profile-identity { display: grid; gap: 10px; min-width: 0; }
+html[data-design="point"] .community-profile .profile-name { font-size: clamp(40px, 6vw, 88px); font-weight: 300; line-height: 1.04; letter-spacing: -.05em; }
+html[data-design="point"] .community-profile .profile-bio { margin: 0; line-height: 1.65; color: var(--z-muted); }
+html[data-design="point"] .community-profile .profile-handle { margin: 0; color: var(--z-muted); }
+html[data-design="point"] .community-profile .profile-stats { display: flex; justify-content: flex-start; flex-wrap: wrap; gap: 16px 28px; padding-top: 20px; border-top: 1px solid var(--z-line); color: var(--z-muted); }
+html[data-design="point"] .community-profile .profile-stats b { color: var(--z-ink); font-weight: 500; }
+html[data-design="point"] .community-profile .hero-actions { justify-content: flex-start; flex-wrap: wrap; }
+html[data-design="point"] .community-profile .pv2-photo { width: clamp(112px, 14vw, 160px); }
+html[data-design="point"] .community-profile .pv2-photo .avatar { box-shadow: none; border-radius: var(--z-radius); }
+html[data-design="point"] .community-profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 310px); gap: clamp(24px, 4vw, 64px); padding-top: 32px; border-top: 1px solid var(--z-line); }
+html[data-design="point"] :is(.community-profile-main, .community-profile-side) { min-width: 0; }
+html[data-design="point"] .community-profile-main > .section-title { margin-top: 32px; font-size: 32px; }
+html[data-design="point"] .community-profile-side .section-title { margin: 8px 0 24px; font-size: 32px; }
+html[data-design="point"] .community-profile-side .shelf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-columns: auto; grid-auto-flow: row; overflow: visible; gap: 18px 12px; padding: 0; }
+html[data-design="point"] .community-profile-side .artist-cta { display: grid; gap: 16px; margin-top: 32px; }
+html[data-design="point"] :is(.community-profile, .community-artist) :is(.card-title, .card-sub) { overflow-wrap: anywhere; }
+html[data-design="point"] :is(.community-profile, .community-artist) .card { min-width: 0; border-radius: var(--z-radius-sm); background: none; box-shadow: none; }
+html[data-design="point"] :is(.community-profile, .community-artist) .card-title { font-family: var(--font-display); font-weight: 500; color: var(--z-ink); }
+html[data-design="point"] :is(.community-profile, .community-artist) .card-sub { color: var(--z-muted); }
+html[data-design="point"] :is(.community-profile, .community-artist) .card-play { background: var(--z-action); color: var(--z-on-action); box-shadow: none; }
+html[data-design="point"] .community-editor .pe-fields { background: var(--z-paper); }
+html[data-design="point"] .community-editor :is(.input, .select) { color: var(--z-ink); background: var(--z-surface); border-color: var(--z-line); border-radius: var(--z-radius-sm); }
+html[data-design="point"] .community-editor .profile-name { font-weight: 400; }
+html[data-design="point"] .community-editor .pe-media { flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  html[data-design="point"] :is(.community-feed, .community-profile-layout) { grid-template-columns: minmax(0, 1fr); }
+  html[data-design="point"] .community-feed .fx-side { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 24px; padding-top: 0; }
+  html[data-design="point"] .community-profile-side .shelf { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+@media (max-width: 480px) {
+  html[data-design="point"] .community-feed .fx-tabs { gap: 18px; }
+  html[data-design="point"] .community-feed-intro { padding-top: 12px; }
+  html[data-design="point"] .community-post.post { grid-template-columns: 32px minmax(0, 1fr); gap: 8px; padding-block: 20px 12px; }
+  html[data-design="point"] .community-post .post-avatar .avatar { width: 32px; height: 32px; }
+  html[data-design="point"] .community-post .post-head { column-gap: 4px; }
+  html[data-design="point"] .community-post .post-who { max-width: calc(100% - 48px); }
+  html[data-design="point"] .community-post .post-time { white-space: normal; }
+  html[data-design="point"] .community-post .post-attach { grid-template-columns: 44px minmax(0, 1fr); }
+  html[data-design="point"] .community-post .post-attach .art.sm { width: 44px; height: 44px; }
+  html[data-design="point"] .community-post .post-attach .post-play { grid-column: 1 / -1; justify-self: end; }
+  html[data-design="point"] .community-post .post-actions .pa { font-size: 12px; padding-inline: 4px; }
+  html[data-design="point"] .community-composer.fx-composer { padding: 16px; }
+  html[data-design="point"] .community-composer > .avatar { display: none; }
+  html[data-design="point"] .community-artist .ap-tabs { gap: 20px; }
+  html[data-design="point"] .community-artist .hero-actions :is(.btn-glass, .btn-primary) { padding-inline: 12px; }
+  html[data-design="point"] .community-artist .tiers { grid-template-columns: minmax(0, 1fr); }
+  html[data-design="point"] .community-artist .ap-mini b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html[data-design="point"] .community-artist .ap-mini .btn-primary { flex-shrink: 0; }
+  html[data-design="point"] .community-profile .profile-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor, .community-post),
+  html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor, .community-post) *,
+  html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor, .community-post) *::before,
+  html[data-design="point"] :is(.community-feed, .community-profile, .community-artist, .community-editor, .community-post) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

@@ -33,10 +33,10 @@ export function profileHeader(p, { preview = false } = {}) {
       : `<div class="pv2-media none" style="--h:${hueOf(p.uid || p.displayName)}" aria-hidden="true"></div>`;
     return `<header class="pv2-hero kind-${kind}">${media}
       ${kind === 'cover' ? '' : `<div class="pv2-photo">${avatar(p, 'xl')}</div>`}
-      <p class="eyebrow">${roleLabel(p, verified)}</p>
-      <h1 class="profile-name" style="font-family:${fontStack(p.font)}">${esc(p.displayName)}${tick(verified, 'Artista verificado')}</h1>
+      <div class="community-profile-identity"><p class="eyebrow">Tu perfil / ${roleLabel(p, verified)}</p>
+      <h1 class="profile-name" style="font-family:${esc(fontStack(p.font))}">${esc(p.displayName)}${tick(verified, 'Artista verificado')}</h1>
       <p class="profile-handle">@${esc(p.username)}</p>
-      ${p.bio ? `<p class="profile-bio">${esc(p.bio)}</p>` : ''}
+      ${p.bio ? `<p class="profile-bio">${esc(p.bio)}</p>` : ''}</div>
       <div class="profile-stats">
         <span><b>${app.playlists.mine.length}</b> playlists</span>
         <span><b>${plays}</b> reproducciones</span>
@@ -55,7 +55,7 @@ export function profileHeader(p, { preview = false } = {}) {
       ${avatar(p, 'xl profile-avatar')}
       <div class="profile-id">
         <p class="eyebrow">${roleLabel(p, verified)}</p>
-        <h1 class="profile-name" style="font-family:${fontStack(p.font)}">${esc(p.displayName)}${tick(verified, 'Artista verificado')}</h1>
+        <h1 class="profile-name" style="font-family:${esc(fontStack(p.font))}">${esc(p.displayName)}${tick(verified, 'Artista verificado')}</h1>
         <p class="profile-handle">@${esc(p.username)}</p>
         ${p.bio ? `<p class="profile-bio">${esc(p.bio)}</p>` : ''}
         ${preview ? '' : `<div class="profile-stats">
@@ -80,17 +80,20 @@ export function viewProfile() {
   const top = app.stats.top(10).map(([id]) => app.resolve(id)).filter((t) => t && !t.hidden);
   const lists = app.playlists.list.filter((x) => !x.system || x.trackIds.length);
   const releases = app.artist.releases.filter((r) => r.status === 'published' || r.status === 'scheduled');
-  return `<section class="profile pv2 enter" style="${themeStyle(p)}">
+  return `<section class="profile pv2 community-profile enter" style="${themeStyle(p)};--font-display:${esc(fontStack(p.font))}">
     ${profileHeader(p)}
+    <div class="community-profile-layout"><div class="community-profile-main">
     ${artistStepCard(p)}
     ${p.role === 'artist' && releases.length ? `<h2 class="section-title">Lanzamientos</h2>
       <div class="shelf">${releases.map(releaseCard).join('')}</div>` : ''}
     <h2 class="section-title">Publicaciones</h2>
     ${app.posts.byUser(p.uid).length ? `<div class="feed">${app.posts.byUser(p.uid).slice(0, 20).map(postCard).join('')}</div>` : `<div class="glass-soft notice">${icon('edit')}<p>Todavía no publicaste nada. <button class="link small" data-action="nav" data-view="feed">Ir al feed</button></p></div>`}
-    <h2 class="section-title">Playlists</h2>    ${lists.length ? `<div class="shelf">${lists.map(playlistCard).join('')}</div>` : `<div class="glass-soft notice">${icon('playlist')}<p>Todavía no armaste playlists. <button class="link small" data-action="new-playlist">Crear la primera</button></p></div>`}
     <h2 class="section-title">Lo más escuchado</h2>
     ${top.length ? trackList(top) : '<p class="muted">Escuchá un poco de música y tus favoritas van a aparecer acá.</p>'}
+    </div><aside class="community-profile-side" aria-label="Tus playlists y tu cuenta">
+    <p class="eyebrow">Tu colección</p><h2 class="section-title">Playlists</h2>${lists.length ? `<div class="shelf">${lists.map(playlistCard).join('')}</div>` : `<div class="glass-soft notice">${icon('playlist')}<p>Todavía no armaste playlists. <button class="link small" data-action="new-playlist">Crear la primera</button></p></div>`}
     ${p.role !== 'artist' && p.accountType !== 'artist' ? `<div class="glass-soft notice artist-cta lit">${icon('mic')}<p><b>¿Hacés música?</b> Cambiá tu cuenta a Artista para tener tu perfil de artista y, una vez verificado, subir tus lanzamientos gratis.</p><button class="btn-glass lit" data-action="account-type" data-type="artist" data-press>Cambiar a Artista</button></div>` : ''}
+    </aside></div>
   </section>`;
 }
 
@@ -269,7 +272,7 @@ function editorModal({ welcome = false } = {}) {
     const preview = () => `<div class="pe-preview profile" style="${themeStyle(draft)}">${profileHeader(draft, { preview: true })}</div>`;
 
     const body = () => `
-      <form class="pe" novalidate>
+      <form class="pe community-editor" novalidate>
         <header class="pe-head">
           <div><h3>${welcome ? 'Armá tu perfil' : 'Editar perfil'}</h3>${welcome ? '<p class="muted">Así te van a ver. Podés cambiarlo cuando quieras.</p>' : ''}</div>
           ${welcome ? '' : `<button type="button" class="btn-icon lit sm" data-close>${icon('close')}</button>`}
@@ -302,7 +305,7 @@ function editorModal({ welcome = false } = {}) {
                 <div class="seg three">${MODES.map(([v, l]) => `<button type="button" class="seg-btn lit ${modeOf(draft.mode) === v ? 'on' : ''}" data-mode="${v}">${l}</button>`).join('')}</div></div>
             </div>
             <div class="field"><span>Tipografía</span>
-              <div class="font-grid">${FONTS.map((f) => { loadFont(f.id); return `<button type="button" class="font-chip lit ${draft.font === f.id ? 'on' : ''}" data-font="${f.id}" style="font-family:${fontStack(f.id)}">${f.label}</button>`; }).join('')}</div></div>
+              <div class="font-grid">${FONTS.map((f) => { loadFont(f.id); return `<button type="button" class="font-chip lit ${draft.font === f.id ? 'on' : ''}" data-font="${f.id}" style="font-family:${esc(fontStack(f.id))}">${f.label}</button>`; }).join('')}</div></div>
           </div>
         </div>
         <footer class="confirm-actions">

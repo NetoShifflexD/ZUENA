@@ -6,6 +6,7 @@ import { app, registerActions } from '../app.js';
 import { artColors } from '../ui/artcolor.js';
 import { icon } from '../ui/icons.js';
 import { esc, hueOf } from '../ui/format.js';
+import { loadFont, fontStack, themeStyle } from '../theme/theme.js';
 import { confirmModal, openModal } from '../ui/modal.js';
 import {
   tierName, TIER_NAMES, canSubscribeSim, TIER_BENEFITS, supportVariant, subStateLabel, visibleTiers,
@@ -173,7 +174,7 @@ export function viewArtistPage() {
         <button class="btn-glass lit" data-action="artist-retry">Reintentar</button></div>`;
     }
   };
-  return `<article class="ap" aria-busy="true"><div class="ap-hero skeleton"><div class="ap-head">${backBtn()}<div class="ap-id"><span class="sk-line w40"></span><span class="sk-line w70 tall"></span></div></div></div></article>`;
+  return `<article class="ap community-artist" aria-busy="true"><div class="ap-hero skeleton"><div class="ap-head">${backBtn()}<div class="ap-id"><span class="sk-line w40"></span><span class="sk-line w70 tall"></span></div></div></div></article>`;
 }
 
 // La portada del disco pertenece al catálogo. La cabecera sólo usa imágenes del perfil.
@@ -280,6 +281,7 @@ function aboutPanel(m, source, id) {
 }
 
 function page(m, source, id) {
+  if (m.themed) loadFont(m.themed.font);
   const parts = [];
   if (m.popular.length) parts.push(sec('pop', m.popularTitle, `<div class="ap-popular">${trackList(m.popular.slice(0, 5), { numbered: true })}</div>
     ${m.popular.length > 5 ? `<div class="ap-more" hidden>${trackList(m.popular.slice(5), { numbered: false })}</div><button class="link small ap-more-btn" data-action="artist-more">Ver más</button>` : ''}`));
@@ -296,7 +298,7 @@ function page(m, source, id) {
   const body = { music: () => parts.join(''), posts: () => postsPanel(m, source, id), about: () => aboutPanel(m, source, id) };
   const tablist = `<div class="ap-tabs" role="tablist" aria-label="Secciones del perfil">${tabs.map((t) => `<button role="tab" class="ap-tab ${t === cur ? 'on' : ''}" id="ap-tab-${t}" aria-controls="ap-panel-${t}" aria-selected="${t === cur}" tabindex="${t === cur ? 0 : -1}" data-action="ap-tab" data-tab="${t}">${TAB_LABEL[t]}</button>`).join('')}</div>`;
   const panels = tabs.map((t) => `<div class="ap-panel" role="tabpanel" id="ap-panel-${t}" aria-labelledby="ap-tab-${t}" tabindex="0" ${t === cur ? '' : 'hidden'}>${body[t]()}</div>`).join('');
-  return `<article class="ap" data-source="${source}">${hero(m, source, id)}<div class="ap-body">${tablist}${panels}</div></article>`;
+  return `<article class="ap community-artist" data-source="${source}"${m.themed ? ` style="${themeStyle(m.themed)};--font-display:${esc(fontStack(m.themed.font))}"` : ''}>${hero(m, source, id)}<div class="ap-body">${tablist}${panels}</div></article>`;
 }
 
 function selectTab(tab, focus = false) {
@@ -590,10 +592,11 @@ function mountScrollFx(root, m) {
     ${m.popular.length ? `<button class="btn-primary lit sm" data-action="artist-play" tabindex="-1">${icon('play')}Reproducir</button>` : ''}</div>`);
   const mini = ap.querySelector('.ap-mini');
   const motion = app.motion;
+  const point = document.documentElement.dataset.design === 'point';
   // sangrado de color: los tonos de la portada (o de la foto) tiñen la página hacia abajo
   // sin imágenes de perfil, el color sale de la carátula de su canción más popular (sólo color: no se muestra)
   const img = m.cover || m.avatar || (m.popular[0] && app.library.coverUrl(m.popular[0])) || m.shelves?.flatMap((s) => s.items)[0]?.artwork;
-  if (img) artColors(img).then((c) => {
+  if (img && !point) artColors(img).then((c) => {
     if (!c || !ap.isConnected) return;
     const [a, b] = [c.a || c.b, c.b || c.a];
     if (!a) return;
@@ -603,7 +606,7 @@ function mountScrollFx(root, m) {
   });
   const end = () => Math.max(1, (heroEl.offsetHeight || 1) * 0.85);
   // paralaje nativo (ScrollTimeline): el navegador mueve portada, foto y nombre con el scroll, sin JS por fotograma
-  const native = motion?.support.scrollTimeline && motion.enabled;
+  const native = !point && motion?.support.scrollTimeline && motion.enabled;
   if (native) {
     ap.classList.add('ap-native-px');
     const range = { start: 0, end: end() };
@@ -617,7 +620,7 @@ function mountScrollFx(root, m) {
     raf = 0;
     if (!ap.isConnected) { view.removeEventListener('scroll', onScroll); return; }
     const p = Math.min(1, Math.max(0, view.scrollTop / end()));
-    if (!native) ap.style.setProperty('--p', p.toFixed(3)); // respaldo sin ScrollTimeline
+    if (!native && !point) ap.style.setProperty('--p', p.toFixed(3)); // respaldo sin ScrollTimeline
     const on = p >= 0.98;
     if (mini.classList.contains('on') !== on) { mini.classList.toggle('on', on); mini.setAttribute('aria-hidden', String(!on)); mini.querySelector('button')?.setAttribute('tabindex', on ? '0' : '-1'); }
   };

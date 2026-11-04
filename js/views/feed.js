@@ -39,9 +39,10 @@ export function composer({ replyTo = null, placeholder } = {}) {
     if (!access.ok) return `<p class="fx-reader-note" role="status">${esc(access.message)}</p>`;
   }
   const cur = app.player.current;
-  return `<form class="composer fx-composer ${replyTo ? 'reply' : ''}" data-form="post" ${replyTo ? `data-reply="${esc(replyTo)}"` : ''}>
+  return `<form class="composer fx-composer community-composer ${replyTo ? 'reply' : ''}" data-form="post" ${replyTo ? `data-reply="${esc(replyTo)}"` : ''}>
     ${avatar(p, 'md')}
     <div class="composer-main">
+      <p class="community-composer-title">${replyTo ? 'Sumate a la conversación' : 'Una novedad para tu comunidad'}</p>
       <textarea class="composer-input" name="text" aria-label="${replyTo ? 'Escribir una respuesta' : 'Escribir una publicación'}" maxlength="${POST_MAX}" rows="${replyTo ? 1 : 2}" placeholder="${esc(placeholder || (replyTo ? 'Publicá tu respuesta' : '¿Qué está pasando con tu música?'))}"></textarea>
       <div class="composer-bar">
         <div class="composer-tools">
@@ -155,7 +156,7 @@ export function lockedCard(post, need, i = 0, by = null) {
   const root = app.posts.rootOf(post) || post;
   const name = tierName(need);
   const teaser = post === root && post.teaser ? post.teaser : '';
-  return `<article class="post fx-post locked enter" style="--i:${Math.min(i, 12)}" data-post="${esc(post.id)}" data-locked="1">
+  return `<article class="post fx-post community-post locked enter" style="--i:${Math.min(i, 12)}" data-post="${esc(post.id)}" data-locked="1">
     ${by ? `<p class="post-context">${icon('repeat')}${esc(by.displayName || 'Alguien')} reposteó</p>` : ''}
     ${profileBtn(a, post.uid, avatar(a, 'md'), 'post-avatar')}
     <div class="post-body">
@@ -232,7 +233,7 @@ export function postCard(post, i = 0, { detail = false, compact = false } = {}) 
       ? `<p class="post-replying">Respondiendo al lanzamiento de <b>${esc(parent.catalog?.artist || '')}</b></p>`
       : `<p class="post-replying">Respondiendo a <b>@${esc(authorOf(parent).username || '')}</b></p>`
     : '';
-  return `<article class="post fx-post enter ${cat ? 'catalog' : ''} ${excl ? 'exclusive' : ''} ${post.pinned ? 'pinned' : ''} ${detail ? 'detail' : ''} ${compact ? 'compact' : ''}" style="--i:${Math.min(i, 12)}" data-post="${esc(post.id)}" data-flip="${esc(post.id)}" ${detail ? '' : `data-open="${esc(post.id)}"`}>
+  return `<article class="post fx-post community-post enter ${cat ? 'catalog' : ''} ${excl ? 'exclusive' : ''} ${post.pinned ? 'pinned' : ''} ${detail ? 'detail' : ''} ${compact ? 'compact' : ''}" style="--i:${Math.min(i, 12)}" data-post="${esc(post.id)}" data-flip="${esc(post.id)}" ${detail ? '' : `data-open="${esc(post.id)}"`}>
     ${by ? `<p class="post-context">${icon('repeat')}${esc(by.displayName || 'Alguien')} reposteó</p>` : post.pinned && !detail ? `<p class="post-context">${icon('star')}Anclado</p>` : ''}
     ${cat ? ce.avatar : profileBtn(a, post.uid, avatar(a, 'md'), 'post-avatar')}
     <div class="post-body">
@@ -388,7 +389,7 @@ export function viewFeed() {
     ? `<div class="fx-empty">${icon('feed')}<h3>Todavía no seguís a nadie</h3><p>Seguí artistas desde "A quién seguir" y sus publicaciones van a aparecer acá.</p></div>`
     : tab === 'releases'
       ? `<div class="fx-empty">${icon('disc')}<h3>Todavía no hay estrenos</h3><p>Los lanzamientos y estrenos programados de los artistas van a aparecer acá.</p></div>`
-      : `<div class="fx-empty">${icon('edit')}<h3>Todavía no hay publicaciones</h3><p>Las novedades de los artistas de ZUENA van a aparecer acá.</p></div>`;
+      : `<div class="fx-empty">${icon('edit')}<h3>Todavía no hay publicaciones para mostrar.</h3><p>Las novedades de los artistas de ZUENA van a aparecer acá.</p></div>`;
   const tabs = FEED_TABS.findIndex(([k]) => k === tab);
   // primero las que entran en pantalla; el resto en una tarea aparte cuando el hilo queda libre
   // (las 40 juntas eran ~2100 nodos: una tarea de 35–50 ms en PC y más de 150 ms en móvil)
@@ -405,10 +406,10 @@ export function viewFeed() {
       }, { timeout: 200 });
     };
   }
-  return `<div class="fx fx4">
+  return `<div class="fx fx4 community-feed">
     <section class="fx-main">
       <header class="fx-head enter">
-        <h1>Feed</h1>
+        <div class="community-feed-intro"><p class="eyebrow">Comunidad / ZUENA</p><h1>Feed</h1><p class="muted">La música también se conversa.</p></div>
         <div class="fx-tabs" role="tablist" aria-label="Qué ver" style="--tabs:${FEED_TABS.length};--tab-i:${Math.max(0, tabs)}">
           ${FEED_TABS.map(([k, l]) => `<button role="tab" class="fx-tab ${tab === k ? 'on' : ''}" aria-selected="${tab === k}" data-action="feed-tab" data-tab="${k}">${l}</button>`).join('')}
           <i class="fx-tab-ink" aria-hidden="true"></i>
@@ -447,7 +448,7 @@ export function viewPost() {
   // exclusivo sin derecho: sólo la tarjeta bloqueada (sin respuestas ni composer)
   const acc = accessOf(post);
   if (!acc.ok) {
-    return `<div class="fx fx-thread"><section class="fx-main">
+    return `<div class="fx fx-thread community-feed"><section class="fx-main">
       <header class="fx-head enter">${backBtn()}<h1>Publicación</h1></header>${lockedCard(acc.root, acc.need)}
     </section><aside class="fx-side">${sideHtml()}</aside></div>`;
   }
@@ -459,7 +460,7 @@ export function viewPost() {
   }
   const replies = orderReplies(post, app.posts.repliesOf(post.id), acc);
   const placeholder = post.kind === 'catalog' ? 'Respondé al lanzamiento' : `Respondé a @${authorOf(post).username || ''}`;
-  return `<div class="fx fx-thread"><section class="fx-main">
+  return `<div class="fx fx-thread community-feed"><section class="fx-main">
     <header class="fx-head enter">${backBtn()}<h1>Publicación</h1></header>
     ${chain.map((p) => postCard(p, 0, { compact: true })).join('')}
     ${postCard(post, 0, { detail: true })}

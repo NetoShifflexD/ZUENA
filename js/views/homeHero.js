@@ -1,5 +1,5 @@
 // Portada de Inicio: carrusel a sangre dentro del recuadro de bienvenida (sin marcos internos).
-// Diapositiva 1: presentación animada de ZUENA (escenas con texto cinético, se repite en bucle).
+// Diapositiva 1: portada editorial quieta, sin bucles decorativos.
 // Siguientes: último lanzamiento, playlists destacadas y artistas, con datos del catálogo de prueba
 // (js/data/testArtists.js, Apple Music) o de lo publicado en ZUENA.
 import { app } from '../app.js';
@@ -9,27 +9,18 @@ import { sounds } from '../ui/sounds.js';
 import { TEST_CATALOG } from '../config.js';
 import { testReleases, testPlaylists, testArtistCards, linkArtistNames } from '../data/testArtists.js';
 
-const SCENES = [
-  { w: 'Escuchá', s: 'Sonido sin pérdida, como salió del estudio.', note: 392 },
-  { w: 'Descubrí', s: 'Estrenos con cuenta regresiva y lo nuevo de cada semana.', note: 440 },
-  { w: 'Apoyá', s: 'Suscripciones y SoundDrops que van directo a quien crea.', note: 523.25 },
-  { w: 'ZUENA', s: 'La música que se siente.', note: 329.63 },
-];
-const SLIDE_MS = 7000;
-const SCENE_MS = 2600;
-
-const letters = (txt) => [...txt].map((c, i) => `<span style="--l:${i}">${c === ' ' ? '&nbsp;' : esc(c)}</span>`).join('');
+// Una presentación quieta: los destacados sólo cambian por una acción explícita.
+const INTRO_NOTE = 392;
 
 export function heroCarousel(p) {
   return `<div class="bento-hero hc" role="region" aria-roledescription="carrusel" aria-label="Destacados">
     <div class="hc-track">
       <article class="hc-slide hc-intro on" data-tab="ZUENA" aria-roledescription="diapositiva" aria-label="Presentación de ZUENA">
-        <div class="hc-aura" aria-hidden="true"><i class="h1"></i><i class="h2"></i><i class="h3"></i>
-          <svg class="hc-ribbon" viewBox="0 0 800 300" preserveAspectRatio="none"><path d="M-20 230 C 150 210, 250 90, 420 120 S 680 220, 820 70"/><path d="M-20 250 C 170 230, 260 130, 430 150 S 690 240, 820 110"/></svg></div>
+        <span class="hc-editorial-disc" aria-hidden="true"></span>
         <div class="hc-copy">
           <p class="eyebrow">${greeting()}${p?.displayName ? `, ${esc(p.displayName)}` : ''}</p>
-          <div class="hc-scene" aria-live="off"></div>
-          <div class="hc-eq" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--b:${i}"></i>`).join('')}</div>
+          <div class="hc-scene" aria-live="off"><div class="hc-sc in"><h2>Poné algo<br>que te mueva.</h2><p>Tu próxima escucha empieza acá.</p></div></div>
+          <div class="hero-actions"><button class="btn-primary" data-action="nav" data-view="explore">Explorar música ${icon('arrowRight')}</button><button class="btn-glass" data-action="nav" data-view="songs">Tu biblioteca</button></div>
         </div>
         <button class="btn-icon lit sm hc-sound" data-hc="sound" aria-label="Activar sonido de la presentación" title="Sonido">${icon('mute')}</button>
       </article>
@@ -49,8 +40,7 @@ export function mountHero(root, { registerMix, mixCovers }) {
   stopHero();
   const el = root.querySelector('.hc');
   if (!el) return;
-  state = { el, idx: 0, scene: -1, timer: 0, sceneTimer: 0, paused: false, sound: false, onScreen: true, io: null, off: new AbortController() };
-  runScenes();
+  state = { el, idx: 0, timer: 0, paused: false, sound: false, onScreen: true, io: null, off: new AbortController() };
   // fuera de pantalla, con la pestaña oculta o en otra diapositiva la presentación no consume nada
   state.io = new IntersectionObserver(([e]) => { if (state?.el === el) { state.onScreen = e.isIntersecting; syncScenes(); } });
   state.io.observe(el);
@@ -64,7 +54,6 @@ export function mountHero(root, { registerMix, mixCovers }) {
 function stopHero() {
   if (!state) return;
   clearTimeout(state.timer);
-  clearTimeout(state.sceneTimer);
   state.io?.disconnect();
   state.off.abort();
   state = null;
@@ -77,22 +66,6 @@ function syncScenes() {
   if (!alive()) { stopHero(); return; }
   const active = state.onScreen && !document.hidden && state.idx === 0;
   state.el.classList.toggle('hc-idle', !active);
-  if (active && !state.sceneTimer) runScenes();
-  else if (!active && state.sceneTimer) { clearTimeout(state.sceneTimer); state.sceneTimer = 0; }
-}
-
-// ---------- presentación: escenas en bucle ----------
-function runScenes() {
-  if (!alive()) { stopHero(); return; }
-  const box = state.el.querySelector('.hc-scene');
-  state.scene = (state.scene + 1) % SCENES.length;
-  const sc = SCENES[state.scene];
-  const old = box.firstElementChild;
-  if (old) { old.classList.add('out'); setTimeout(() => old.remove(), 500); }
-  box.insertAdjacentHTML('beforeend', `<div class="hc-sc"><h2 aria-label="${esc(sc.w)}"><span aria-hidden="true">${letters(sc.w)}</span></h2><p>${esc(sc.s)}</p></div>`);
-  requestAnimationFrame(() => box.lastElementChild?.classList.add('in'));
-  if (state.sound && state.idx === 0) sounds.chord(sc.note, 0.035);
-  state.sceneTimer = setTimeout(runScenes, app.prefs.motion === false ? SCENE_MS * 2 : SCENE_MS);
 }
 
 // ---------- carrusel ----------
@@ -110,9 +83,6 @@ function go(i, user = false) {
   all.forEach((s, k) => { s.classList.toggle('on', k === state.idx); s.inert = k !== state.idx; s.setAttribute('aria-hidden', String(k !== state.idx)); });
   renderDots();
   syncScenes();
-  // la pestaña activa queda a la vista dentro de la tira, sin mover la página
-  const rail = state.el.querySelector('.hc-dots'), tab = rail?.querySelector('.hc-dot.on');
-  if (tab && rail.scrollWidth > rail.clientWidth) rail.scrollTo({ left: tab.offsetLeft - rail.offsetLeft - (rail.clientWidth - tab.offsetWidth) / 2 });
   if (focusedSlide && !focusedSlide.classList.contains('on')) state.el.querySelector('[data-hc="next"]')?.focus();
   if (user && state.sound) sounds.whoosh(0.4, 0.04);
   schedule();
@@ -132,7 +102,6 @@ function renderDots() {
   if (dots.children.length !== all.length) dots.innerHTML = markup;
   [...dots.children].forEach((dot, k) => { dot.classList.toggle('on', k === state.idx); dot.setAttribute('aria-pressed', String(k === state.idx)); });
   state.el.querySelector('.hc-position').textContent = all.length > 1 ? `${state.idx + 1} de ${all.length}` : '';
-  dots.style.setProperty('--dur', `${state.idx === 0 ? SCENES.length * SCENE_MS : SLIDE_MS}ms`);
   dots.classList.toggle('paused', state.paused || app.prefs.motion === false);
 }
 
@@ -144,6 +113,7 @@ function tabOf(s) {
 }
 
 function bind(el) {
+  const signal = state.off.signal;
   el.addEventListener('click', (e) => {
     const b = e.target.closest('[data-hc]');
     if (!b || !state || state.el !== el) return;
@@ -156,26 +126,31 @@ function bind(el) {
       state.sound = !state.sound;
       b.innerHTML = icon(state.sound ? 'volume' : 'mute');
       b.setAttribute('aria-label', state.sound ? 'Silenciar la presentación' : 'Activar sonido de la presentación');
-      if (state.sound) sounds.chord(SCENES[state.scene].note, 0.035);
+      if (state.sound) sounds.chord(INTRO_NOTE, 0.035);
     }
-  });
+  }, { signal });
   const pause = (v) => { if (!state || state.el !== el) return; state.paused = v; renderDots(); schedule(); };
-  el.addEventListener('pointerenter', () => pause(true));
-  el.addEventListener('pointerleave', () => pause(false));
-  el.addEventListener('focusin', () => pause(true));
-  el.addEventListener('focusout', (e) => { if (!el.contains(e.relatedTarget)) pause(false); });
+  el.addEventListener('pointerenter', () => pause(true), { signal });
+  el.addEventListener('pointerleave', () => pause(false), { signal });
+  el.addEventListener('focusin', () => pause(true), { signal });
+  el.addEventListener('focusout', (e) => { if (!el.contains(e.relatedTarget)) pause(false); }, { signal });
   el.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
     if (e.key === 'ArrowRight') { go(state.idx + 1, true); e.preventDefault(); }
     if (e.key === 'ArrowLeft') { go(state.idx - 1, true); e.preventDefault(); }
-  });
+  }, { signal });
   // deslizar en pantallas táctiles
-  let x0 = null;
-  el.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') x0 = e.clientX; }, { passive: true });
+  let start = null;
+  el.addEventListener('pointercancel', () => { start = null; }, { passive: true, signal });
+  el.addEventListener('pointerdown', (e) => {
+    start = e.pointerType !== 'mouse' && !e.target.closest('.hc-nav, button, a, [data-action]')
+      ? { x: e.clientX, y: e.clientY } : null;
+  }, { passive: true, signal });
   el.addEventListener('pointerup', (e) => {
-    if (x0 == null) return;
-    const dx = e.clientX - x0; x0 = null;
-    if (Math.abs(dx) > 50) go(state.idx + (dx < 0 ? 1 : -1), true);
-  }, { passive: true });
+    if (!start) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y; start = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(state.idx + (dx < 0 ? 1 : -1), true);
+  }, { passive: true, signal });
 }
 
 // ---------- diapositivas con datos ----------
@@ -192,7 +167,7 @@ async function loadSlides(el, registerMix, mixCovers) {
   if (TEST_CATALOG) {
     const [rels, lists, artists] = await Promise.all([testReleases().catch(() => []), testPlaylists().catch(() => []), testArtistCards().catch(() => [])]);
     if (!current()) return;
-    rels.slice(0, 2).forEach((r) => html.push(slideRelease({ title: r.title, artist: r.artist, art: r.artwork, eyebrow: `Nuevo lanzamiento · ${kindLabel(r.kind)}`, action: `data-action="open-amc" data-id="${esc(r.collectionId)}"`, cta: 'Ver lanzamiento' })));
+    rels.slice(0, 2).forEach((r) => html.push(slideRelease({ title: r.title, artist: r.artist, art: r.artwork, eyebrow: `Catálogo de prueba · ${kindLabel(r.kind)}`, action: `data-action="open-amc" data-id="${esc(r.collectionId)}"`, cta: 'Ver lanzamiento' })));
     const region = app.taste.data.region;
     const top = lists.find((l) => l.id === 'tp-global');
     const local = lists.find((l) => l.id === `tp-${region}`) || lists.find((l) => l.id !== 'tp-global');
@@ -228,7 +203,7 @@ function slideRelease({ title, artist, art, eyebrow, action, cta }) {
 function slidePlaylist(l, covers) {
   return `<article class="hc-slide hc-pl" data-tab="${esc(l.title)}" data-thumb="${esc(covers[0] || '')}" aria-roledescription="diapositiva" aria-label="Playlist ${esc(l.title)}">
     ${covers[0] ? `<div class="hc-bg" style="background-image:url('${esc(covers[0])}')" aria-hidden="true"></div>` : ''}
-    <div class="hc-copy"><p class="eyebrow">Playlist destacada</p><h2>${esc(l.title)}</h2><p class="hc-by">${esc(l.sub)} · ${l.items.length} canciones</p>
+    <div class="hc-copy"><p class="eyebrow">${TEST_CATALOG ? 'Catálogo de prueba · ' : ''}Playlist destacada</p><h2>${esc(l.title)}</h2><p class="hc-by">${esc(l.sub)} · ${l.items.length} canciones</p>
       <div class="hero-actions"><button class="btn-primary lit" data-action="play-mix" data-id="${esc(l.id)}">${icon('play')}Reproducir</button>
       <button class="btn-glass lit" data-action="mix" data-id="${esc(l.id)}">Ver playlist</button></div></div>
     <div class="hc-stack" aria-hidden="true">${covers.slice(0, 3).map((u, k) => `<img src="${esc(u)}" alt="" style="--k:${k}" loading="lazy" decoding="async">`).join('')}</div>
@@ -237,7 +212,7 @@ function slidePlaylist(l, covers) {
 
 function slideArtists(list) {
   return `<article class="hc-slide hc-art" data-tab="Artistas" data-thumb="${esc(list[0]?.artwork || '')}" aria-roledescription="diapositiva" aria-label="Artistas más escuchados">
-    <div class="hc-copy"><p class="eyebrow">Los más escuchados</p><h2>Artistas que están sonando</h2>
+    <div class="hc-copy"><p class="eyebrow">Catálogo de prueba · Los más escuchados</p><h2>Artistas que están sonando</h2>
       <p class="hc-by">Global, Puerto Rico, Argentina, España, México y Chile</p></div>
     <div class="hc-faces">${list.map((a, i) => `<button class="hc-face" style="--i:${i}" data-action="open-artist" data-id="am:${a.id}" aria-label="${esc(a.name)}">${a.artwork ? `<img src="${esc(a.artwork)}" alt="" loading="lazy" decoding="async">` : ''}<span>${esc(a.name)}</span></button>`).join('')}</div>
   </article>`;

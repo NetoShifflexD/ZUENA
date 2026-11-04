@@ -115,3 +115,10 @@
 @media (max-width: 360px) { .floatbar .island-core .island-label, .np .np-tab .ico { display: none; } }
 body.no-motion .mini-progress > i { transition: none !important; }
 @media (prefers-reduced-motion: reduce) { .mini-progress > i { transition: none !important; } }
+
+@media (any-hover: hover) and (any-pointer: fine) and (min-width: 601px) {
+  .floatbar .island-core .island-label { display: block; flex: 0 0 104px; width: 104px; max-width: 104px; min-height: 44px; line-height: 44px; padding-left: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+}
+.island-core[data-wheel-preview] .island-label { color: var(--text); font-weight: 600; }
+.island-core[data-wheel-preview] .island-chev { rotate: -90deg; }
+.island-core[data-wheel-preview] { box-shadow: var(--rim), var(--depth), 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }

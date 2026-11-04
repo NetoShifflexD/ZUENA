@@ -18,6 +18,7 @@ export function playIntro({ first }) {
       </div>` : ''}
     </div>`;
   document.body.appendChild(el);
+  document.getElementById('boot-cover')?.remove(); // la intro ya tapa la app: se retira la cubierta de index.html
   // doble rAF: garantiza que el estado inicial se pinte antes de animar (si no, las letras "saltan")
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('run')));
 

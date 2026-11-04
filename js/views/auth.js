@@ -11,19 +11,17 @@ function authHtml(tab, { brand = true, consent = false } = {}) {
   const nube = app.auth.cloudAccounts; // cuentas de correo en la nube de Supabase
   const local = app.auth.mode === 'local' && !cloud;
   return `
-      <div class="auth">
+      <div class="auth access-editorial">
         ${brand ? `<div class="auth-brand"><span class="auth-logo">${logo()}</span><span>ZUENA</span></div>` : ''}
-        <h2 tabindex="-1">${tab === 'signup' ? 'Creá tu cuenta' : 'Bienvenido de nuevo'}</h2>
+        <p class="access-kicker">${tab === 'signup' ? 'Tu lugar en ZUENA' : 'La música sigue acá'}</p>
+        <h2 tabindex="-1">${tab === 'signup' ? 'Creá tu cuenta' : 'Volvé a escuchar'}</h2>
         <p class="muted">${tab === 'signup' ? 'Sumate desde el primer día: tu perfil, tus playlists y tu música, en un solo lugar.' : 'Ingresá para seguir escuchando.'}</p>
         <div class="seg two auth-tabs">
-          <button type="button" class="seg-btn lit ${tab === 'signup' ? 'on' : ''}" data-tab="signup">Crear cuenta</button>
-          <button type="button" class="seg-btn lit ${tab === 'signin' ? 'on' : ''}" data-tab="signin">Iniciar sesión</button>
+          <button type="button" class="seg-btn lit ${tab === 'signup' ? 'on' : ''}" data-tab="signup" aria-pressed="${tab === 'signup'}">Crear cuenta</button>
+          <button type="button" class="seg-btn lit ${tab === 'signin' ? 'on' : ''}" data-tab="signin" aria-pressed="${tab === 'signin'}">Iniciar sesión</button>
         </div>
         ${local ? '' : `<button type="button" class="btn-google lit" data-google>${googleLogo}<span>Continuar con Google</span></button>`}
-        <button type="button" class="btn-glass lit wide" data-guest>Seguir como invitado</button>
-        <p class="hint center">Cuenta temporal de 7 días, sin correo</p>
-        <span class="field-error" data-err="guest" role="status">${esc(app.auth.guestMessage || '')}</span>
-        <div class="or"><span>o con tu correo</span></div>
+        <div class="or"><span>${local ? 'Con tu correo' : 'O con tu correo'}</span></div>
         <form class="auth-form" novalidate>
           <label class="field"><span>Correo electrónico</span>
             <div class="input-icon">${icon('mail')}<input class="input" name="email" type="email" autocomplete="email" placeholder="vos@correo.com" required></div>
@@ -35,10 +33,15 @@ function authHtml(tab, { brand = true, consent = false } = {}) {
             <span class="field-error" data-err="password"></span></label>
           ${tab === 'signin' ? `<button type="button" class="link small" data-forgot>¿Olvidaste tu contraseña?</button>${nube ? '<button type="button" class="link small" data-magic>Enviarme un enlace de acceso</button>' : ''}` : ''}
           ${tab === 'signup' ? `${consentFieldHtml({ checked: consent })}<span class="field-error" data-err="consent" role="alert"></span>` : ''}
-          <span class="field-error" data-err="form"></span><span class="field-error" data-err="google"></span>
+          <span class="field-error" data-err="form" role="alert"></span><span class="field-error" data-err="google" role="alert"></span>
           <p class="hint auth-notice" data-notice role="status" hidden></p>
           <button class="btn-primary lit wide" data-submit>${tab === 'signup' ? 'Crear cuenta' : 'Ingresar'}</button>
         </form>
+        <aside class="access-guest" aria-label="Acceso temporal">
+          <div><h3>Primero, conocé ZUENA.</h3><p class="hint">Cuenta temporal de 7 días, sin correo</p></div>
+          <button type="button" class="btn-glass lit wide" data-guest>Seguir como invitado</button>
+          <span class="field-error" data-err="guest" role="status">${esc(app.auth.guestMessage || '')}</span>
+        </aside>
         ${local && nube ? `<p class="hint center">${icon('lock')} Tu cuenta se guarda en la nube de ZUENA: entrás desde cualquier dispositivo.</p>` : ''}
         ${local && !nube ? `<p class="hint center">${icon('lock')} Modo local: tu cuenta queda guardada sólo en este equipo.</p>` : ''}
         ${cloud ? `<p class="hint center">${icon('lock')} Con Google tu cuenta se guarda en la nube de ZUENA. Con correo queda sólo en este equipo.</p>` : ''}
@@ -61,6 +64,7 @@ export function mountAuthForm(el, { mode = 'signup', onUser, brand = true, autof
   const run = async (fn) => {
     if (busy) return;
     busy = true;
+    el.querySelector('.auth').setAttribute('aria-busy', 'true');
     el.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     el.querySelector('[data-submit]')?.classList.add('loading');
     try {
@@ -74,6 +78,7 @@ export function mountAuthForm(el, { mode = 'signup', onUser, brand = true, autof
       setErr(err.field || 'form', err.message);
     } finally {
       busy = false;
+      el.querySelector('.auth').setAttribute('aria-busy', 'false');
       el.querySelectorAll('button').forEach((b) => { b.disabled = false; });
       const guest = el.querySelector('[data-guest]');
       if (guest) guest.textContent = 'Seguir como invitado';
@@ -102,7 +107,12 @@ export function mountAuthForm(el, { mode = 'signup', onUser, brand = true, autof
       el.querySelector('[data-guest]').textContent = 'Preparando acceso…';
       return app.auth.guestSignIn();
     });
-    el.querySelector('[data-peek]').onclick = () => { form.password.type = form.password.type === 'password' ? 'text' : 'password'; };
+    el.querySelector('[data-peek]').onclick = (e) => {
+      const shown = form.password.type === 'password';
+      form.password.type = shown ? 'text' : 'password';
+      e.currentTarget.setAttribute('aria-label', shown ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      e.currentTarget.title = shown ? 'Ocultar' : 'Mostrar';
+    };
     form.addEventListener('input', (e) => {
       e.target.classList.remove('invalid');
       if (e.target.name === 'consent') { consent = e.target.checked; if (consent) el.querySelector('[data-err=consent]').textContent = ''; }
@@ -143,7 +153,21 @@ export function openAuth({ mode = 'signup', required = false } = {}) {
       cls: 'auth-modal',
       dismissable: !required,
       onClose: () => resolve(result),
-      onMount: (m, close) => mountAuthForm(m, { mode, onUser: (u) => { result = u; close(); } }),
+      onMount: (m, close) => {
+        const content = document.createElement('div');
+        m.append(content);
+        m.setAttribute('aria-label', 'Acceso a ZUENA');
+        mountAuthForm(content, { mode, onUser: (u) => { result = u; close(); } });
+        if (!required) {
+          const back = document.createElement('button');
+          back.type = 'button';
+          back.className = 'access-close btn-icon';
+          back.setAttribute('aria-label', 'Cerrar acceso');
+          back.innerHTML = icon('close');
+          back.onclick = close;
+          m.prepend(back);
+        }
+      },
     });
   });
 }
@@ -154,13 +178,15 @@ export const authLabel = (user) => (user?.isGuest || user?.provider === 'guest' 
 
 // después del enlace de recuperación de contraseña (evento 'recovery' de la cuenta de la nube)
 export function openPasswordRecovery() {
-  openModal(`<form class="confirm" novalidate>
+  openModal(`<form class="confirm access-recovery" novalidate>
+      <div class="auth-brand"><span class="auth-logo">${logo()}</span><span>ZUENA</span></div>
+      <p class="access-kicker">Recuperá tu acceso</p>
       <h3>Elegí una contraseña nueva</h3>
       <label class="field"><span>Contraseña nueva</span><input class="input" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo 8 caracteres" required>
-        <span class="field-error" data-err="password"></span></label>
+        <span class="field-error" data-err="password" role="alert"></span></label>
       <div class="confirm-actions"><button type="button" class="btn-glass lit" data-modal="cancel">Cancelar</button><button class="btn-primary lit">Guardar</button></div>
     </form>`, {
-    cls: 'sm',
+    cls: 'sm access-recovery-modal',
     onMount: (m, close) => {
       const form = m.querySelector('form');
       m.querySelector('[data-modal=cancel]').onclick = close;

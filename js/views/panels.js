@@ -141,15 +141,25 @@ export function panelSettings(view = null) {
 
 function settingsList(cats) {
   const p = app.profile;
+  // Las categorías mantienen sus rutas y condiciones; los grupos ayudan a encontrarlas.
+  const groups = [
+    ['Tu experiencia', ['sonido', 'salida', 'eq', 'apariencia', 'inicio']],
+    ['Tu espacio', ['biblioteca', 'cuenta', 'artista']],
+    ['Control y privacidad', ['legal', 'avanzado', 'desarrollo']],
+  ];
+  const grouped = new Set(groups.flatMap(([, ids]) => ids));
+  const extra = cats.filter((c) => !grouped.has(c.id));
+  if (extra.length) groups.push(['Otros ajustes', extra.map((c) => c.id)]);
   return `${panelHead('Ajustes')}
     <div class="panel-body set-list">
+      <p class="set-intro">Hacé ZUENA tuya. Elegí qué querés ajustar.</p>
       ${p ? `<button class="account-card lit" data-action="nav" data-view="profile">${avatar(p, 'md')}<span class="row-main"><span class="row-title">${esc(p.displayName)}${tick(p.role === 'artist')}</span><span class="row-sub">Ver perfil</span></span>${icon('arrowRight')}</button>`
         : '<p class="hint">Iniciá sesión para guardar tus ajustes.</p>'}
-      <nav class="set-cats" aria-label="Categorías de ajustes">${cats.map((c) => `
+      <nav class="set-cats" aria-label="Categorías de ajustes">${groups.map(([title, ids]) => `<h4 class="set-group">${title}</h4>${cats.filter((c) => ids.includes(c.id)).map((c) => `
         <button class="set-cat lit" data-action="settings-cat" data-cat="${c.id}">
           <span class="set-ico">${icon(c.icon)}</span>
           <span class="row-main"><span class="row-title">${c.name}</span><span class="row-sub">${esc(c.sub)}</span></span>
-          ${icon('arrowRight')}</button>`).join('')}
+          ${icon('arrowRight')}</button>`).join('')}`).join('')}
       </nav>
     </div>`;
 }
@@ -197,7 +207,7 @@ const SECTIONS = {
       : '<p class="hint">Iniciá sesión para elegir modo, tema, color y tipografía.</p>'}
       <h4 class="ap-sub">En este equipo</h4>
       ${seg('density')}${seg('glass')}${seg('text')}
-      <div class="field"><span>Fondo</span><div class="seg two">${[['on', 'Con movimiento'], ['off', 'Quieto']].map(([v, l]) => `<button class="seg-btn lit ${(ambient ? 'on' : 'off') === v ? 'on' : ''}" data-action="look-ambient" data-v="${v}" aria-pressed="${(ambient ? 'on' : 'off') === v}">${l}</button>`).join('')}</div></div>
+      <div class="field"><span>Luz ambiental</span><div class="seg two">${[['on', 'Con reflejos'], ['off', 'Liso']].map(([v, l]) => `<button class="seg-btn lit ${(ambient ? 'on' : 'off') === v ? 'on' : ''}" data-action="look-ambient" data-v="${v}" aria-pressed="${(ambient ? 'on' : 'off') === v}">${l}</button>`).join('')}</div></div>
       ${toggleRow('motion', 'Animaciones', 'Transiciones, aparición de secciones y efectos de luz.', app.prefs.motion !== false)}
       ${toggleRow('uiSounds', 'Sonidos de interfaz', 'Toques suaves de cristal al pasar el mouse y al hacer clic.', app.prefs.uiSounds !== false)}
       <button class="btn-glass lit ap-reset" data-action="look-reset">Restablecer la apariencia</button>`;

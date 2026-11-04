@@ -1,0 +1,94 @@
+/* Punto · navegación y escucha. Conserva el transporte y sus áreas táctiles. */
+html[data-design="point"] :is(#island,#dock,#np) { --text: var(--z-ink); --muted: var(--z-muted); color: var(--z-ink); }
+html[data-design="point"] .floatbar { bottom: calc(20px + var(--sab,0px)); gap: 10px; }
+html[data-design="point"] .floatbar .island-core { min-height: 64px; border-radius: 22px; padding: 9px 15px; gap: 11px; background: var(--z-glass); border: 1px solid var(--z-line); color: var(--z-ink); box-shadow: var(--z-shadow); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+html[data-design="point"] .island-core:hover { box-shadow: var(--z-shadow),inset 0 0 0 1px var(--z-line); }
+html[data-design="point"] .island-core .island-fill { background: var(--z-reflection); }
+html[data-design="point"] .island-core .island-mark { width: 32px; height: 32px; border-radius: 50%; background: none; box-shadow: none; }
+html[data-design="point"] .island-mark svg { width: 32px; height: 32px; }
+html[data-design="point"] .island-word { font-size: 11px; letter-spacing: .24em; font-weight: 700; }
+html[data-design="point"] .island-core .island-label { color: var(--z-muted); font-size: 12px; border-color: var(--z-line); }
+html[data-design="point"] .island-core[data-wheel-preview] .island-label { color: var(--z-ink); }
+html[data-design="point"] .floatbar .island-panel { border: 1px solid var(--z-line); background: var(--z-glass); box-shadow: var(--z-shadow),inset 0 1px 0 rgb(255 255 255 / .22); border-radius: 28px; padding: 24px; gap: 15px; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+html[data-design="point"] .island-panel::before { opacity: .1; }
+html[data-design="point"] .island-brand { display: flex; align-items: center; gap: 12px; }
+html[data-design="point"] .island-brand svg { width: 28px; height: 28px; }
+html[data-design="point"] .island-brand b { font-size: 11px; letter-spacing: .24em; }
+html[data-design="point"] .island-panel .search { border-radius: 15px; height: 52px; }
+html[data-design="point"] .island-search-filters { gap: 3px; padding-bottom: 8px; border-bottom: 1px solid var(--z-line); }
+html[data-design="point"] .island-search-filters button { color: var(--z-muted); border-radius: 999px; min-height: 44px; padding: 0 13px; font-size: 12px; }
+html[data-design="point"] .island-search-filters button[aria-pressed="true"] { color: var(--z-on-action); background: var(--z-action); box-shadow: none; }
+html[data-design="point"] .island-content { padding-top: 4px; }
+html[data-design="point"] :is(.ic-tile,.ic-profile,.ic-playlist,.ic-release,.ic-premiere,.ic-post.fx-post,.ic-mosaic) { background: var(--z-surface); border-color: var(--z-line); box-shadow: none; }
+html[data-design="point"] .island-content :is(h2,h3) { font-family: var(--font-display); letter-spacing: -.035em; font-weight: 450; }
+html[data-design="point"] .ic-heading :is(h2,h3) { font-size: 23px; }
+html[data-design="point"] .island-panel .us-result { border-radius: 14px; min-height: 64px; }
+html[data-design="point"] .island-panel .us-result:hover { background: var(--glass-hi-2); }
+html[data-design="point"] .island-panel .us-result-icon { color: var(--z-ink); background: var(--glass-hi); }
+html[data-design="point"] .floatbar .island-np.mini-player { border: 1px solid var(--z-line); background: var(--z-glass); box-shadow: var(--z-shadow); border-radius: 22px; height: 64px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+html[data-design="point"] .mini-player::before { background: var(--z-reflection); }
+html[data-design="point"] .mini-player .mini-art .art { border-radius: 10px; }
+html[data-design="point"] .mini-player .mini-copy strong { font-weight: 550; font-size: 12px; }
+html[data-design="point"] .mini-player .mini-copy span { color: var(--z-muted); font-size: 11px; }
+html[data-design="point"] .mini-player button { color: var(--z-ink); }
+html[data-design="point"] .mini-player .mini-toggle { background: var(--z-action); color: var(--z-on-action); border-radius: 50%; box-shadow: none; }
+html[data-design="point"] .mini-progress { background: var(--z-line); height: 2px; left: 14px; right: 14px; }
+html[data-design="point"] .mini-progress > i { background: var(--z-ink); }
+html[data-design="point"] .island-audio-slot { border-color: var(--z-line); }
+html[data-design="point"] .floatbar .island-audio-slot #dock.player { border: 0; background: var(--z-surface); box-shadow: var(--rim); border-radius: 18px; }
+html[data-design="point"] .dock-title { font-weight: 550; }
+html[data-design="point"] :is(.dock-artist,.transport-state) { color: var(--z-muted); }
+html[data-design="point"] .floatbar .island-audio-slot .dock-art .art { border-radius: 10px; }
+html[data-design="point"] #np { background: var(--z-paper); }
+html[data-design="point"] .np::before { background: var(--z-reflection); opacity: .45; }
+html[data-design="point"] .np .np-bg { opacity: .025; filter: grayscale(1) blur(24px); animation: none; will-change: auto; transform: none; }
+html[data-design="point"] .np > .np-viz { opacity: .28; mix-blend-mode: normal; }
+html[data-design="point"] .np .np-top { max-width: 1440px; margin-inline: auto; width: 100%; padding: calc(24px + var(--sat,0px)) max(20px,4vw,var(--sar,0px)) 24px max(20px,4vw,var(--sal,0px)); }
+html[data-design="point"] .np .np-tabs { background: var(--glass-hi); border: 1px solid var(--z-line); box-shadow: none; min-height: 52px; }
+html[data-design="point"] .np .np-tab { color: var(--z-muted); min-height: 44px; font-weight: 500; }
+html[data-design="point"] .np .np-tab.on { color: var(--z-ink); box-shadow: none; background: none; }
+html[data-design="point"] .np .np-tab-indicator { background: var(--z-raised); box-shadow: var(--rim); }
+html[data-design="point"] .np .np-body { max-width: 1260px; width: 100%; margin-inline: auto; gap: clamp(32px,7vw,100px); padding-inline: clamp(24px,5vw,72px); }
+html[data-design="point"] .np .np-orb { display: none; }
+html[data-design="point"] .np .np-art { border-radius: 20px; box-shadow: 0 30px 80px -35px rgb(0 0 0 / .35); }
+html[data-design="point"] .np .np-art .art { border-radius: inherit; }
+html[data-design="point"] .np .np-title-row .js-title { font-family: var(--font-display); font-size: clamp(32px,4vw,60px); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; color: var(--z-ink); background: none; -webkit-text-fill-color: currentColor; }
+html[data-design="point"] #np .np-title-row .js-title { display: block; overflow: visible; text-overflow: clip; white-space: normal; -webkit-line-clamp: unset; overflow-wrap: anywhere; }
+html[data-design="point"] .np :is(.np-artist,.np-album) { color: var(--z-muted); }
+html[data-design="point"] .np .np-artist { margin-top: 12px; font-size: 18px; font-weight: 400; letter-spacing: -.02em; }
+html[data-design="point"] .np .np-next { background: var(--z-surface); border-color: var(--z-line); box-shadow: none; border-radius: 16px; }
+html[data-design="point"] .np .np-next strong { font-weight: 500; }
+html[data-design="point"] .np .np-times { color: var(--z-muted); }
+html[data-design="point"] .np .np-tech { background: var(--z-surface); }
+html[data-design="point"] .np :is(.np-queue,.credits-section) { border-color: var(--z-line); }
+html[data-design="point"] .np .ly { color: var(--z-muted); font-weight: 450; letter-spacing: -.035em; }
+html[data-design="point"] .np .ly.on { color: var(--z-ink); }
+html[data-design="point"] .np .np-extra .link-chip { color: var(--z-muted); background: var(--z-surface); }
+html[data-design="point"] .island-live { background: var(--z-glass); color: var(--z-ink); box-shadow: var(--z-shadow); }
+@media(max-width:600px) {
+  html[data-design="point"] .floatbar { bottom: calc(12px + var(--sab,0px)); gap: 7px; }
+  html[data-design="point"] .floatbar .island-core { gap: 8px; padding-inline: 10px; min-height: 62px; border-radius: 21px; }
+  html[data-design="point"] .island-core .island-mark,html[data-design="point"] .island-mark svg { width: 30px; height: 30px; }
+  html[data-design="point"] .floatbar .island-panel,html[data-design="point"] .floatbar .island[data-island-compact] .island-panel { padding: 17px; gap: 10px; border-radius: 24px; }
+  html[data-design="point"] .island-search-filters button { padding: 0 7px; }
+  html[data-design="point"] .island-search-filters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 3px; }
+  html[data-design="point"] .np .np-top { padding: calc(16px + var(--sat,0px)) max(20px,var(--sar,0px)) 16px max(20px,var(--sal,0px)); }
+  html[data-design="point"] .np .np-body { padding-inline: 24px; gap: 24px; padding-bottom: 110px; }
+  html[data-design="point"] .np .np-title-row .js-title { font-size: 34px; }
+}
+@media(prefers-reduced-transparency:reduce) {
+  html[data-design="point"] .floatbar :is(.island-core,.island-panel,.mini-player) { background: var(--z-raised); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media(max-width:360px) {
+  html[data-design="point"] #dock .dock-bottom { flex-wrap: wrap; gap: 4px; }
+  html[data-design="point"] #dock .pl-controls { flex: 1 0 100%; justify-content: center; }
+  html[data-design="point"] #dock .dock-tools { width: 100%; gap: 8px; }
+  html[data-design="point"] #dock .dock-volume { flex: 1; }
+  html[data-design="point"] #dock .dock-volume input[type="range"].range { flex: 1; width: auto; }
+}
+html[data-design="point"][data-glass="solid"] .floatbar :is(.island-core,.island-panel,.mini-player) { background: var(--z-raised); backdrop-filter: none; -webkit-backdrop-filter: none; }
+/* La preferencia del sistema prevalece incluso sobre Transparente. */
+@media(prefers-reduced-transparency:reduce) {
+  html[data-design="point"][data-glass] { --z-glass: var(--z-raised); }
+  html[data-design="point"] :is(.panel,.ld-nav,.ld-auth-card,.auth-modal,.access-recovery-modal) { background: var(--z-raised); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}

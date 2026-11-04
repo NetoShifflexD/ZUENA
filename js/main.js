@@ -5,6 +5,7 @@ import { Library } from './library.js';
 import { Player } from './player.js';
 import { PlaybackSession } from './playback-session.js';
 import { FloatingPlayer } from './ui/floating-player.js';
+import { bindIslandWheel } from './ui/island-wheel.js';
 import { PLAYER_TABS, selectPlayerTab, enterPlayer, cancelPlayerPresentation, updateMiniProgress } from './ui/player-presentation.js';
 import { Auth } from './auth/auth.js';
 import { Playlists, Stats } from './data/playlists.js';
@@ -48,6 +49,7 @@ import { applyLook } from './ui/appearance.js';
 import { TEST_CATALOG } from './config.js';
 import { Charts } from './data/charts.js';
 import { SimSubs } from './data/subs.js';
+import { createSimulator } from './sim/simulator.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -172,7 +174,10 @@ async function boot() {
   if (player.restore(device?.queue, { get: app.resolve })) syncPlayer();
   render();
   // simulación de actividad para pruebas (sin IA, configurable desde Obsidian): sólo con el catálogo de prueba
-  // La actividad de prueba se inicia sólo de forma explícita.
+  if (TEST_CATALOG) {
+    app.sim = createSimulator(app);
+    app.simReady = app.sim.start().catch((err) => { console.warn('[sim]', err); });
+  }
   syncPlayState();
   syncVolume();
   requestAnimationFrame(frame);
@@ -302,6 +307,7 @@ const SECTION_OF = {
 };
 
 function go(view, param = null) {
+  islandWheel?.reset();
   if (!auth.checkGuest() || ui.accountLoading) return;
   if (app.user?.isGuest && ['claim', 'studio', 'release', 'review'].includes(view)) { toast('Para acceder al área de artistas necesitás una cuenta permanente.'); return; }
   if (ui.npOpen) setNp(false);
@@ -397,9 +403,11 @@ const ISLAND = [
   ['home', 'Inicio', 'home'], ['explore', 'Explorar', 'compass'], ['feed', 'Feed', 'feed'], ['search', 'Buscar', 'search'],
   ['songs', 'Biblioteca', 'library'], ['profile', 'Perfil', 'user'], ['settings', 'Ajustes', 'settings'], ['import', 'Agregar música', 'plus'],
 ];
+let islandWheel = null;
 const SECTION_LABEL = { home: 'Inicio', explore: 'Explorar', feed: 'Feed', library: 'Biblioteca', profile: 'Perfil' };
 
 function renderIsland() {
+  islandWheel?.reset();
   const searchBox = $('#search')?.closest('.search');
   const restoreSearch = document.activeElement?.id === 'search';
   const dock = els.dock;
@@ -407,13 +415,13 @@ function renderIsland() {
   const lists = playlists.list.slice(0, 5);
   els.island.innerHTML = `
     <div class="island-panel" role="dialog" aria-label="Centro de ZUENA" aria-modal="true" tabindex="-1">
-      <div class="island-heading"><b>ZUENA</b><button type="button" class="btn-icon lit" data-island-close aria-label="Cerrar centro de ZUENA">${icon('close')}</button></div>
+      <div class="island-heading"><span class="island-brand">${logo()}<b>ZUENA</b></span><button type="button" class="btn-icon lit" data-island-close aria-label="Cerrar centro de ZUENA">${icon('close')}</button></div>
       <div class="island-search-slot"></div>
       <div class="island-search-filters" aria-label="Secciones de la isla">${['Todo', 'Perfiles', 'Canciones', 'Estrenos', 'Playlists', 'Feed'].map((label, i) => `<button type="button" class="lit" data-search-filter="${i}" aria-pressed="${i === 0}">${label}</button>`).join('')}</div>
       <div class="island-content"><div class="island-results" aria-live="polite" hidden></div><div class="island-discovery">
       </div></div><div class="island-audio-slot"></div>
     </div>
-    <button class="island-core" data-island-core aria-expanded="false" aria-haspopup="dialog" aria-label="Navegación (hacé clic o mantené el puntero 2 segundos)">
+    <button class="island-core" data-island-core aria-expanded="false" aria-haspopup="dialog" aria-label="Navegación (hacé clic o mantené el puntero 2 segundos)" title="Rueda sobre la sección para elegir; clic para abrir el menú.">
       <span class="island-fill" aria-hidden="true"></span>
       <span class="island-mark">${logo()}</span><span class="island-word">ZUENA</span><span class="island-label" id="island-label"></span>
       ${icon('chevronDown', 'island-chev')}
@@ -511,8 +519,7 @@ function syncIsland() {
 let islandHold = 0, islandLeave = 0;
 let islandSearchTimer = 0, islandSearchToken = 0, islandSearchFilter = 0, islandSearchResult = null, islandSearchLimit = 20;
 function drawIslandContent(more = false) {
-  const navigation = `<div class="island-grid">${ISLAND.map(([id, label, ic]) => `<button class="island-item lit" data-island="${id}">${icon(ic)}<span>${label}</span></button>`).join('')}</div>`;
-  mountIslandContent(els.island.querySelector('.island-discovery'), islandSearchFilter, { navigation, more });
+  mountIslandContent(els.island.querySelector('.island-discovery'), islandSearchFilter, { more });
 }
 function drawIslandSearch() {
   const box = els.island.querySelector('.island-results');
@@ -548,6 +555,7 @@ function searchIsland() {
   }, 180);
 }
 function openIsland(focusFirst = false) {
+  islandWheel?.reset();
   clearTimeout(islandHold);
   clearTimeout(islandLeave);
   els.island.classList.remove('charging');
@@ -590,6 +598,26 @@ function islandGo(id) {
 
 function bindIsland() {
   const isl = els.island;
+  islandWheel = bindIslandWheel(isl, {
+    items: ISLAND.filter(([id]) => id !== 'import'),
+    current: () => ui.panel === 'settings' ? 'settings' : ui.query ? 'search' : SECTION_OF[ui.view] === 'library' ? 'songs' : SECTION_OF[ui.view] || 'home',
+    canUse: () => !!app.user && !ui.accountLoading && !ui.npOpen && auth.checkGuest(),
+    onInteract: () => { clearTimeout(islandHold); isl.classList.remove('charging'); },
+    onPreview: ([id, label]) => {
+      $('#island-label').textContent = label;
+      const core = $('[data-island-core]');
+      core.setAttribute('aria-label', `Ir a ${label}. Hacé clic para confirmar`);
+      core.title = `Ir a ${label} · clic para confirmar · Escape para cancelar`;
+      motion.animate($('#island-label'), [{ opacity: .35, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 160, commit: false });
+    },
+    onReset: () => {
+      syncIsland();
+      const core = $('[data-island-core]');
+      core?.setAttribute('aria-label', 'Navegación (hacé clic o mantené el puntero 2 segundos)');
+      if (core) core.title = 'Rueda sobre la sección para elegir; clic para abrir el menú.';
+    },
+    onCommit: (id) => islandGo(id),
+  });
   isl.addEventListener('click', (e) => {
     if (!auth.checkGuest() || ui.accountLoading) { e.preventDefault(); e.stopPropagation(); return; }
     if (e.target.closest('[data-island-close]')) { closeIsland(); $('[data-island-core]')?.focus(); return; }
@@ -618,7 +646,7 @@ function bindIsland() {
   isl.addEventListener('pointerover', (e) => {
     if (e.pointerType === 'touch' || !e.target.closest('[data-island-core]')) return;
     clearTimeout(islandLeave);
-    if (isl.classList.contains('open') || isl.classList.contains('charging')) return;
+    if (isl.classList.contains('open') || isl.classList.contains('charging') || e.target.closest('[data-island-core]')?.hasAttribute('data-wheel-browsing')) return;
     isl.classList.add('charging');
     islandHold = setTimeout(openIsland, 2000);
   });
@@ -878,6 +906,7 @@ function checkSleep() {
 function setNp(open) {
   if (!!ui.npOpen === open) return;
   if (open && !player.current) return;
+  if (open) islandWheel?.reset();
   cancelAnimationFrame(npFocusFrame);
   // un panel (Ajustes, cola, EQ) abierto quedaba encima de la pantalla completa
   if (open && ui.panel) { ui.panel = null; renderPanel(); }
@@ -1053,6 +1082,7 @@ function renderTech() {
 
 // openPanel('settings') alterna y abre en la lista; con sección va directo a esa categoría (no alterna)
 function openPanel(name, section = null) {
+  islandWheel?.reset();
   if (ui.npOpen) setNp(false);
   if (section && name === 'settings') {
     if (section === 'eq') { ui.panel = 'eq'; ui.settingsView = null; ui.eqFromSettings = true; renderPanel(true); return; }
@@ -1382,6 +1412,7 @@ Object.assign(app.actions, {
   'shuffle-all': () => app.playGroup(library.tracks, true),
   toggle: () => playback.dispatch('toggle'),
   'floating-player': (el) => {
+    islandWheel?.reset();
     floating.open().then((child) => {
       if (child || !el?.isConnected) return;
       const r = el.getBoundingClientRect();

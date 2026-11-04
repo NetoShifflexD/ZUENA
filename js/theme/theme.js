@@ -106,6 +106,7 @@ export function applyTheme(settings, el = document.documentElement) {
   for (const [k, v] of Object.entries(TOKENS)) el.style.setProperty(v, palette[k]);
   if (el === document.documentElement) {
     el.dataset.scheme = palette.scheme;
+    try { localStorage.setItem('zuena:boot', JSON.stringify({ scheme: palette.scheme, bg: palette.bgBase })); } catch { /* sin almacenamiento */ }
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', palette.bgBase);
   }
   return palette;

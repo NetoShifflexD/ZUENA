@@ -16,6 +16,15 @@ import {
 } from './common.js';
 
 const mixes = new Map();
+const retryLoads = new WeakMap();
+
+const discoveryHead = (title, sub, label) => `<header class="discovery-head">
+  <div><p class="eyebrow"><span class="discovery-point" aria-hidden="true"></span>${label}</p>
+  <h1 aria-label="${esc(title.replace(/<br\s*\/?>/gi, ' '))}">${title}</h1><p class="discovery-deck">${sub}</p></div>
+  <span class="discovery-wordmark" aria-hidden="true">ZUENA</span></header>`;
+
+const familyNav = () => `<nav class="discovery-families" aria-label="Secciones de Inicio">
+  ${[['t-releases', 'Estrenos'], ['t-songs', 'Canciones'], ['t-playlists', 'Playlists'], ['t-artists', 'Artistas'], ['t-feed', 'Feed'], ['t-trends', 'Tendencias']].map(([id, label]) => `<button data-action="discovery-jump" data-section="${id}">${label}${icon('arrowRight')}</button>`).join('')}</nav>`;
 
 const regionOf = () => app.taste.data.region || 'ar';
 const regionLabel = () => REGIONS.find((r) => r.id === regionOf())?.label || 'tu país';
@@ -23,8 +32,8 @@ const recentIds = () => new Set((app.stats.data?.recent || []).slice(0, 15));
 
 function section(id, title, sub = '', action = '') {
   return `<section class="home-sec" data-sec="${id}" data-reveal="fadeUp">
-    <header class="sec-head"><div><h2 class="section-title">${title}</h2>${sub ? `<p class="sec-sub">${sub}</p>` : ''}</div>${action}</header>
-    <div class="sec-body">${skeletonRow()}</div>
+    <header class="sec-head"><div><h2 class="section-title" tabindex="-1">${title}</h2>${sub ? `<p class="sec-sub">${sub}</p>` : ''}</div>${action}</header>
+    <div class="sec-body" aria-busy="true"><span class="discovery-loading" role="status">Cargando…</span>${skeletonRow()}</div>
   </section>`;
 }
 
@@ -60,16 +69,25 @@ const yieldTask = () => (globalThis.scheduler?.postTask
 async function fill(root, id, loader) {
   const body = root.querySelector(`[data-sec="${id}"] .sec-body`);
   if (!body) return;
+  body.setAttribute('aria-busy', 'true');
+  if (retryLoads.has(body)) {
+    retryLoads.delete(body);
+    body.innerHTML = `<span class="discovery-loading" role="status">Cargando…</span>${skeletonRow()}`;
+  }
   try {
     const html = await loader();
     await yieldTask();
     if (!body.isConnected) return;
-    if (!html) { body.closest('.home-sec').remove(); return; }
-    body.innerHTML = html;
+    body.innerHTML = html || `<div class="discovery-empty"><p>${id === 't-feed' ? 'Todavía no hay publicaciones para mostrar.' : id === 't-trends' ? 'Todavía no hay tendencias para mostrar.' : 'No encontramos resultados.'}</p></div>`;
+    body.setAttribute('aria-busy', 'false');
     app.afterFill(body);
   } catch (err) {
     console.warn('[inicio]', id, err);
-    if (body.isConnected) body.innerHTML = '<p class="muted small">No se pudo cargar ahora. Revisá tu conexión.</p>';
+    if (body.isConnected) {
+      body.setAttribute('aria-busy', 'false');
+      retryLoads.set(body, () => fill(root, id, loader));
+      body.innerHTML = '<div class="discovery-empty" role="status"><p>No pudimos cargar este contenido.</p><button class="btn-glass" data-action="discovery-retry">Reintentar</button></div>';
+    }
   }
 }
 
@@ -78,8 +96,8 @@ async function fill(root, id, loader) {
 // llamado a artistas: lleva a la presentación de ZUENA para artistas
 const artistsCta = () => `<section class="zu-artists-cta lit" data-reveal="scaleIn">
     <div class="zac-glow" aria-hidden="true"></div>
-    <div class="zac-copy"><p class="eyebrow">Para artistas</p><h2>Tu música, tu comunidad, tus ingresos.</h2>
-      <p>Publicá gratis, estrená con cuenta regresiva y recibí apoyo directo de tus oyentes.</p></div>
+    <div class="zac-copy"><p class="eyebrow">Para artistas</p><h2>Tu música, cerca de quien escucha.</h2>
+      <p>Conocé el espacio para publicar tu música y encontrarte con tus oyentes.</p></div>
     <button class="btn-glass lit zac-btn" data-action="nav" data-view="forartists">${icon('play')}Ver la presentación</button>
   </section>`;
 
@@ -101,15 +119,16 @@ export function viewHome() {
     if (TEST_CATALOG) loadTestHome(root);
   };
 
-  const last = recentLocal[0];
-  return `<section class="bento enter">
+  return `<div class="z-discovery z-home">
+    ${discoveryHead('La música<br>que se siente.', 'Volvé a lo que te gusta. Encontrá lo que viene.', 'Inicio · Tu selección')}
+    <section class="bento enter">
       ${heroCarousel(p)}
-      ${quick.length ? `<div class="bento-quick">${quick.map((q, i) => q.kind === 'pl'
+      ${quick.length ? `<aside class="discovery-recent"><p class="eyebrow">A mano · Tu actividad</p><div class="bento-quick">${quick.map((q, i) => q.kind === 'pl'
         ? `<button class="quick-tile lit enter" style="--i:${i + 1}" data-action="playlist" data-id="${esc(q.pl.id)}">${q.pl.system ? '<span class="art likes xs">' + icon('heartFill') + '</span>' : art(q.pl.trackIds.map(app.resolve).find(Boolean), 'xs')}<span>${esc(q.pl.name)}</span></button>`
-        : `<button class="quick-tile lit enter" style="--i:${i + 1}" data-action="play" data-list="${quickKey}" data-index="${recentLocal.indexOf(q.t)}" data-id="${esc(q.t.id)}">${art(q.t, 'xs')}<span>${esc(q.t.title)}</span></button>`).join('')}</div>` : ''}
+        : `<button class="quick-tile lit enter" style="--i:${i + 1}" data-action="play" data-list="${quickKey}" data-index="${recentLocal.indexOf(q.t)}" data-id="${esc(q.t.id)}">${art(q.t, 'xs')}<span>${esc(q.t.title)}</span></button>`).join('')}</div></aside>` : ''}
     </section>    ${taste.data.done || !EXTERNAL_CATALOG ? '' : `<div class="glass-soft notice lit enter">${icon('sparkle')}<p><b>Contanos qué te gusta.</b> Con un test de un minuto armamos recomendaciones a tu medida.</p><button class="btn-primary lit" data-action="taste-test">Hacer el test</button></div>`}
     ${zuenaReleases() || (EXTERNAL_CATALOG || TEST_CATALOG ? '' : startEmpty())}
-    ${TEST_CATALOG ? testSections() : ''}
+    ${TEST_CATALOG ? `<p class="discovery-source">Catálogo de prueba · Apple Music · Vistas previas, lanzamientos y artistas de fuentes reales.</p>${familyNav()}${testSections()}` : ''}
     ${(hookCharts(), chartsSection(true))}
     ${EXTERNAL_CATALOG ? `${section('mixes', 'Hecho para vos', 'Mixes que se actualizan con lo que escuchás')}
     ${section('foryou', 'Recomendado para vos', 'Artistas independientes con música completa en ZUENA')}` : ''}
@@ -120,7 +139,7 @@ export function viewHome() {
     ${section('creators', 'Artistas para descubrir')}
     ${section('podcasts', 'Podcasts para vos', '', `<button class="link small" data-action="nav" data-view="explore" data-tab="podcasts">Ver más</button>`)}
     ${taste.data.radio !== false ? section('radio', 'Radio en vivo', '', `<button class="link small" data-action="nav" data-view="explore" data-tab="radio">Ver más</button>`) : ''}` : ''}
-    ${app.library.tracks.length ? `<h2 class="section-title">Tu biblioteca</h2><div class="shelf">${app.library.derive().albums.slice(0, 12).map(albumCard).join('')}</div>` : ''}`;
+    ${app.library.tracks.length ? `<section class="home-sec"><header class="sec-head"><h2 class="section-title">Tu biblioteca</h2><button class="link" data-action="nav" data-view="songs">Ver biblioteca</button></header><div class="shelf">${app.library.derive().albums.slice(0, 12).map(albumCard).join('')}</div></section>` : ''}</div>`;
 }
 
 // ZUENA desde cero: todavía no hay lanzamientos publicados
@@ -136,8 +155,8 @@ function zuenaReleases() {
   const soon = app.releases.upcoming(), live = app.releases.live().slice(0, 16);
   if (!soon.length && !live.length) return '';
   const note = app.auth.mode === 'local' ? 'Publicados en este equipo por artistas verificados' : 'De artistas verificados en ZUENA';
-  return `${soon.length ? `<h2 class="section-title">Próximos estrenos</h2><div class="shelf">${soon.map(releaseCard).join('')}</div>` : ''}
-    ${live.length ? `<header class="sec-head"><div><h2 class="section-title">Nuevo en ZUENA</h2><p class="sec-sub">${note}</p></div></header><div class="shelf">${live.map(releaseCard).join('')}</div>` : ''}`;
+  return `${soon.length ? `<section class="home-sec"><header class="sec-head"><h2 class="section-title">Próximos estrenos</h2></header><div class="shelf">${soon.map(releaseCard).join('')}</div></section>` : ''}
+    ${live.length ? `<section class="home-sec"><header class="sec-head"><div><h2 class="section-title">Nuevo en ZUENA</h2><p class="sec-sub">${note}</p></div></header><div class="shelf">${live.map(releaseCard).join('')}</div></section>` : ''}`;
 }
 
 async function loadHome(root, by) {
@@ -410,16 +429,17 @@ function exploreZuena() {
   const live = app.releases.live(), soon = app.releases.upcoming();
   if (TEST_CATALOG) {
     app.ui.mount = (root) => {
-      fill(root, 'x-artists', async () => { const a = await testArtistCards(); return `<div class="grid">${a.map(amArtistCard).join('')}</div>`; });
-      fill(root, 'x-releases', async () => { const r = await testReleases(); return `<div class="grid">${r.map(amReleaseCard).join('')}</div>`; });
+      fill(root, 'x-artists', async () => { const a = await testArtistCards(); return a.length ? `<div class="grid">${a.map(amArtistCard).join('')}</div>` : ''; });
+      fill(root, 'x-releases', async () => { const r = await testReleases(); return r.length ? `<div class="grid">${r.map(amReleaseCard).join('')}</div>` : ''; });
     };
   }
-  return `<header class="page-head enter"><h1>Explorar</h1></header>
+  return `<div class="z-discovery z-explore">${discoveryHead('Escuchá más allá.', 'Lanzamientos, artistas y voces para seguir descubriendo.', 'Explorar · El catálogo')}
+    ${TEST_CATALOG ? '<p class="discovery-source">Catálogo de prueba · Apple Music · Vistas previas y perfiles de artistas reales.</p>' : ''}
     ${soon.length ? `<h2 class="section-title">Próximos estrenos</h2><div class="shelf">${soon.map(releaseCard).join('')}</div>` : ''}
     ${live.length ? `<h2 class="section-title">Publicado en ZUENA</h2><div class="grid">${live.map(releaseCard).join('')}</div>` : TEST_CATALOG ? '' : startEmpty()}
     ${(hookCharts(), chartsSection(false))}
     ${TEST_CATALOG ? `${section('x-artists', 'Artistas')}${section('x-releases', 'Lanzamientos recientes')}` : ''}
-    ${artistsCta()}`;
+    ${artistsCta()}</div>`;
 }
 
 export function viewExplore() {
@@ -429,11 +449,12 @@ export function viewExplore() {
   const tabs = [['music', 'Música', 'music'], ['podcasts', 'Podcasts', 'mic'], ['radio', 'Radio', 'radio']];
   const chips = tab === 'music' ? GENRES.map((g) => [g.id, g.label]) : tab === 'podcasts' ? TOPICS.map((t) => [t.id, t.label]) : GENRES.slice(0, 12).map((g) => [g.id, g.label]);
   app.ui.mount = (root) => loadExplore(root, tab, chip);
-  return `<header class="page-head enter"><h1>Explorar</h1>
-      <div class="seg three explore-tabs">${tabs.map(([id, l, ic]) => `<button class="seg-btn lit ${tab === id ? 'on' : ''}" data-action="explore-tab" data-tab="${id}">${icon(ic)}<span>${l}</span></button>`).join('')}</div></header>
-    <div class="chips scroll enter" style="--i:1"><button class="chip lit ${!chip ? 'on' : ''}" data-action="explore-chip" data-chip="">${tab === 'radio' ? regionLabel() : 'Destacado'}</button>${chips.map(([id, l]) => `<button class="chip lit ${chip === id ? 'on' : ''}" data-action="explore-chip" data-chip="${id}">${esc(l)}</button>`).join('')}</div>
+  return `<div class="z-discovery z-explore">${discoveryHead('Escuchá más allá.', 'Música independiente, podcasts y radio. Elegí por dónde empezar.', 'Explorar · Fuentes reales')}
+    <section class="discovery-filters" aria-label="Filtrar catálogo"><div class="seg three explore-tabs" role="group" aria-label="Tipo de contenido">${tabs.map(([id, l, ic]) => `<button class="seg-btn lit ${tab === id ? 'on' : ''}" aria-pressed="${tab === id}" data-action="explore-tab" data-tab="${id}">${icon(ic)}<span>${l}</span></button>`).join('')}</div>
+    <div class="chips scroll enter" role="group" aria-label="Categorías" style="--i:1"><button class="chip lit ${!chip ? 'on' : ''}" aria-pressed="${!chip}" data-action="explore-chip" data-chip="">${tab === 'radio' ? regionLabel() : 'Destacado'}</button>${chips.map(([id, l]) => `<button class="chip lit ${chip === id ? 'on' : ''}" aria-pressed="${chip === id}" data-action="explore-chip" data-chip="${id}">${esc(l)}</button>`).join('')}</div></section>
+    <p class="discovery-source">${tab === 'music' ? 'Audius · Música independiente completa / Apple Music · Ranking y vistas previas de 30 segundos' : tab === 'podcasts' ? 'Apple Podcasts · Catálogo de podcasts' : 'Radio Browser · Emisoras en vivo'}</p>
     <div class="explore-body"><div class="home-sec" data-sec="explore"><div class="sec-body">${skeletonRow(8)}</div></div>
-    ${tab === 'music' && !chip ? `<div class="home-sec" data-sec="explore-chart"><h2 class="section-title">Ranking en ${regionLabel()}</h2><div class="sec-body">${skeletonRow()}</div></div>` : ''}</div>`;
+    ${tab === 'music' && !chip ? `<div class="home-sec" data-sec="explore-chart"><h2 class="section-title">Ranking en ${regionLabel()}</h2><div class="sec-body">${skeletonRow()}</div></div>` : ''}</div></div>`;
 }
 
 async function loadExplore(root, tab, chip) {
@@ -441,18 +462,21 @@ async function loadExplore(root, tab, chip) {
   if (tab === 'music') {
     fill(root, 'explore', async () => {
       const items = await src.audiusTrending({ genre: chip || null, limit: 30 });
+      if (!items.length) return '';
       return `<h2 class="section-title">${chip ? `Tendencias · ${esc(GENRE_BY_ID[chip].label)}` : 'Tendencias en ZUENA'}</h2>${trackList(items)}`;
     });
-    if (!chip) fill(root, 'explore-chart', async () => podium(await src.appleChart(region, 25)));
+    if (!chip) fill(root, 'explore-chart', async () => { const items = await src.appleChart(region, 25); return items.length ? podium(items) : ''; });
   } else if (tab === 'podcasts') {
     fill(root, 'explore', async () => {
       const items = chip ? await src.podcastsByTerm(TOPICS.find((t) => t.id === chip).term, region, 18) : await src.topPodcasts(region, 20);
+      if (!items.length) return '';
       return `<h2 class="section-title">${chip ? esc(TOPICS.find((t) => t.id === chip).label) : `Top podcasts en ${regionLabel()}`}</h2><div class="grid">${items.map(podcastCard).join('')}</div>`;
     });
   } else {
     fill(root, 'explore', async () => {
       const cc = REGIONS.find((r) => r.id === region)?.radio || 'AR';
       const items = chip ? await src.radiosByTag(GENRE_BY_ID[chip].label.split(' ')[0].toLowerCase(), 24) : await src.radiosByCountry(cc, 24);
+      if (!items.length) return '';
       const key = listKey(items);
       return `<h2 class="section-title">${chip ? `Radios de ${esc(GENRE_BY_ID[chip].label)}` : `Radios de ${regionLabel()}`}</h2><div class="grid">${items.map((it, i) => mediaCard(it, key, i)).join('')}</div>`;
     });
@@ -524,6 +548,12 @@ function creatorHead(u) {
 // ---------- acciones ----------
 
 registerActions({
+  'discovery-jump': (el) => {
+    const section = el.closest('.z-discovery')?.querySelector(`[data-sec="${el.dataset.section}"]`);
+    section?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    section?.querySelector('.section-title')?.focus({ preventScroll: true });
+  },
+  'discovery-retry': (el) => retryLoads.get(el.closest('.sec-body'))?.(),
   mix: (el) => app.go('mix', el.dataset.id),
   'play-mix': (el, e) => { e?.stopPropagation(); app.playGroup(mixes.get(el.dataset.id)?.items, false); },
   'shuffle-mix': (el) => app.playGroup(mixes.get(el.dataset.id)?.items, true),

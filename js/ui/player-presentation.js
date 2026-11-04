@@ -1,6 +1,6 @@
 // Presentación efímera sobre Prisma Motion: sin estado de audio ni temporizadores propios.
 export const PLAYER_TABS = [
-  ['now', 'Ahora suena', 'music'], ['lyrics', 'Letra', 'mic'],
+  ['now', 'Sonando', 'music'], ['lyrics', 'Letra', 'mic'],
   ['queue', 'Cola', 'queue'], ['credits', 'Créditos', 'disc'],
 ];
 
