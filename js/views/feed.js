@@ -599,9 +599,10 @@ export function releaseCard(r, i = 0) {
   const parts = countdownParts(r.premiereAt);
   const theme = esc(r.premiereTheme || 'obsidian');
   const accent = esc(r.premiereAccent || '#5ff0ff');
+  const artistName = r.primaryArtist || r.artistName || r.artist || 'Artista';
   const prof = app.posts?.author?.(r.uid) || (r.uid === app.user?.uid ? app.profile : null) || {
     uid: r.uid,
-    displayName: r.primaryArtist,
+    displayName: artistName,
     username: r.username || '',
     role: 'artist',
     isOfficialTeam: r.uid === 'zuena-official',
@@ -619,8 +620,8 @@ export function releaseCard(r, i = 0) {
       <span class="p-card-glow"></span>
     </div>
     <header class="p-card-top">
-      <span class="p-status-pill"><i class="p-live-dot" aria-hidden="true"></i>Estreno programado</span>
-      <span class="p-quality-pill">${esc(r.audioQuality || '24-BIT LOSSLESS')}</span>
+      <span class="p-status-pill"><span class="p-live-dot" aria-hidden="true"></span>Estreno exclusivo</span>
+      <span class="p-quality-pill">${esc(r.audioQuality || '24-BIT · LOSSLESS')}</span>
     </header>
     <div class="p-card-Stage">
       <div class="p-card-art">
@@ -628,15 +629,15 @@ export function releaseCard(r, i = 0) {
         <span class="p-card-vinyl" aria-hidden="true"></span>
       </div>
       <div class="p-card-info">
-        <button type="button" class="p-artist-chip" data-action="open-artist" data-id="zu:${esc(r.uid)}" aria-label="Ver perfil de ${esc(r.primaryArtist)}">
+        <button type="button" class="p-artist-chip" data-action="open-artist" data-id="zu:${esc(r.uid)}" aria-label="Ver perfil de ${esc(artistName)}">
           ${avatar(prof, 'xs')}
-          <span class="p-artist-name">${esc(r.primaryArtist)}</span>
+          <span class="p-artist-name">${esc(artistName)}</span>
           ${tick(true, 'Artista verificado')}
           ${roleBadges(prof, { compact: true })}
         </button>
         <h3 class="p-card-title">${esc(r.title)}${r.explicit ? ' <span class="badge">E</span>' : ''}</h3>
         <p class="p-card-meta">${esc(kindLabel)}${r.genre ? ` · ${esc(r.genre)}` : ''} · ${tracksCount} ${tracksCount === 1 ? 'pista' : 'pistas'}</p>
-        ${note ? `<p class="p-card-note">«${esc(note)}»</p>` : ''}
+        ${note ? `<blockquote class="p-card-quote">«${esc(note)}»</blockquote>` : ''}
       </div>
     </div>
     <div class="p-card-countdown-box">
@@ -645,17 +646,17 @@ export function releaseCard(r, i = 0) {
         <time class="p-countdown-date" datetime="${new Date(r.premiereAt).toISOString()}">${esc(premiereLabel(r.premiereAt))}</time>
       </div>
       <div class="p-timer" data-countdown-parts="${r.premiereAt}" role="timer" aria-label="Cuenta regresiva del estreno">
-        <div class="pt-seg"><b data-cd="d">${parts.d}</b><small>DÍAS</small></div><span class="pt-sep" aria-hidden="true">:</span>
-        <div class="pt-seg"><b data-cd="h">${parts.h}</b><small>HORAS</small></div><span class="pt-sep" aria-hidden="true">:</span>
-        <div class="pt-seg"><b data-cd="m">${parts.m}</b><small>MIN</small></div><span class="pt-sep" aria-hidden="true">:</span>
+        <div class="pt-seg"><b data-cd="d">${parts.d}</b><small>DÍAS</small></div>
+        <div class="pt-seg"><b data-cd="h">${parts.h}</b><small>HORAS</small></div>
+        <div class="pt-seg"><b data-cd="m">${parts.m}</b><small>MIN</small></div>
         <div class="pt-seg"><b data-cd="s">${parts.s}</b><small>SEG</small></div>
       </div>
     </div>
     <footer class="p-card-actions">
-      <button type="button" class="btn-glass lit sm p-remind-btn ${reminded ? 'on' : ''}" data-action="premiere-remind" data-id="${esc(r.id)}" aria-pressed="${reminded}">
+      <button type="button" class="btn-primary lit p-remind-btn ${reminded ? 'on' : ''}" data-action="premiere-remind" data-id="${esc(r.id)}" aria-pressed="${reminded}">
         ${icon(reminded ? 'check' : 'bell')}<span>${reminded ? 'Aviso activado' : 'Recordarme estreno'}</span>
       </button>
-      ${canEdit ? `<button type="button" class="btn-glass lit sm p-customize-btn" data-action="premiere-customize" data-id="${esc(r.id)}" title="Personalizar tarjeta de estreno">${icon('sparkle')}<span>Personalizar tarjeta</span></button>` : `<button type="button" class="btn-glass lit sm" data-action="open-artist" data-id="zu:${esc(r.uid)}">${icon('user')}<span>Ver artista</span></button>`}
+      ${canEdit ? `<button type="button" class="btn-glass lit p-customize-btn" data-action="premiere-customize" data-id="${esc(r.id)}" title="Personalizar tarjeta de estreno">${icon('sparkle')}<span>Personalizar</span></button>` : `<button type="button" class="btn-glass lit" data-action="open-artist" data-id="zu:${esc(r.uid)}">${icon('user')}<span>Ver artista</span></button>`}
     </footer>
   </article>`;
 }
