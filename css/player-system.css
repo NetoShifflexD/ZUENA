@@ -1,22 +1,25 @@
 /* Transporte compartido: superficies ligeras dentro del vidrio de la isla. */
-.floatbar .island-audio-slot #dock.player { height: auto; min-height: 174px; border-radius: 24px; }
-.floatbar .island-audio-slot .pl-inner { display: flex; flex-direction: column; gap: 0; height: auto; width: 100%; padding: 12px; }
+.floatbar .island-audio-slot #dock.player,
+.floatbar.island-open .island-audio-slot #dock.player { display: block; width: 100%; height: auto; min-height: 168px; margin: 0; opacity: 1; visibility: visible; border-radius: 24px; pointer-events: auto; }
+.floatbar .island-audio-slot #dock.player[hidden] { display: none !important; }
+.floatbar .island-audio-slot .pl-inner { display: flex; flex-direction: column; gap: 2px; height: auto; width: 100%; padding: 12px; }
 .dock-head { display: flex; gap: 12px; align-items: center; width: 100%; min-width: 0; }
-.floatbar .island-audio-slot .dock-art { flex: 0 0 52px; width: 52px; height: 52px; border-radius: 15px; }
+.floatbar .island-audio-slot .dock-art { flex: 0 0 52px; width: 52px; height: 52px; border-radius: 14px; overflow: hidden; }
+.floatbar .island-audio-slot .dock-art .art { width: 52px; height: 52px; border-radius: 14px; }
 .floatbar .island-audio-slot .dock-meta { flex: 1; width: auto; min-width: 0; }
 .floatbar .island-audio-slot .dock-title { font-size: 15px; font-weight: 600; letter-spacing: -.02em; }
 .floatbar .island-audio-slot .dock-artist { margin-top: 3px; }
 .floatbar .island-audio-slot .dock-head .js-like:not([hidden]) { display: inline-flex !important; }
 .transport-state { display: block; color: var(--muted); font-size: 10px; line-height: 1.5; margin-top: 4px; }
-.floatbar .island-audio-slot .timeline { display: flex; width: 100%; gap: 8px; min-height: 44px; margin: 1px 0; }
+.floatbar .island-audio-slot .timeline { display: flex !important; align-items: center; width: 100%; gap: 8px; min-height: 44px; margin: 2px 0; }
 .floatbar .island-audio-slot .timeline .scrub-wrap { flex: 1; min-width: 0; height: 44px; }
 .floatbar .island-audio-slot .timeline canvas { height: 44px; width: 100%; touch-action: none; }
 .dock-bottom { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .floatbar .island-audio-slot .pl-controls, .dock-tools { display: flex; gap: 4px; align-items: center; }
-.dock-volume { display: flex; gap: 3px; min-width: 0; }
+.dock-volume { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .floatbar .island-audio-slot .dock-volume { width: auto; max-width: none; }
-.floatbar .island-audio-slot .dock-volume input[type=range].range { flex: 0 0 72px; width: 72px; height: 44px; min-width: 0; }
-.floatbar .island-audio-slot .dock-artist button { min-height: 44px; min-width: 44px; margin-block: -6px; }
+.floatbar .island-audio-slot .dock-volume input[type=range].range { flex: 0 0 76px; width: 76px; height: 44px; min-width: 0; }
+.floatbar .island-audio-slot .dock-artist button { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; margin-block: -10px; }
 .floatbar .island-audio-slot :is(.btn-icon, .btn-play), .np :is(.btn-icon, .btn-play) { min-width: 44px; min-height: 44px; flex-shrink: 0; }
 .floatbar .island-audio-slot .btn-play { width: 48px; height: 48px; }
 .transport-feedback { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding: 12px; width: 100%; background: var(--glass-hi); border-radius: 16px; font-size: 12px; line-height: 1.5; }
@@ -55,10 +58,13 @@
 @media (prefers-reduced-motion: reduce) { .np-next { transition: none; } .np-next:hover { transform: none; } }
 
 /* Cápsula de transporte: piezas operables hermanas, una única superficie de vidrio. */
-.floatbar .island-np.mini-player { display: flex; gap: 4px; width: 360px; max-width: 48vw; height: 62px; padding: 7px; border-radius: 23px; animation: none; isolation: isolate; overflow: hidden; background: var(--surface-strong); box-shadow: var(--rim), var(--depth); touch-action: manipulation; }
-.mini-player[hidden], .floatbar.np-mode .mini-player { display: none !important; }
+.floatbar .island-np.mini-player { display: flex; align-items: center; gap: 4px; width: 360px; max-width: 48vw; height: 62px; padding: 7px; border-radius: 23px; animation: none; isolation: isolate; overflow: hidden; background: var(--surface-strong); box-shadow: var(--rim), var(--depth); touch-action: manipulation; }
+.mini-player[hidden], .floatbar.np-mode .mini-player, .floatbar.island-open .mini-player { display: none !important; }
 .floatbar.np-mode { opacity: 0; visibility: hidden; pointer-events: none; }
-.np { z-index: 75; }
+.np { z-index: 75; height: 100vh; height: 100dvh; max-height: 100dvh; box-sizing: border-box; overflow: hidden; }
+.np .np-body { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; min-height: 0; }
+.np .np-side { min-width: 0; width: 100%; }
+.np .np-scrub { height: 46px; min-height: 44px; touch-action: none; }
 .np-grabber { display: none; width: 36px; height: 4px; border-radius: 99px; background: var(--stroke); grid-column: 1 / -1; justify-self: center; pointer-events: none; }
 .mini-player::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: linear-gradient(115deg, color-mix(in oklab, var(--accent) 10%, transparent), transparent 60%); }
 .mini-player button { position: relative; flex: 0 0 44px; height: 44px; min-width: 44px; border-radius: 15px; display: grid; place-items: center; padding: 0; color: var(--text); transition: background .18s; }
@@ -90,12 +96,21 @@
 .np .np-top { grid-template-columns: minmax(44px, 1fr) minmax(0, 520px) minmax(140px, 1fr); gap: 12px; }
 .np.open :is(.np-credits, .np-lyrics, .np-queue, .np-titles) { animation: none !important; }
 .np .np-art.swap { animation: none; }
+@media (min-width: 861px) {
+  .np .np-body { align-items: center; align-content: safe center; overflow-y: auto; padding-block: 12px 28px; }
+  .np .np-stage { width: min(100%, calc(100dvh - 210px), 480px); max-width: 100%; aspect-ratio: 1; margin-inline: auto; }
+}
 @media (max-width: 860px) {
   .floatbar .island-np.mini-player { width: 310px; max-width: 55vw; }
   .floatbar .island-live { min-width: 0; max-width: calc(100vw - 350px); }
   .mini-player .mini-expand { display: none; }
   .np .np-top { grid-template-columns: 44px minmax(0, 1fr) 140px; gap: 8px; }
   .np .np-tab { gap: 5px; padding-inline: 8px; }
+  .np .np-body { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 14px; overflow-y: auto; overflow-x: hidden; padding: 6px max(18px, var(--sar, 0px)) calc(28px + var(--sab, 0px)) max(18px, var(--sal, 0px)); }
+  .np .np-stage { flex: 0 0 auto; width: min(68vw, 34dvh, 320px); aspect-ratio: 1; margin-inline: auto; touch-action: pan-y; }
+  .np .np-side { width: 100%; max-width: 480px; margin-inline: auto; gap: 10px; }
+  .np .controls.big { justify-content: center; gap: 12px; margin: 2px 0; }
+  .np .volume.wide { width: 100%; max-width: 100%; align-items: center; gap: 8px; }
   .np[data-tab]:not([data-tab="now"]) :is(.np-stage, .np-next) { display: none; }
 }
 @media (max-width: 760px) {

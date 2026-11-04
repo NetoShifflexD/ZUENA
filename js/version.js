@@ -1,12 +1,12 @@
 // Versiones de ZUENA: la app y cada función. Sirve para saber en qué nivel quedó cada parte y priorizar
 // la actualización de las más viejas. Regla: al cambiar una función, subir su versión (mayor = rediseño,
 // menor = mejora, parche = arreglo), poner la fecha de hoy y reflejarlo en Wiki/Registro/Versiones.md.
-export const APP_VERSION = '0.30.0';
+export const APP_VERSION = '0.30.1';
 
 // [id, nombre, versión, última actualización]
 export const FEATURES = [
   ['audio', 'Motor de audio (gapless, LUFS, EQ, espacial, 5.1/7.1, limitador)', '3.4.0', '2026-11-03'],
-  ['np', 'Reproductor, cápsula rápida y navegación inmersiva', '5.1.0', '2026-11-04'],
+  ['np', 'Reproductor, cápsula rápida y navegación inmersiva', '5.2.0', '2026-11-04'],
   ['viz', 'Espectro "seda"', '2.0.0', '2026-11-01'],
   ['home', 'Inicio y carrusel de portada', '4.2.0', '2026-11-04'],
   ['search', 'Búsqueda unificada de música, perfiles y feed', '1.2.0', '2026-11-04'],
@@ -22,16 +22,16 @@ export const FEATURES = [
   ['studio', 'Programa de artistas, reclamo v2 y Estudio', '2.1.0', '2026-11-04'],
   ['library', 'Biblioteca y música propia', '2.0.0', '2026-11-04'],
   ['playlists', 'Playlists', '1.0.0', '2026-10-30'],
-  ['settings', 'Ajustes (con Privacidad y legal)', '3.1.0', '2026-11-04'],
+  ['settings', 'Ajustes (con Privacidad, legal y administración restringida)', '3.2.0', '2026-11-04'],
   ['sounds', 'Sonidos de interfaz', '1.0.0', '2026-11-01'],
-  ['auth', 'Landing Punto, acceso editorial, invitado temporal y consentimiento', '5.3.0', '2026-11-04'],
+  ['auth', 'Landing Punto, acceso editorial, perfil ZUENA oficial y modo desarrollador exclusivo', '5.4.0', '2026-11-04'],
   ['legal', 'Apartados legales, aviso de cookies y consentimiento (borradores)', '0.1.1', '2026-11-04'],
   ['forartists', 'Presentación para artistas', '2.0.0', '2026-11-04'],
   ['catalog', 'Catálogo de prueba (30 artistas)', '1.1.0', '2026-11-01'],
   ['cloud', 'Nube Cloudflare (Worker + D1)', '0.1.0', '2026-11-01'],
   ['supabase', 'Nube Supabase (cuentas, perfiles, feed, me gusta, seguidos y pistas subidas)', '0.2.0', '2026-11-04'],
   ['payments', 'Servidor de pagos (sin ejecutar)', '0.1.0', '2026-11-01'],
-  ['pwa', 'App instalable', '1.1.1', '2026-11-03'],
+  ['pwa', 'App instalable (shell v4-031 y bypass de caché)', '1.2.0', '2026-11-04'],
   ['theme', 'Sistema Punto, temas y personalización', '4.3.0', '2026-11-04'],
   ['island', 'Isla Punto: búsqueda, contenido y transporte', '4.2.0', '2026-11-04'],
 ];

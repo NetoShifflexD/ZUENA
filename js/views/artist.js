@@ -579,13 +579,9 @@ export async function publishRelease(r) {
 
 // ---------- revisión (§7): owner/admin; en cuentas locales sólo con "Modo desarrollador" ----------
 
-export const canReview = () => {
-  const r = app.auth.role;
-  if (r !== 'owner' && r !== 'admin') return false;
-  return app.auth.mode !== 'local' || app.user?.mode === 'cloud' || !!app.prefs.dev;
-};
-// el propio reclamo sólo se aprueba en modo local con Modo desarrollador (queda "Verificado en este equipo")
-const reviewer = () => ({ uid: app.user?.uid || '', name: app.profile?.displayName || '', canSelf: !app.artist.hasServer && !!app.prefs.dev });
+export const canReview = () => Boolean(app.auth.isOwner || app.auth.isAdmin);
+// el propio reclamo sólo se aprueba por cuentas de administración o en modo desarrollador
+const reviewer = () => ({ uid: app.user?.uid || '', name: app.profile?.displayName || '', canSelf: Boolean(app.auth.isOwner || app.auth.isAdmin) });
 const REVIEW_FILTERS = [['pending', 'Pendientes'], ['needs_info', 'Faltan datos'], ['rejected', 'Rechazados'], ['approved', 'Aprobados'], ['revoked', 'Revocados']];
 const EV_STATUS = { unchecked: ['Sin comprobar', 'muted'], ok: ['Comprobada', 'ok'], manual_ok: ['Comprobada a mano', 'ok'], fail: ['No encontrada', 'bad'] };
 const evLabel = (e) => (e.kind === 'code' ? `Código publicado en ${PLATFORMS.find((p) => p.key === e.where)?.label || 'una red'}` : e.kind === 'email_domain' ? 'Correo del dominio oficial' : `Enlace · ${PLATFORMS.find((p) => p.key === e.platform)?.label || 'enlace'}`);

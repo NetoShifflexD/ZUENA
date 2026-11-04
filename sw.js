@@ -3,8 +3,8 @@
 // Contenido externo (streams, carátulas, APIs) no se intercepta: lo maneja el navegador.
 // Precarga (2026-11-03): además del armazón fijo, al instalarse recorre index.html y el grafo de módulos
 // (import, import(), new URL(...), rutas a vendor/json) para guardar la lista real de archivos sin mantenerla a mano.
-const CACHE = 'zuena-shell-v2';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
+const CACHE = 'zuena-shell-v4-031';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './brand/logo.svg', './brand/logo-invertido.svg', './brand/cover-zuena.svg'];
 // rutas relativas o absolutas a archivos propios dentro del código (las plantillas con ${} quedan afuera)
 const REF = /["'`]((?:\.{1,2}\/|\/(?:js|css)\/)[^"'`$\s]+\.(?:js|css|json))["'`]/g;
 const SKIP = /\/js\/tests\//;
@@ -52,7 +52,7 @@ self.addEventListener('fetch', (e) => {
   if (req.headers.has('range')) return;
   e.respondWith((async () => {
     try {
-      const res = await fetch(req);
+      const res = await fetch(req, { cache: 'no-cache' });
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}); }
       return res;
     } catch {

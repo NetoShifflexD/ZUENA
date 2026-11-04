@@ -229,6 +229,11 @@ async function hydrateUser(user, generation) {
   // role = verificado: sube con el reclamo aprobado y baja si ya no lo está; accountType se infiere en perfiles previos
   if (!app.user.isGuest && syncAccount(app.profile, artist.claim)) await saveProfile(auth, app.profile);
   if (!current()) return false;
+  // El modo desarrollador sólo está permitido para cuentas de administración (Owner, Equipo ZUENA o ADMIN_EMAILS)
+  if (!auth.isOwner && !auth.isAdmin && app.prefs.dev) {
+    app.prefs.dev = false;
+    savePrefs();
+  }
   app.applyUserTheme();
   ui.accountLoading = false;
   return true;
@@ -593,6 +598,7 @@ function openIsland(focusFirst = false) {
     els.island.querySelector('[data-island-close]')?.focus({ preventScroll: true });
   }
   requestAnimationFrame(() => dockScrub?.resize());
+  setTimeout(() => { if (els.island.classList.contains('open')) dockScrub?.resize(); }, 200);
   searchIsland();
 }
 function closeIsland() {
@@ -1031,6 +1037,8 @@ function setNp(open) {
     enterPlayer(els.np, motion);
     viz.start();
     npScrub.resize();
+    requestAnimationFrame(() => npScrub?.resize());
+    setTimeout(() => { if (ui.npOpen) npScrub?.resize(); }, 200);
     renderTech();
     if (ui.npTab === 'credits') renderNpPane();
     els.np.querySelector('[data-action=close-np]')?.focus({ preventScroll: true });
@@ -1844,6 +1852,13 @@ function bindEvents() {
       return;
     }
     if (key === 'motion' || key === 'dev' || key === 'advanced') {
+      if (key === 'dev' && !auth.isOwner && !auth.isAdmin) {
+        el.checked = false;
+        app.prefs.dev = false;
+        savePrefs();
+        toast('El modo desarrollador es exclusivo para cuentas de administración');
+        return;
+      }
       app.prefs[key] = el.checked;
       savePrefs();
       applyMotion();

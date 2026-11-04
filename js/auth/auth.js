@@ -47,7 +47,18 @@ const OWNER_UID = 'bf3b1550-da87-4443-a8ba-0ae542fed5dd';
 const OWNER_SALT = 'enVlbmEtb3duZXItMjAyNg==';
 const OWNER_HASH = '3ufigGc4AIdoCcXsnSHONlh9EbMgGFhCq9aTRz9jDnc=';
 
-async function ensureOwnerAndInitialUsers() {
+async function putAccountSafely(acc) {
+  const email = String(acc.email || '').trim().toLowerCase();
+  if (email) {
+    const existing = await db.byIndex('accounts', 'email', email).catch(() => []);
+    for (const old of existing) {
+      if (old.uid !== acc.uid) await db.del('accounts', old.uid).catch(() => {});
+    }
+  }
+  await db.put('accounts', { ...acc, email });
+}
+
+export async function ensureOwnerAndInitialUsers() {
   if (!OWNER_EMAIL) return;
   try {
     const email = OWNER_EMAIL.trim().toLowerCase();
@@ -55,7 +66,7 @@ async function ensureOwnerAndInitialUsers() {
     const ownerAcc = existing.find((a) => !isGuest(a));
     const uid = ownerAcc?.uid || OWNER_UID;
     const now = Date.now();
-    await db.put('accounts', {
+    await putAccountSafely({
       uid,
       email,
       hash: OWNER_HASH,
@@ -122,8 +133,8 @@ async function ensureOwnerAndInitialUsers() {
     }
     // Perfil oficial y exclusivo de ZUENA (@zuena · Equipo de Zuena · Administración)
     const zuUid = ZUENA_OFFICIAL_UID;
-    const zuEmail = ZUENA_OFFICIAL_EMAIL;
-    await db.put('accounts', {
+    const zuEmail = ZUENA_OFFICIAL_EMAIL.trim().toLowerCase();
+    await putAccountSafely({
       uid: zuUid,
       email: zuEmail,
       hash: OWNER_HASH,
@@ -504,15 +515,14 @@ export class Auth extends EventTarget {
     return u.uid === ZUENA_OFFICIAL_UID || u.isOfficialTeam === true || String(u.email || '').trim().toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase();
   }
   get role() { return isGuest(this.user) ? 'guest' : this.isOwner ? 'owner' : this.isAdmin ? 'admin' : this.user ? 'user' : 'guest'; }
-  // En modo local cualquier cuenta del equipo administra (modo desarrollador); las cuentas de la nube
-  // (Google en Cloudflare) sólo si su correo es el del propietario o está en ADMIN_EMAILS.
+  // Sólo las cuentas del Propietario, del Equipo de ZUENA o de ADMIN_EMAILS verificados tienen permisos de administración
+  // y acceso al modo desarrollador. Las cuentas de oyentes o artistas nunca tienen permisos de administración.
   get isAdmin() {
     if (!this.user || isGuest(this.user)) return false;
-    if (this.isOwner || this.isOfficialTeam) return true;
-    const email = String(this.user.email || '').toLowerCase();
-    const verified = this.user.mode === 'supabase' || this.user.mode === 'cloud' || this.mode === 'firebase';
-    if (verified && ADMIN_EMAILS.some((e) => e.toLowerCase() === email)) return true;
-    return this.mode === 'local' && this.user.mode !== 'cloud' && this.user.mode !== 'supabase';
+    if (this.isOwner || this.isOfficialTeam || this.user.isAdmin === true) return true;
+    const email = String(this.user.email || '').trim().toLowerCase();
+    const verified = this.user.mode === 'supabase' || this.user.mode === 'cloud' || this.mode === 'firebase' || this.user.emailVerified === true;
+    return Boolean(verified && email && ADMIN_EMAILS.some((e) => e.toLowerCase() === email));
   }
 
   // token verificable por el servidor de pagos; las cuentas locales no tienen identidad verificable
@@ -621,6 +631,10 @@ export class Auth extends EventTarget {
       }
       return;
     }
+    if (saved && saved.uid === ZUENA_OFFICIAL_UID) {
+      this.user = this.localUser(saved);
+      return;
+    }
     if (this.mode === 'firebase') {
       try {
         await this.initFirebase();
@@ -723,6 +737,7 @@ export class Auth extends EventTarget {
 
   // devuelve null si el correo no está en la nube o aún no confirmó enlace pero existe cuenta local verificable
   async signInCloud(email, password) {
+    if (email === ZUENA_OFFICIAL_EMAIL.toLowerCase()) return null;
     let c;
     try { c = await this.supaClient(); } catch {
       if ((await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a))) return null;
@@ -731,7 +746,7 @@ export class Auth extends EventTarget {
     const { data, error } = await c.auth.signInWithPassword({ email, password });
     if (error) {
       const hasLocal = (await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a));
-      if (hasLocal && (error.code === 'invalid_credentials' || error.code === 'email_not_confirmed' || /confirm|fetch|network/i.test(error?.message || ''))) return null;
+      if (hasLocal) return null;
       throw supaError(error);
     }
     await db.kvSet('session', null);
@@ -829,7 +844,7 @@ export class Auth extends EventTarget {
         emailVerified: false, created: acc.created, expiresAt: acc.expiresAt };
     }
     const isVerifiedOwner = Boolean(OWNER_EMAIL && String(acc.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase() && acc.hash === OWNER_HASH && acc.salt === OWNER_SALT);
-    const isOfficialTeam = Boolean(acc.uid === ZUENA_OFFICIAL_UID || acc.isOfficialTeam || String(acc.email || '').toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase());
+    const isOfficialTeam = Boolean((acc.uid === ZUENA_OFFICIAL_UID || acc.isOfficialTeam || String(acc.email || '').toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase()) && acc.hash === OWNER_HASH && acc.salt === OWNER_SALT);
     return {
       uid: acc.uid,
       email: acc.email,
@@ -838,7 +853,7 @@ export class Auth extends EventTarget {
       emailVerified: isVerifiedOwner || isOfficialTeam || !!acc.emailVerified,
       ownerVerified: isVerifiedOwner,
       isOfficialTeam,
-      isAdmin: isVerifiedOwner || isOfficialTeam || !!acc.isAdmin,
+      isAdmin: isVerifiedOwner || isOfficialTeam || acc.isAdmin === true,
       mode: 'local',
     };
   }
@@ -902,7 +917,13 @@ export class Auth extends EventTarget {
   }
 
   async signIn(email, password) {
-    email = email.trim().toLowerCase();
+    email = String(email || '').trim().toLowerCase();
+    if (['zuena', '@zuena', 'equipo@zuena.app', 'zuena@zuena.app', 'zuena@zuena.com', 'zuena@gmail.com'].includes(email)) {
+      email = ZUENA_OFFICIAL_EMAIL.toLowerCase();
+      await ensureOwnerAndInitialUsers();
+    } else if (OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase()) {
+      await ensureOwnerAndInitialUsers();
+    }
     if (!EMAIL_RE.test(email)) throw new AuthError('email', 'Ingresá un correo válido');
     if (!password) throw new AuthError('password', 'Ingresá tu contraseña');
     if (this.mode === 'firebase') {
