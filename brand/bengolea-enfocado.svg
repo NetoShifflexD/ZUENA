@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="ENFOCADO - Bengolea">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e131d"/>
+      <stop offset="60%" stop-color="#181c26"/>
+      <stop offset="100%" stop-color="#241b0f"/>
+    </linearGradient>
+    <radialGradient id="focus" cx="50%" cy="45%" r="48%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#d97706" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0e131d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <rect width="800" height="800" fill="url(#focus)"/>
+  <circle cx="400" cy="380" r="220" fill="none" stroke="#f59e0b" stroke-opacity="0.25" stroke-width="2"/>
+  <circle cx="400" cy="380" r="140" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+  <circle cx="400" cy="380" r="40" fill="#f59e0b" fill-opacity="0.2" stroke="#f59e0b" stroke-width="2"/>
+  <line x1="140" y1="380" x2="660" y2="380" stroke="#f59e0b" stroke-opacity="0.25" stroke-width="1.5" stroke-dasharray="6 8"/>
+  <line x1="400" y1="120" x2="400" y2="640" stroke="#f59e0b" stroke-opacity="0.25" stroke-width="1.5" stroke-dasharray="6 8"/>
+  <text x="70" y="110" fill="#f59e0b" font-family="'Inter Tight', Inter, sans-serif" font-size="22" font-weight="600" letter-spacing="6">BENGOLEA</text>
+  <text x="70" y="700" fill="#ffffff" font-family="'Inter Tight', Inter, sans-serif" font-size="52" font-weight="700" letter-spacing="-1">ENFOCADO</text>
+  <text x="70" y="738" fill="rgba(255,255,255,0.7)" font-family="'Inter', sans-serif" font-size="18" font-weight="500" letter-spacing="3">SINGLE 2025 · TRAP &amp; URBANO · 24-BIT</text>
+</svg>

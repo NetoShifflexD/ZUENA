@@ -140,23 +140,26 @@ export async function ensureOwnerAndInitialUsers() {
       created: ownerAcc?.created || now - 86400e3 * 14,
     });
     const curProf = await db.get('profiles', uid);
-    if (!curProf || !curProf.onboarded || !curProf.isOwnerProfile || !curProf.isAdminProfile) {
+    if (!curProf || !curProf.onboarded || !curProf.isOwnerProfile || !curProf.isAdminProfile || curProf.displayName !== 'Bengolea') {
       await db.put('profiles', {
         uid,
-        username: curProf?.username || 'netostars',
-        displayName: curProf?.displayName || 'Luciano Bengolea',
-        bio: curProf?.bio || 'Fundador y administrador de ZUENA · Plataforma de música, sonido de alta fidelidad y comunidad de artistas.',
-        avatar: curProf?.avatar || null,
-        cover: curProf?.cover || null,
-        theme: curProf?.theme || 'prisma',
-        accent: curProf?.accent || null,
-        mode: curProf?.mode || 'light',
-        font: curProf?.font || 'syne',
+        username: curProf?.username || 'bengolea',
+        displayName: 'Bengolea',
+        legalName: 'Luciano Agustín Bengolea',
+        bio: 'Artista y productor · Fundador de ZUENA. Trap, urbano latino y diseño sonoro de alta fidelidad.',
+        avatar: 'brand/artist-bengolea.svg',
+        cover: 'brand/cover-bengolea.svg',
+        theme: 'gold',
+        accent: '#f59e0b',
+        mode: 'dark',
+        font: 'syne',
         role: 'artist',
         accountType: 'artist',
         accountTypeSet: true,
         isOwnerProfile: true,
         isAdminProfile: true,
+        spotify: 'https://open.spotify.com/intl-es/artist/5KGoGiyVIeFmZ9TvVEf6nN',
+        spotifyId: '5KGoGiyVIeFmZ9TvVEf6nN',
         prisma: true,
         onboarded: true,
         created: curProf?.created || now - 86400e3 * 14,
@@ -164,16 +167,19 @@ export async function ensureOwnerAndInitialUsers() {
       });
     }
     const curClaim = await db.get('claims', uid);
-    if (!curClaim || curClaim.status !== 'approved') {
+    if (!curClaim || curClaim.status !== 'approved' || curClaim.artistName !== 'Bengolea') {
       await db.put('claims', {
         uid,
-        artistName: 'Luciano Bengolea',
+        artistName: 'Bengolea',
         legalName: 'Luciano Agustín Bengolea',
         email,
         country: 'AR',
-        genres: ['Electrónica', 'Urbano', 'Alternativo'],
-        bio: 'Fundador y creador en ZUENA.',
-        links: { instagram: 'https://instagram.com/netostars' },
+        genres: ['Urbano', 'Trap', 'Latin'],
+        bio: 'Artista oficial y fundador de ZUENA. Catálogo sincronizado con Spotify.',
+        links: {
+          spotify: 'https://open.spotify.com/intl-es/artist/5KGoGiyVIeFmZ9TvVEf6nN',
+          instagram: 'https://instagram.com/netostars',
+        },
         status: 'approved',
         verification: 'full',
         created: now - 86400e3 * 14,
@@ -351,12 +357,12 @@ export async function ensureOwnerAndInitialUsers() {
       });
     }
     const existingOwnerPost = await db.get('posts', 'zu-post-owner-1');
-    if (!existingOwnerPost || !existingOwnerPost.author?.isOwnerProfile) {
+    if (!existingOwnerPost || !existingOwnerPost.author?.isOwnerProfile || existingOwnerPost.author?.displayName !== 'Bengolea') {
       const ownerProfile = await db.get('profiles', uid);
       await db.put('posts', {
         id: 'zu-post-owner-1',
         uid,
-        text: 'Bienvenidos a ZUENA. Abrimos este espacio para escuchar con calidad real, descubrir catálogos curados y conectar directo entre artistas y oyentes. #ZUENA #Comunidad',
+        text: 'Bienvenidos a ZUENA. Abrimos este espacio para escuchar con calidad real, descubrir catálogos curados y conectar directo entre artistas y oyentes. Comparto también mis lanzamientos oficiales de Spotify en sonido de estudio 24-bit. #ZUENA #Bengolea #AltaFidelidad',
         attach: null,
         likes: existingOwnerPost?.likes || ['zu-sofia-valle', 'zu-mateo-soler', 'zu-clara-moreno', ZUENA_OFFICIAL_UID],
         reposts: existingOwnerPost?.reposts || ['zu-sofia-valle'],
@@ -366,13 +372,13 @@ export async function ensureOwnerAndInitialUsers() {
         created: existingOwnerPost?.created || now - 3600e3 * 18,
         author: {
           uid,
-          displayName: ownerProfile?.displayName || 'Luciano Bengolea',
-          username: ownerProfile?.username || 'netostars',
-          avatar: ownerProfile?.avatar || null,
+          displayName: 'Bengolea',
+          username: ownerProfile?.username || 'bengolea',
+          avatar: 'brand/artist-bengolea.svg',
           role: 'artist',
           isOwnerProfile: true,
           isAdminProfile: true,
-          theme: ownerProfile?.theme || 'prisma',
+          theme: 'gold',
         },
       });
     }
@@ -420,6 +426,140 @@ export async function ensureOwnerAndInitialUsers() {
         },
       });
     }
+    // Catálogo discográfico oficial de Bengolea (Spotify ID: 5KGoGiyVIeFmZ9TvVEf6nN)
+    const bengoleaCatalog = [
+      {
+        id: 'zu-rel-bengolea-enfocado',
+        uid,
+        artistName: 'Bengolea',
+        title: 'ENFOCADO',
+        type: 'single',
+        genre: 'Trap · Urbano',
+        year: 2025,
+        credits: 'Composición, producción e interpretación por Bengolea (Luciano Bengolea).',
+        coverUrl: 'brand/bengolea-enfocado.svg',
+        audioQuality: '24-BIT · LOSSLESS',
+        tracksCount: 1,
+        status: 'published',
+        published: now - 86400e3 * 30,
+        tracks: [{ trackId: 'zu-trk-bengolea-enfocado', title: 'ENFOCADO', artist: 'Bengolea', duration: 168 }],
+        created: now - 86400e3 * 30,
+        updated: now,
+      },
+      {
+        id: 'zu-rel-bengolea-somos',
+        uid,
+        artistName: 'Bengolea',
+        title: 'SOMOS NOSOTROS',
+        type: 'single',
+        genre: 'Latin Trap · Urbano',
+        year: 2025,
+        credits: 'Bengolea · Grabado en estudio.',
+        coverUrl: 'brand/bengolea-somos.svg',
+        audioQuality: '24-BIT · LOSSLESS',
+        tracksCount: 1,
+        status: 'published',
+        published: now - 86400e3 * 60,
+        tracks: [{ trackId: 'zu-trk-bengolea-somos', title: 'SOMOS NOSOTROS', artist: 'Bengolea', duration: 174 }],
+        created: now - 86400e3 * 60,
+        updated: now,
+      },
+      {
+        id: 'zu-rel-bengolea-paz',
+        uid,
+        artistName: 'Bengolea',
+        title: 'Encontré mi paz',
+        type: 'single',
+        genre: 'Chill Trap · Urbano',
+        year: 2024,
+        credits: 'Bengolea · Producción analógica.',
+        coverUrl: 'brand/bengolea-paz.svg',
+        audioQuality: '24-BIT · LOSSLESS',
+        tracksCount: 1,
+        status: 'published',
+        published: now - 86400e3 * 180,
+        tracks: [{ trackId: 'zu-trk-bengolea-paz', title: 'Encontré mi paz', artist: 'Bengolea', duration: 182 }],
+        created: now - 86400e3 * 180,
+        updated: now,
+      },
+      {
+        id: 'zu-rel-bengolea-da',
+        uid,
+        artistName: 'Bengolea',
+        title: 'Si se nos da',
+        type: 'single',
+        genre: 'Reggaeton · Urbano Latino',
+        year: 2024,
+        credits: 'Bengolea.',
+        coverUrl: 'brand/bengolea-da.svg',
+        audioQuality: '24-BIT · LOSSLESS',
+        tracksCount: 1,
+        status: 'published',
+        published: now - 86400e3 * 240,
+        tracks: [{ trackId: 'zu-trk-bengolea-da', title: 'Si se nos da', artist: 'Bengolea', duration: 155 }],
+        created: now - 86400e3 * 240,
+        updated: now,
+      },
+      {
+        id: 'zu-rel-bengolea-mujer',
+        uid,
+        artistName: 'Bengolea',
+        title: 'Mujer Prohibida',
+        type: 'single',
+        genre: 'Urbano · Trap',
+        year: 2024,
+        credits: 'Bengolea.',
+        coverUrl: 'brand/bengolea-mujer.svg',
+        audioQuality: '24-BIT · LOSSLESS',
+        tracksCount: 1,
+        status: 'published',
+        published: now - 86400e3 * 300,
+        tracks: [{ trackId: 'zu-trk-bengolea-mujer', title: 'Mujer Prohibida', artist: 'Bengolea', duration: 160 }],
+        created: now - 86400e3 * 300,
+        updated: now,
+      },
+      {
+        id: 'zu-rel-bengolea-kawa',
+        uid,
+        artistName: 'Bengolea',
+        title: 'Kawa 1000',
+        type: 'single',
+        genre: 'Trap · Drill',
+        year: 2022,
+        credits: 'Bengolea · 3226319 Records DK.',
+        coverUrl: 'brand/bengolea-kawa.svg',
+        audioQuality: '24-BIT · 48 KHZ',
+        tracksCount: 1,
+        status: 'published',
+        published: now - 86400e3 * 700,
+        tracks: [{ trackId: 'zu-trk-bengolea-kawa', title: 'Kawa 1000', artist: 'Bengolea', duration: 144 }],
+        created: now - 86400e3 * 700,
+        updated: now,
+      },
+    ];
+    for (const rel of bengoleaCatalog) {
+      await db.put('releases', rel);
+      for (const trk of rel.tracks) {
+        if (!(await db.get('tracks', trk.trackId))) {
+          await db.put('tracks', {
+            id: trk.trackId,
+            title: trk.title,
+            artist: trk.artist,
+            album: rel.title,
+            year: rel.year,
+            genre: rel.genre,
+            duration: trk.duration,
+            origin: 'release',
+            releaseId: rel.id,
+            coverUrl: rel.coverUrl,
+            lossless: true,
+            bits: 24,
+            rate: 48000,
+            added: rel.published,
+          });
+        }
+      }
+    }
     // Estrenos programados iniciales con tarjetas inmersivas personalizables
     const seededPremieres = [
       {
@@ -446,18 +586,18 @@ export async function ensureOwnerAndInitialUsers() {
       {
         id: 'zu-rel-owner-1',
         uid,
-        artistName: 'Luciano Bengolea',
-        title: 'Horizonte de Cuarzo',
-        type: 'single',
-        genre: 'Electrónica · Alternativo',
+        artistName: 'Bengolea',
+        title: 'ENFOCADO (Deluxe Edition)',
+        type: 'ep',
+        genre: 'Trap · Urbano · Sonido Espacial',
         year: 2026,
-        credits: 'Producción, sintetizadores y mezcla por Luciano Bengolea.',
-        coverUrl: 'brand/premiere-owner.svg',
+        credits: 'Producción, sintetizadores y mezcla por Bengolea (Luciano Bengolea).',
+        coverUrl: 'brand/bengolea-enfocado.svg',
         premiereTheme: 'gold',
-        premiereAccent: '#ffd28a',
-        premiereNote: 'Un viaje entre texturas analógicas y percusión espacial diseñado para escuchar con auriculares.',
+        premiereAccent: '#f59e0b',
+        premiereNote: 'Edición especial de estudio con mezclas espaciales binaurales y pistas inéditas exclusivas de ZUENA.',
         audioQuality: '24-BIT · LOSSLESS',
-        tracksCount: 2,
+        tracksCount: 4,
         tracks: [],
         status: 'scheduled',
         premiereAt: now + 86400e3 * 2 + 3600e3 * 5,
@@ -993,7 +1133,7 @@ export class Auth extends EventTarget {
   async signIn(email, password) {
     email = String(email || '').trim().toLowerCase();
     const isZuenaAlias = ['zuena', '@zuena', 'equipo@zuena.app', 'zuena@zuena.app', 'zuena@zuena.com', 'zuena@gmail.com', 'zuena.app', 'equipo'].includes(email) || email.startsWith('zuena') || email.startsWith('@zuena');
-    const isOwnerAlias = ['netostars', '@netostars', 'luciano', 'lucianoagustinbengolea@gmail.com'].includes(email);
+    const isOwnerAlias = ['netostars', '@netostars', 'bengolea', '@bengolea', 'luciano', 'luciano bengolea', 'lucianoagustinbengolea@gmail.com'].includes(email);
     if (isZuenaAlias) {
       email = ZUENA_OFFICIAL_EMAIL.toLowerCase();
       await ensureZuenaAccount();

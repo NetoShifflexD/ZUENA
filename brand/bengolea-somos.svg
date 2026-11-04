@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="SOMOS NOSOTROS - Bengolea">
+  <defs>
+    <linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#09121a"/>
+      <stop offset="50%" stop-color="#10202d"/>
+      <stop offset="100%" stop-color="#0a1017"/>
+    </linearGradient>
+    <radialGradient id="cyan" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#0891b2" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#09121a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#sbg)"/>
+  <rect width="800" height="800" fill="url(#cyan)"/>
+  <rect x="240" y="220" width="320" height="320" rx="36" fill="none" stroke="#06b6d4" stroke-opacity="0.4" stroke-width="2"/>
+  <rect x="280" y="260" width="240" height="240" rx="28" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.5"/>
+  <circle cx="400" cy="380" r="60" fill="#06b6d4" fill-opacity="0.2" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="70" y="110" fill="#06b6d4" font-family="'Inter Tight', Inter, sans-serif" font-size="22" font-weight="600" letter-spacing="6">BENGOLEA</text>
+  <text x="70" y="696" fill="#ffffff" font-family="'Inter Tight', Inter, sans-serif" font-size="46" font-weight="700" letter-spacing="-1">SOMOS NOSOTROS</text>
+  <text x="70" y="736" fill="rgba(255,255,255,0.7)" font-family="'Inter', sans-serif" font-size="18" font-weight="500" letter-spacing="3">SINGLE 2025 · LATIN TRAP · 24-BIT</text>
+</svg>

@@ -233,74 +233,83 @@ html[data-design="point"] .shelf > * {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   vertical-align: middle;
 }
-.z-badges.compact { gap: 4px; }
+.z-badges.compact, .z-badges.sm { gap: 3.5px; }
 .z-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
+  gap: 4.5px;
+  padding: 2.5px 8.5px;
   border-radius: 999px;
-  font: 600 10.5px/1.2 var(--font);
-  letter-spacing: .04em;
+  font: 550 11px/1.2 var(--font);
+  letter-spacing: .01em;
   white-space: nowrap;
-  border: 1px solid transparent;
   user-select: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background-color .18s ease, border-color .18s ease;
 }
-.z-badges.compact .z-badge {
-  padding: 2px 7px;
+.z-badges.compact .z-badge, .z-badge.sm {
+  padding: 1.5px 7px;
   font-size: 10px;
+  gap: 3.5px;
 }
 .z-badge svg {
-  width: 12px;
-  height: 12px;
+  width: 11.5px;
+  height: 11.5px;
   flex: none;
 }
+.z-badge.sm svg {
+  width: 10px;
+  height: 10px;
+}
 .z-badge-logo {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
   display: inline-grid;
   place-items: center;
-  background: #0b0d13;
+  background: #0284c7;
   color: #fff;
-  padding: 1.5px;
+  font-size: 8.5px;
+  font-weight: 800;
+  line-height: 1;
+  flex: none;
 }
 .z-badge-logo svg { width: 100%; height: 100%; }
 
-/* Insignia exclusiva: Equipo de Zuena */
+/* Insignia exclusiva: Equipo de Zuena (sutil cyan/sky frosted) */
 .z-badge-team {
-  background: linear-gradient(135deg, #0c1018 0%, #172033 100%);
-  color: #f8fafc;
-  border-color: rgb(95 240 255 / .45);
-  box-shadow: 0 2px 10px -2px rgb(95 240 255 / .28);
+  background: color-mix(in srgb, #0ea5e9 10%, var(--z-raised));
+  color: var(--z-ink);
+  border: 1px solid color-mix(in srgb, #0ea5e9 28%, var(--z-line));
 }
 .z-badge-team span:last-child {
-  background: linear-gradient(90deg, #ffffff 0%, #9beeff 55%, #d8b4fe 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  font-weight: 700;
-}
-
-/* Insignia: Dueño */
-.z-badge-owner {
-  background: linear-gradient(135deg, #241b08 0%, #3b2a0a 100%);
-  color: #fde68a;
-  border-color: rgb(245 184 65 / .55);
-  box-shadow: 0 2px 10px -2px rgb(245 184 65 / .25);
-}
-.z-badge-owner svg { color: #fbbf24; }
-
-/* Insignia: Administración */
-.z-badge-admin {
-  background: color-mix(in srgb, var(--z-ink) 10%, var(--z-raised));
   color: var(--z-ink);
-  border-color: color-mix(in srgb, var(--z-ink) 26%, var(--z-line));
+  font-weight: 550;
 }
-.z-badge-admin svg { color: #38bdf8; }
+
+/* Insignia: Dueño / Fundador (sutil ámbar/champagne frosted) */
+.z-badge-owner {
+  background: color-mix(in srgb, #f59e0b 10%, var(--z-raised));
+  color: var(--z-ink);
+  border: 1px solid color-mix(in srgb, #f59e0b 28%, var(--z-line));
+}
+.z-badge-owner svg { color: #d97706; }
+html[data-theme="dark"] .z-badge-owner svg,
+html[data-scheme="dark"] .z-badge-owner svg { color: #fbbf24; }
+
+/* Insignia: Administración (sutil índigo/azul sereno frosted) */
+.z-badge-admin {
+  background: color-mix(in srgb, #6366f1 9%, var(--z-raised));
+  color: var(--z-ink);
+  border: 1px solid color-mix(in srgb, #6366f1 26%, var(--z-line));
+}
+.z-badge-admin svg { color: #4f46e5; }
+html[data-theme="dark"] .z-badge-admin svg,
+html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
 
 .pm-badges { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
 .pm-z-ico {

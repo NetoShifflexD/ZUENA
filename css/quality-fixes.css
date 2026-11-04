@@ -26,3 +26,19 @@
 .artist-dashboard::-webkit-scrollbar {
   display: none !important;
 }
+
+@media(pointer: coarse), (max-width: 640px) {
+  .brand-home, .btn-primary, .btn-glass, .dh-pill {
+    min-height: 44px;
+  }
+  .btn-icon {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+.link-inline, .cookie-banner .link-inline {
+  color: var(--z-ink, var(--text));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -1,7 +1,7 @@
 // Versiones de ZUENA: la app y cada función. Sirve para saber en qué nivel quedó cada parte y priorizar
 // la actualización de las más viejas. Regla: al cambiar una función, subir su versión (mayor = rediseño,
 // menor = mejora, parche = arreglo), poner la fecha de hoy y reflejarlo en Wiki/Registro/Versiones.md.
-export const APP_VERSION = '0.32.0';
+export const APP_VERSION = '0.33.0';
 
 // [id, nombre, versión, última actualización]
 export const FEATURES = [
@@ -18,9 +18,9 @@ export const FEATURES = [
   ['feed', 'Feed Punto (comunidad, estrenos, conversaciones y nube)', '5.2.0', '2026-11-04'],
   ['motion', 'Motor de animaciones Prisma Motion', '0.4.0', '2026-11-04'],
   ['sim', 'Simulador de actividad', '1.1.1', '2026-11-04'],
-  ['artistpage', 'Perfil de artista', '4.2.0', '2026-11-04'],
+  ['artistpage', 'Perfil de artista y catálogo Bengolea / Spotify', '4.3.0', '2026-11-04'],
   ['charts', 'Charts de oyentes y suscriptores', '1.0.0', '2026-11-02'],
-  ['profile', 'Perfil de oyente (tipo de cuenta Oyente / Artista, fila en la nube)', '3.2.0', '2026-11-04'],
+  ['profile', 'Perfil y rol dual Artista/Admin con insignias sutiles', '3.3.0', '2026-11-04'],
   ['support', 'Apoyo al artista (Suscripciones v2, sin cobros)', '2.0.0', '2026-11-02'],
   ['releases', 'Lanzamientos y estrenos', '2.0.0', '2026-11-04'],
   ['studio', 'Programa de artistas, reclamo v2 y Estudio', '2.1.0', '2026-11-04'],

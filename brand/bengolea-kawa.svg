@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Kawa 1000 - Bengolea">
+  <defs>
+    <linearGradient id="kbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#09140e"/>
+      <stop offset="50%" stop-color="#10251a"/>
+      <stop offset="100%" stop-color="#0a120c"/>
+    </linearGradient>
+    <radialGradient id="green" cx="50%" cy="40%" r="52%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#059669" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#09140e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#kbg)"/>
+  <rect width="800" height="800" fill="url(#green)"/>
+  <circle cx="400" cy="380" r="190" fill="none" stroke="#10b981" stroke-opacity="0.3" stroke-width="2"/>
+  <circle cx="400" cy="380" r="130" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+  <polygon points="340,300 480,380 340,460" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="2"/>
+  <text x="70" y="110" fill="#10b981" font-family="'Inter Tight', Inter, sans-serif" font-size="22" font-weight="600" letter-spacing="6">BENGOLEA</text>
+  <text x="70" y="696" fill="#ffffff" font-family="'Inter Tight', Inter, sans-serif" font-size="52" font-weight="700" letter-spacing="-1">KAWA 1000</text>
+  <text x="70" y="736" fill="rgba(255,255,255,0.7)" font-family="'Inter', sans-serif" font-size="18" font-weight="500" letter-spacing="3">SINGLE 2022 · DRILL &amp; TRAP · 24-BIT</text>
+</svg>

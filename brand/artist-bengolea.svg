@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Avatar de Bengolea">
+  <defs>
+    <linearGradient id="abg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#181308"/>
+      <stop offset="50%" stop-color="#2a1f0d"/>
+      <stop offset="100%" stop-color="#0e131d"/>
+    </linearGradient>
+    <radialGradient id="aglow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#181308" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="200" fill="url(#abg)"/>
+  <rect width="400" height="400" rx="200" fill="url(#aglow)"/>
+  <circle cx="200" cy="200" r="188" fill="none" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="2"/>
+  <circle cx="200" cy="200" r="140" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5" stroke-dasharray="3 6"/>
+  <path d="M 150 120 L 220 120 C 255 120 275 138 275 168 C 275 188 260 202 240 208 C 265 214 282 230 282 254 C 282 286 258 304 220 304 L 150 304 Z M 184 150 L 184 196 L 216 196 C 236 196 245 186 245 173 C 245 160 236 150 216 150 Z M 184 228 L 184 274 L 218 274 C 240 274 250 264 250 251 C 250 238 240 228 218 228 Z" fill="#ffffff" fill-opacity="0.95"/>
+  <circle cx="200" cy="336" r="4" fill="#f59e0b"/>
+</svg>
