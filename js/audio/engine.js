@@ -38,6 +38,14 @@ export const DEFAULT_SETTINGS = {
   output: 'stereo',      // stereo | 5.1 | 7.1 (para Dolby Atmos / Windows Sonic / receptor)
   headphoneEq: null,     // perfil AutoEQ { name, source, preamp, filters }
   headphoneEqOn: true,
+  dspOn: true,           // procesador de masterización ZUENA Studio
+  dspPreset: 'audiophile',
+  dspWarmth: 0.20,       // calidez analógica / cinta (0 a 1)
+  dspBassDrive: 0.30,    // graves psicoacústicos (0 a 1)
+  dspAirClarity: 0.25,   // claridad y aire de estudio (0 a 1)
+  dspStereoWidth: 1.15,  // campo estéreo holográfico (0.5 a 2.0)
+  dspVocalFocus: 0.15,   // presencia vocal (0 a 1)
+  dspMonoMaker: true,    // subgraves en mono < 110 Hz
 };
 
 export class AudioEngine extends EventTarget {
@@ -61,6 +69,7 @@ export class AudioEngine extends EventTarget {
     this.highComp = new BiquadFilterNode(ctx, { type: 'highshelf', frequency: 11000, gain: 0 });
     this.analyser = new AnalyserNode(ctx, { fftSize: 8192, smoothingTimeConstant: 0.72, minDecibels: -96, maxDecibels: -12 });
     this.limiter = null;
+    this.dsp = null;
     this.gainReduction = 0;
     this.truePeakOut = -120;
 
@@ -102,6 +111,16 @@ export class AudioEngine extends EventTarget {
       console.warn('[engine] limitador no disponible', err);
     }
 
+    try {
+      await ctx.audioWorklet.addModule(new URL('./dsp-worklet.js', import.meta.url));
+      this.dsp = new AudioWorkletNode(ctx, 'zuena-dsp', {
+        numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [this.maxOut],
+        channelCount: 2, channelCountMode: 'explicit', channelInterpretation: 'discrete',
+      });
+    } catch (err) {
+      console.warn('[engine] DSP de estudio no disponible', err);
+    }
+
     let node = this.bus;
     node.connect(this.preamp);
     node = this.preamp;
@@ -110,6 +129,7 @@ export class AudioEngine extends EventTarget {
     this.corrOut.connect(this.spatial.input);
     this.spatial.output.connect(this.crossfeed.input);
     node = this.crossfeed.output;
+    if (this.dsp) { node.connect(this.dsp); node = this.dsp; }
     if (this.limiter) { node.connect(this.limiter); node = this.limiter; }
     node.connect(this.analyser);
     this.buildMeters(node);
@@ -118,6 +138,7 @@ export class AudioEngine extends EventTarget {
 
     this.applyVolume(true);
     this.applyEq(true);
+    this.applyDsp(true);
     this.applyLimiter();
     this.applyCorrection();
     this.applyOutput();
@@ -280,6 +301,7 @@ export class AudioEngine extends EventTarget {
     this.settings = { ...prev, ...partial };
     if ('volume' in partial || 'muted' in partial || 'smartVolume' in partial) this.applyVolume();
     if ('eq' in partial || 'eqOn' in partial) this.applyEq();
+    if ('dspOn' in partial || 'dspPreset' in partial || 'dspWarmth' in partial || 'dspBassDrive' in partial || 'dspAirClarity' in partial || 'dspStereoWidth' in partial || 'dspVocalFocus' in partial || 'dspMonoMaker' in partial) this.applyDsp();
     if ('limiter' in partial) this.applyLimiter();
     if ('spatial' in partial || 'crossfeed' in partial) this.applySpatial();
     if ('headphoneEq' in partial || 'headphoneEqOn' in partial) this.applyCorrection();
@@ -315,6 +337,32 @@ export class AudioEngine extends EventTarget {
 
   applyLimiter() {
     if (this.limiter) this.limiter.parameters.get('bypass').value = this.settings.limiter ? 0 : 1;
+  }
+
+  applyDsp(instant = false) {
+    if (!this.dsp) return;
+    const s = this.settings;
+    const t = this.ctx.currentTime;
+    const tc = instant ? 0 : 0.03;
+    const p = this.dsp.parameters;
+    const set = (name, val) => {
+      const param = p.get(name);
+      if (!param) return;
+      if (instant || tc === 0) {
+        param.cancelScheduledValues(t);
+        param.setValueAtTime(val, t);
+      } else {
+        param.setTargetAtTime(val, t, tc);
+      }
+    };
+    const on = s.dspOn !== false;
+    set('bypass', on ? 0 : 1);
+    set('warmth', on ? (s.dspWarmth ?? 0.20) : 0);
+    set('bassDrive', on ? (s.dspBassDrive ?? 0.30) : 0);
+    set('airClarity', on ? (s.dspAirClarity ?? 0.25) : 0);
+    set('stereoWidth', on ? (s.dspStereoWidth ?? 1.15) : 1.0);
+    set('vocalFocus', on ? (s.dspVocalFocus ?? 0.15) : 0);
+    set('monoMaker', on && s.dspMonoMaker !== false ? 1 : 0);
   }
 
   // canales de salida efectivos según la elección y lo que admite el dispositivo

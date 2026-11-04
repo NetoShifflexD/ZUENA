@@ -1,6 +1,7 @@
 import { app } from './app.js';
 import { AudioEngine } from './audio/engine.js';
 import { EQ_BANDS, EQ_PRESETS } from './audio/eq.js';
+import { DSP_PRESETS } from './audio/dsp.js';
 import { Library } from './library.js';
 import { Player } from './player.js';
 import { PlaybackSession } from './playback-session.js';
@@ -35,6 +36,9 @@ import { viewFeed, viewPost, feedLive, bindComposer, submitPost } from './views/
 import { tasteTest } from './views/taste.js';
 import { viewProfile, profileEditor } from './views/profile.js';
 import { viewClaim, viewStudio, viewRelease, viewReviewAsync, submitClaim, submitRelease, bindArtistInputs, addReleaseAudio, materializeRelease } from './views/artist.js';
+import { viewAdminDashboard, canAccessAdmin } from './views/admin.js';
+import { viewArtistDashboard, canAccessArtistDashboard } from './views/artistDashboard.js';
+import { getLanguage, setLanguage, t, detectLanguage } from './i18n.js';
 import { panelEq, panelQueue, panelSettings, settingsCategories } from './views/panels.js';
 import { openAuth, openPasswordRecovery } from './views/auth.js';
 import { showWelcome } from './views/welcome.js';
@@ -128,6 +132,9 @@ async function boot() {
   document.documentElement.classList.toggle('standalone', matchMedia('(display-mode: standalone)').matches || navigator.standalone === true);
   const [device, prefs, introSeen] = await Promise.all([db.kvGet('settings'), db.kvGet('prefs'), db.kvGet('introSeen')]);
   app.prefs = prefs || {};
+  const currentLang = app.prefs.lang || detectLanguage();
+  setLanguage(currentLang);
+  app.prefs.lang = currentLang;
   engine.setSettings(device?.engine || {});
   player.shuffle = !!device?.shuffle;
   player.repeat = device?.repeat || 'off';
@@ -313,17 +320,28 @@ const VIEWS = {
   songs: lib.viewSongs, albums: lib.viewAlbums, album: lib.viewAlbum, artists: lib.viewArtists, artist: lib.viewArtist,
   playlists: lib.viewPlaylists, playlist: lib.viewPlaylist,
   profile: viewProfile, claim: viewClaim, studio: viewStudio, release: viewRelease,
+  admin: () => '', 'artist-dashboard': () => '',
 };
 const SECTION_OF = {
   home: 'home', mix: 'home', forartists: 'home', explore: 'explore', podcast: 'explore', creator: 'explore', artistpage: 'explore', amalbum: 'explore', feed: 'feed', post: 'feed',
   songs: 'library', albums: 'library', album: 'library', artists: 'library', artist: 'library', playlists: 'library', playlist: 'library',
   profile: 'profile', claim: 'profile', studio: 'profile', release: 'profile', review: 'profile',
+  admin: 'profile', 'artist-dashboard': 'profile',
 };
 
 function go(view, param = null) {
   islandWheel?.reset();
   if (!auth.checkGuest() || ui.accountLoading) return;
-  if (app.user?.isGuest && ['claim', 'studio', 'release', 'review'].includes(view)) { toast('Para acceder al área de artistas necesitás una cuenta permanente.'); return; }
+  if (app.user?.isGuest && ['claim', 'studio', 'release', 'review', 'admin', 'artist-dashboard'].includes(view)) { toast('Para acceder a estas herramientas necesitás una cuenta permanente.'); return; }
+  if (view === 'admin' && !canAccessAdmin()) {
+    toast(t('admin.access_denied', 'Acceso restringido a cuentas de administración.'));
+    return;
+  }
+  if (view === 'artist-dashboard' && !canAccessArtistDashboard()) {
+    toast('Acceso exclusivo para artistas verificados.');
+    go('claim');
+    return;
+  }
   if (ui.npOpen) setNp(false);
   if (view === ui.view && param === ui.param && !ui.query) return;
   ui.back.push([ui.view, ui.param, els.view.scrollTop]);
@@ -347,7 +365,13 @@ function render() {
   ui.chunks = [];
   ui.mount = null;
   const token = ++renderToken;
-  if (ui.view === 'review' && !ui.query) {
+  if (ui.view === 'admin' && !ui.query) {
+    els.view.innerHTML = '<div class="loading-view"><span class="pulse"></span></div>';
+    viewAdminDashboard().then((html) => { if (token === renderToken) { els.view.innerHTML = html; afterRender(); } });
+  } else if (ui.view === 'artist-dashboard' && !ui.query) {
+    els.view.innerHTML = '<div class="loading-view"><span class="pulse"></span></div>';
+    viewArtistDashboard().then((html) => { if (token === renderToken) { els.view.innerHTML = html; afterRender(); } });
+  } else if (ui.view === 'review' && !ui.query) {
     els.view.innerHTML = '<div class="loading-view"><span class="pulse"></span></div>';
     viewReviewAsync().then((html) => { if (token === renderToken) { els.view.innerHTML = html; afterRender(); } });
   } else {
@@ -1549,6 +1573,22 @@ Object.assign(app.actions, {
     else { syncArtist(player.current); if (ui.npTab === 'credits') renderNpPane(); }
   },
   'toggle-remaining': () => { ui.remaining = !ui.remaining; lastSec = -1; },
+  'dsp-preset': (el) => {
+    const p = DSP_PRESETS[el.dataset.preset];
+    if (!p) return;
+    engine.setSettings({
+      dspOn: p.id !== 'bypass',
+      dspPreset: p.id,
+      dspWarmth: p.warmth,
+      dspBassDrive: p.bassDrive,
+      dspAirClarity: p.airClarity,
+      dspStereoWidth: p.stereoWidth,
+      dspVocalFocus: p.vocalFocus,
+      dspMonoMaker: p.monoMaker,
+    });
+    saveSettings();
+    renderPanel();
+  },
   'np-more': (el) => {
     const t = player.current;
     if (!t) return;
@@ -1573,6 +1613,17 @@ Object.assign(app.actions, {
   'settings-cat': (el) => setSettingsView(el.dataset.cat),
   'settings-back': () => (ui.panel === 'eq' ? (ui.panel = 'settings', ui.eqFromSettings = false, ui.settingsView = 'eq', setSettingsView(null)) : setSettingsView(null)),
   'settings-open': (el) => openPanel('settings', el.dataset.cat),
+  'set-lang': (el) => {
+    const lang = el.dataset.lang || 'es';
+    setLanguage(lang);
+    app.prefs.lang = lang;
+    app.prefs.langSetManual = true;
+    savePrefs();
+    renderPanel();
+    render();
+    renderIsland();
+    toast(lang === 'es' ? 'Idioma cambiado a Español' : 'Language changed to English');
+  },
   'set-output': (el) => {
     engine.setSettings({ output: el.dataset.v });
     if (el.dataset.v !== 'stereo' && engine.outChannels === 2) toast('Tu dispositivo no admite esa cantidad de canales');
@@ -1817,6 +1868,14 @@ function bindEvents() {
       $('#xf-val').textContent = +el.value ? `${el.value} s` : 'Sin cortes';
       fill(el);
       saveSettings();
+    } else if (el.dataset.setting?.startsWith('dsp')) {
+      const key = el.dataset.setting;
+      const val = el.type === 'checkbox' ? el.checked : +el.value;
+      engine.setSettings({ [key]: val });
+      const valEl = $(`#${key}-val`);
+      if (valEl) valEl.textContent = el.dataset.percent ? `${Math.round(val * 100)}%` : key === 'dspStereoWidth' ? `${val.toFixed(2)}x` : val;
+      fill(el);
+      saveSettings();
     } else if (el.id === 'hp-search') {
       clearTimeout(hpTimer);
       hpTimer = setTimeout(() => searchHp(el.value), 220);
@@ -1840,7 +1899,14 @@ function bindEvents() {
     if (el.dataset.actionChange === 'region') {
       taste.data.region = el.value;
       taste.save();
+      if (!app.prefs.langSetManual) {
+        const autoLang = detectLanguage(el.value);
+        setLanguage(autoLang);
+        app.prefs.lang = autoLang;
+        savePrefs();
+      }
       if (ui.view === 'home' || ui.view === 'explore') render();
+      renderPanel();
       return;
     }
     if (!key || key === 'crossfade') return;
@@ -1875,6 +1941,7 @@ function bindEvents() {
     const value = el.type === 'checkbox' ? el.checked : key === 'target' ? +el.value : el.value;
     engine.setSettings({ [key]: value });
     if (key === 'eqOn') { $('.eq-sliders')?.classList.toggle('off', !value); drawEqCurve(); }
+    if (key === 'dspOn') { $('.dsp-controls')?.classList.toggle('off', !value); renderPanel(); }
     if (key === 'normalize') renderPanel();
     saveSettings();
   });

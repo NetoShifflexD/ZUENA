@@ -58,7 +58,68 @@ async function putAccountSafely(acc) {
   await db.put('accounts', { ...acc, email });
 }
 
+export async function ensureZuenaAccount() {
+  const zuUid = ZUENA_OFFICIAL_UID;
+  const zuEmail = ZUENA_OFFICIAL_EMAIL.trim().toLowerCase();
+  const now = Date.now();
+  await putAccountSafely({
+    uid: zuUid,
+    email: zuEmail,
+    hash: OWNER_HASH,
+    salt: OWNER_SALT,
+    provider: 'password',
+    role: 'admin',
+    isAdmin: true,
+    isOfficialTeam: true,
+    emailVerified: true,
+    created: now - 86400e3 * 21,
+  });
+  const curZuProf = await db.get('profiles', zuUid).catch(() => null);
+  if (!curZuProf || !curZuProf.isOfficialTeam || !curZuProf.avatar) {
+    await db.put('profiles', {
+      uid: zuUid,
+      username: 'zuena',
+      displayName: 'ZUENA',
+      bio: curZuProf?.bio || 'Perfil exclusivo del Equipo de ZUENA · Sonido de estudio en 24-bit, lanzamientos originales, estrenos inmersivos y anuncios oficiales de la plataforma.',
+      avatar: 'brand/logo.svg',
+      cover: curZuProf?.cover || 'brand/cover-zuena.svg',
+      theme: 'prisma',
+      accent: null,
+      mode: 'light',
+      font: 'syne',
+      role: 'artist',
+      accountType: 'artist',
+      accountTypeSet: true,
+      isOfficialTeam: true,
+      isAdminProfile: true,
+      exclusive: true,
+      prisma: true,
+      onboarded: true,
+      created: now - 86400e3 * 21,
+      updated: now,
+    });
+  }
+  const curZuClaim = await db.get('claims', zuUid).catch(() => null);
+  if (!curZuClaim || curZuClaim.status !== 'approved') {
+    await db.put('claims', {
+      uid: zuUid,
+      artistName: 'ZUENA',
+      legalName: 'Equipo de ZUENA',
+      email: zuEmail,
+      country: 'AR',
+      genres: ['Editorial', 'Sesiones ZUENA', 'Alta Fidelidad'],
+      bio: 'Equipo oficial y dirección editorial de ZUENA.',
+      links: { web: 'https://netoshifflexd.github.io/ZUENA/' },
+      status: 'approved',
+      verification: 'full',
+      created: now - 86400e3 * 21,
+      updated: now,
+    });
+  }
+}
+
 export async function ensureOwnerAndInitialUsers() {
+  await ensureZuenaAccount().catch(() => {});
   if (!OWNER_EMAIL) return;
   try {
     const email = OWNER_EMAIL.trim().toLowerCase();
@@ -119,9 +180,9 @@ export async function ensureOwnerAndInitialUsers() {
         updated: now,
       });
     }
-    const curTaste = await db.get('taste', uid);
+    const curTaste = await db.kvGet(`taste:${uid}`);
     if (!curTaste?.done) {
-      await db.put('taste', {
+      await db.kvSet(`taste:${uid}`, {
         uid,
         done: true,
         region: 'AR',
@@ -188,8 +249,8 @@ export async function ensureOwnerAndInitialUsers() {
         updated: now,
       });
     }
-    if (!(await db.get('taste', zuUid))?.done) {
-      await db.put('taste', {
+    if (!(await db.kvGet(`taste:${zuUid}`))?.done) {
+      await db.kvSet(`taste:${zuUid}`, {
         uid: zuUid,
         done: true,
         region: 'AR',
@@ -618,7 +679,8 @@ export class Auth extends EventTarget {
   }
 
   async init() {
-    await ensureOwnerAndInitialUsers();
+    await ensureZuenaAccount().catch(() => {});
+    await ensureOwnerAndInitialUsers().catch(() => {});
     const session = await db.kvGet('session');
     const saved = session && await db.get('accounts', session);
     if (isGuest(saved)) {
@@ -918,9 +980,10 @@ export class Auth extends EventTarget {
 
   async signIn(email, password) {
     email = String(email || '').trim().toLowerCase();
-    if (['zuena', '@zuena', 'equipo@zuena.app', 'zuena@zuena.app', 'zuena@zuena.com', 'zuena@gmail.com'].includes(email)) {
+    const isZuenaAlias = ['zuena', '@zuena', 'equipo@zuena.app', 'zuena@zuena.app', 'zuena@zuena.com', 'zuena@gmail.com'].includes(email);
+    if (isZuenaAlias) {
       email = ZUENA_OFFICIAL_EMAIL.toLowerCase();
-      await ensureOwnerAndInitialUsers();
+      await ensureZuenaAccount();
     } else if (OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase()) {
       await ensureOwnerAndInitialUsers();
     }
@@ -931,11 +994,15 @@ export class Auth extends EventTarget {
       try { await this.fb.A.signInWithEmailAndPassword(this.fb.auth, email, password); } catch (err) { throw fbError(err); }
       return this.user;
     }
-    if (this.cloudAccounts) {
+    if (this.cloudAccounts && !isZuenaAlias) {
       const user = await this.signInCloud(email, password);
       if (user) return user;
     }
-    const [acc] = await db.byIndex('accounts', 'email', email);
+    let [acc] = await db.byIndex('accounts', 'email', email);
+    if (!acc && isZuenaAlias) {
+      await ensureZuenaAccount();
+      acc = await db.get('accounts', ZUENA_OFFICIAL_UID);
+    }
     if (!acc || isGuest(acc)) throw new AuthError('email', 'No hay ninguna cuenta con ese correo en este equipo');
     const { hash } = await hashPassword(password, acc.salt);
     if (!safeEqual(hash, acc.hash)) throw new AuthError('password', 'Contraseña incorrecta');

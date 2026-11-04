@@ -1,7 +1,9 @@
 // Paneles: ecualizador, cola y ajustes. Lo técnico (LUFS, limitador, motor) sólo en Modo avanzado.
 import { app } from '../app.js';
 import { APP_VERSION, staleness } from '../version.js';
+import { getLanguage, setLanguage, t, detectLanguage } from '../i18n.js';
 import { EQ_BANDS, EQ_PRESETS } from '../audio/eq.js';
+import { DSP_PRESETS, findMatchingPreset } from '../audio/dsp.js';
 import { icon } from '../ui/icons.js';
 import { esc, fmtTime, fmtHz, fmtRate } from '../ui/format.js';
 import { PRESETS, MODES, modeOf, FONTS, DEFAULT_FONT, loadFont, fontStack } from '../theme/theme.js';
@@ -167,7 +169,61 @@ function settingsList(cats) {
 const SECTIONS = {
   sonido() {
     const s = app.engine.settings, adv = !!app.prefs.advanced;
-    return `<div class="field"><span>Audio espacial</span>
+    const activePreset = findMatchingPreset(s);
+    return `<div class="field">
+        <label class="toggle-row lit">
+          <div>
+            <div class="toggle-label">Motor de Sonido ZUENA Studio</div>
+            <div class="hint">Masterización acústica con calidez analógica, graves psicoacústicos, claridad cristalina e imagen estéreo 3D.</div>
+          </div>
+          <span class="switch"><input type="checkbox" data-setting="dspOn" ${s.dspOn !== false ? 'checked' : ''}><i></i></span>
+        </label>
+      </div>
+
+      <div class="dsp-controls ${s.dspOn !== false ? '' : 'off'}" style="margin-top: 10px;">
+        <div class="field">
+          <span>Presets de estudio</span>
+          <div class="chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+            ${Object.values(DSP_PRESETS).map((p) => `<button class="chip lit ${activePreset === p.id ? 'on' : ''}" data-action="dsp-preset" data-preset="${p.id}" title="${esc(p.sub)}">${p.name}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <span>Calidez analógica (Cinta y Válvulas) <b id="dspWarmth-val">${Math.round((s.dspWarmth ?? 0.20) * 100)}%</b></span>
+          <input type="range" class="range" min="0" max="1" step="0.05" value="${s.dspWarmth ?? 0.20}" data-setting="dspWarmth" data-percent="true" aria-label="Calidez analógica">
+          <span class="hint">Emula el redondeo armónico y saturación suave de consolas de masterización vintage.</span>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <span>Graves psicoacústicos (Missing Fundamental) <b id="dspBassDrive-val">${Math.round((s.dspBassDrive ?? 0.30) * 100)}%</b></span>
+          <input type="range" class="range" min="0" max="1" step="0.05" value="${s.dspBassDrive ?? 0.30}" data-setting="dspBassDrive" data-percent="true" aria-label="Graves psicoacústicos">
+          <span class="hint">Sintetiza armónicos de frecuencias subgraves (&lt; 110 Hz) para percibir pegada profunda sin distorsión.</span>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <span>Claridad y aire de estudio (Air Exciter) <b id="dspAirClarity-val">${Math.round((s.dspAirClarity ?? 0.25) * 100)}%</b></span>
+          <input type="range" class="range" min="0" max="1" step="0.05" value="${s.dspAirClarity ?? 0.25}" data-setting="dspAirClarity" data-percent="true" aria-label="Aire y claridad">
+          <span class="hint">Apertura cristalina y brillo en frecuencias altas (&gt; 9.5 kHz) para voces e instrumentos acústicos.</span>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <span>Escenario estéreo 3D <b id="dspStereoWidth-val">${(s.dspStereoWidth ?? 1.15).toFixed(2)}x</b></span>
+          <input type="range" class="range" min="0.8" max="1.8" step="0.05" value="${s.dspStereoWidth ?? 1.15}" data-setting="dspStereoWidth" aria-label="Escenario estéreo">
+          <span class="hint">Amplitud holográfica Mid/Side sin cancelaciones de fase.</span>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <span>Presencia vocal en el centro <b id="dspVocalFocus-val">${Math.round((s.dspVocalFocus ?? 0.15) * 100)}%</b></span>
+          <input type="range" class="range" min="0" max="1" step="0.05" value="${s.dspVocalFocus ?? 0.15}" data-setting="dspVocalFocus" data-percent="true" aria-label="Presencia vocal">
+          <span class="hint">Realza la inteligibilidad y presencia de voces en el centro de la imagen sonora.</span>
+        </div>
+
+        ${toggleRow('dspMonoMaker', 'Subgraves en Mono (Mono-Maker)', 'Fuerza las frecuencias &lt; 110 Hz al centro para máxima pegada y evitar cancelaciones de fase.', s.dspMonoMaker !== false)}
+      </div>
+
+      <hr class="sep" style="margin: 20px 0; border: none; border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.08));">
+
+      <div class="field"><span>Audio espacial binaural</span>
         <div class="seg three">${SPATIAL.map(([v, l]) => `<button class="seg-btn lit ${s.spatial === v ? 'on' : ''}" data-action="set-spatial" data-v="${v}" aria-pressed="${s.spatial === v}">${l}</button>`).join('')}</div>
         <span class="hint">${SPATIAL_HINT[s.spatial]}</span></div>
       ${toggleRow('crossfeed', 'Sonido natural en auriculares', 'Mezcla un poco de cada lado en el otro oído, como con parlantes. Cansa menos.', s.crossfeed)}
@@ -213,8 +269,15 @@ const SECTIONS = {
       <button class="btn-glass lit ap-reset" data-action="look-reset">Restablecer la apariencia</button>`;
   },
   inicio() {
-    return `<label class="field"><span>País del contenido</span><select class="select lit" data-action-change="region">${REGIONS.map((r) => `<option value="${r.id}" ${app.taste.data.region === r.id ? 'selected' : ''}>${r.label}</option>`).join('')}</select>
-        <span class="hint">Cambia las canciones y radios que te mostramos en Inicio.</span></label>
+    const lang = getLanguage();
+    return `<label class="field"><span>Idioma de la interfaz</span>
+        <div class="seg two" role="radiogroup" aria-label="Idioma">
+          <button type="button" class="seg-btn lit ${lang === 'es' ? 'on' : ''}" data-action="set-lang" data-lang="es" aria-pressed="${lang === 'es'}">Español</button>
+          <button type="button" class="seg-btn lit ${lang === 'en' ? 'on' : ''}" data-action="set-lang" data-lang="en" aria-pressed="${lang === 'en'}">English</button>
+        </div>
+        <span class="hint">Seleccioná entre Español e Inglés para toda la plataforma.</span></label>
+      <label class="field"><span>País del contenido</span><select class="select lit" data-action-change="region">${REGIONS.map((r) => `<option value="${r.id}" ${app.taste.data.region === r.id ? 'selected' : ''}>${r.label}</option>`).join('')}</select>
+        <span class="hint">Cambia las canciones, estrenos y detecta el idioma preferido.</span></label>
       <button class="btn-glass lit" data-action="taste-test">${icon('sparkle')}Rehacer el test de gustos</button>`;
   },
   biblioteca() {
@@ -233,10 +296,18 @@ const SECTIONS = {
   },
   artista() {
     const claim = app.artist.claim;
-    return `<button class="artist-claim lit" data-action="nav" data-view="${claim?.status === 'approved' ? 'studio' : 'claim'}">
-        <span class="artist-claim-ico">${icon(claim?.status === 'approved' ? 'disc' : 'mic')}</span>
-        <span class="row-main"><span class="row-title">${claim?.status === 'approved' ? 'Estudio de artista' : 'Reclamar perfil de Artista'}</span>
-        <span class="row-sub">${claim ? `Estado: ${CLAIM_STATUS[claim.status].label}` : 'Subí tu música gratis con perfil verificado'}</span></span>
+    const isApproved = claim?.status === 'approved' || app.profile?.role === 'artist';
+    return `
+      ${isApproved ? `
+        <div class="row-btns" style="margin-bottom:14px">
+          <button class="btn-primary lit" data-action="nav" data-view="artist-dashboard">${icon('mic')} Dashboard de Artistas</button>
+          <button class="btn-glass lit" data-action="nav" data-view="studio">${icon('disc')} ZUENA Studio</button>
+        </div>
+      ` : ''}
+      <button class="artist-claim lit" data-action="nav" data-view="${isApproved ? 'artist-dashboard' : claim ? 'claim' : 'claim'}">
+        <span class="artist-claim-ico">${icon(isApproved ? 'disc' : 'mic')}</span>
+        <span class="row-main"><span class="row-title">${isApproved ? 'ZUENA for Artists & Retiros' : 'Reclamar perfil de Artista'}</span>
+        <span class="row-sub">${claim ? `Estado: ${CLAIM_STATUS[claim.status]?.label || claim.status}` : 'Subí tu música gratis con perfil verificado'}</span></span>
         ${claim ? statusPill(CLAIM_STATUS[claim.status]) : icon('arrowRight')}
       </button>`;
   },
@@ -253,7 +324,7 @@ const SECTIONS = {
     const s = app.engine.settings, adv = !!app.prefs.advanced;
     return `${toggleRow('advanced', 'Modo avanzado', adv ? 'Sonoridad (LUFS), true peak, correlación, limitador y motor de audio.' : 'Muestra datos técnicos del sonido y medidores en la pantalla Ahora suena.', adv)}
       ${adv ? `${toggleRow('limiter', 'Limitador true-peak', 'Detección sobremuestreada 4x, 2.5 ms de anticipación, techo −1 dBTP', s.limiter)}
-        <p class="hint">Motor: Web Audio · ${fmtRate(app.engine.ctx.sampleRate)} float 32 · ${app.engine.limiter ? 'limitador true-peak multicanal en AudioWorklet' : 'sin AudioWorklet'} · salida ${app.engine.outChannels} canales (máx. ${app.engine.ctx.destination.maxChannelCount}) · espacial HRTF binaural${s.headphoneEq && s.headphoneEqOn ? ` · AutoEQ ${esc(s.headphoneEq.name)}` : ''} · nube: ${app.auth.mode === 'firebase' ? 'Firebase' : 'modo local'}</p>` : ''}
+        <p class="hint">Motor: Web Audio · ${fmtRate(app.engine.ctx.sampleRate)} float 32 · ${app.engine.dsp ? 'AudioWorklet ZUENA Studio DSP (6 etapas: cinta, válvulas, armónicos subgraves, air exciter, M/S, vocal)' : 'DSP bypass'} · ${app.engine.limiter ? 'limitador true-peak multicanal en AudioWorklet' : 'sin limitador'} · salida ${app.engine.outChannels} canales (máx. ${app.engine.ctx.destination.maxChannelCount}) · espacial HRTF binaural${s.headphoneEq && s.headphoneEqOn ? ` · AutoEQ ${esc(s.headphoneEq.name)}` : ''} · nube: ${app.auth.mode === 'firebase' ? 'Firebase' : 'modo local'}</p>` : ''}
       <p class="hint">ZUENA ${APP_VERSION}${adv ? `</p>
       <details class="versions"><summary>Versiones de cada función</summary><ul>${staleness().map((f) => `<li><span>${esc(f.name)}</span><b>${f.version}</b><small>${f.days ? `hace ${f.days} d` : 'hoy'}</small></li>`).join('')}</ul></details>` : '</p>'}`;
   },
@@ -267,9 +338,12 @@ const SECTIONS = {
         ? `<b>Equipo de ZUENA · Administración</b> (${esc(app.user?.email || '')}) · Perfil oficial exclusivo con permisos de administración.`
         : `<b>Cuenta de Administración</b> (${esc(app.user?.email || '')}) · Permisos de moderación y desarrollo.`;
     return `<div class="glass-soft notice" style="margin-bottom:16px"><p>${label}</p></div>
+      <div class="row-btns" style="margin-bottom:14px">
+        <button class="btn-primary lit" data-action="nav" data-view="admin">${icon('shield')} Dashboard de Administración</button>
+        <button class="btn-glass lit" data-action="nav" data-view="review">${icon('check')} Revisión</button>
+      </div>
       ${toggleRow('dev', 'Modo desarrollador', 'Habilita controles de depuración, inspección técnica y herramientas internas exclusivas para cuentas de administración.', !!app.prefs.dev)}
       <div class="row-btns" style="margin-top:12px">
-        <button class="btn-primary lit" data-action="nav" data-view="review">${icon('shield')}Panel de Revisión y Moderación</button>
         <button class="btn-glass lit" data-action="nav" data-view="studio">${icon('disc')}ZUENA Studio</button>
         <a class="btn-glass lit" href="tests.html" target="_blank">${icon('code')}Suite de Tests</a>
       </div>`;

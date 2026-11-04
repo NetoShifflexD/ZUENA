@@ -1,11 +1,15 @@
 // Versiones de ZUENA: la app y cada función. Sirve para saber en qué nivel quedó cada parte y priorizar
 // la actualización de las más viejas. Regla: al cambiar una función, subir su versión (mayor = rediseño,
 // menor = mejora, parche = arreglo), poner la fecha de hoy y reflejarlo en Wiki/Registro/Versiones.md.
-export const APP_VERSION = '0.30.1';
+export const APP_VERSION = '0.31.0';
 
 // [id, nombre, versión, última actualización]
 export const FEATURES = [
-  ['audio', 'Motor de audio (gapless, LUFS, EQ, espacial, 5.1/7.1, limitador)', '3.4.0', '2026-11-03'],
+  ['audio', 'Motor de audio ZUENA Studio (gapless, LUFS, EQ, DSP 6 etapas, espacial, limitador)', '4.0.0', '2026-11-04'],
+  ['admin', 'Dashboard de administración y moderación', '1.0.0', '2026-11-04'],
+  ['artist_dash', 'Dashboard de artistas y estadísticas estilo Spotify', '1.0.0', '2026-11-04'],
+  ['i18n', 'Sistema de traducción y selector ES/EN por país', '1.0.0', '2026-11-04'],
+  ['payments', 'Servidor de pagos y retiros Stripe (mínimo 10 EUR)', '1.0.0', '2026-11-04'],
   ['np', 'Reproductor, cápsula rápida y navegación inmersiva', '5.2.0', '2026-11-04'],
   ['viz', 'Espectro "seda"', '2.0.0', '2026-11-01'],
   ['home', 'Inicio y carrusel de portada', '4.2.0', '2026-11-04'],

@@ -460,6 +460,8 @@ body:not(.is-playing) .np-art { transform: scale(.9); }
 .eq-curve { width: 100%; height: 110px; border-radius: var(--r-md); background: var(--glass-hi); border: 1px solid var(--stroke); }
 .eq-sliders { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; padding: 6px 0; transition: opacity .3s; }
 .eq-sliders.off { opacity: .4; pointer-events: none; }
+.dsp-controls { transition: opacity .3s, filter .3s; }
+.dsp-controls.off { opacity: .35; filter: grayscale(0.5); pointer-events: none; }
 .eq-band { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .eq-val { font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; height: 14px; }
 .eq-f { font-size: 10.5px; color: var(--faint); font-weight: 600; }

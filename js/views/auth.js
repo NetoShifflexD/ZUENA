@@ -23,8 +23,8 @@ function authHtml(tab, { brand = true, consent = false } = {}) {
         ${local ? '' : `<button type="button" class="btn-google lit" data-google>${googleLogo}<span>Continuar con Google</span></button>`}
         <div class="or"><span>${local ? 'Con tu correo' : 'O con tu correo'}</span></div>
         <form class="auth-form" novalidate>
-          <label class="field"><span>Correo electrónico</span>
-            <div class="input-icon">${icon('mail')}<input class="input" name="email" type="email" autocomplete="email" placeholder="vos@correo.com" required></div>
+          <label class="field"><span>Correo electrónico o usuario</span>
+            <div class="input-icon">${icon('mail')}<input class="input" name="email" type="text" inputmode="email" autocomplete="email" placeholder="vos@correo.com o @zuena" required></div>
             <span class="field-error" data-err="email"></span></label>
           <label class="field"><span>Contraseña</span>
             <div class="input-icon">${icon('lock')}<input class="input" name="password" type="password" autocomplete="${tab === 'signup' ? 'new-password' : 'current-password'}" placeholder="${tab === 'signup' ? 'Mínimo 8 caracteres' : 'Tu contraseña'}" required minlength="8">
