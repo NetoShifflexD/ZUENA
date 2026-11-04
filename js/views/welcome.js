@@ -232,7 +232,9 @@ export function showWelcome({ mode = 'signup' } = {}) {
     // entrada de la portada y apariciones al desplazar (motor)
     motion.play('fadeUp', root.querySelectorAll('.ld-in'), { stagger: 70, delay: 200 });
     motion.reveal(root);
-    import('./welcomeScenes.js').then((m) => m.mountScenes(root)).then((st) => { if (st) root.addEventListener('zuena-welcome-out', () => st.destroy(), { once: true }); }).catch((err) => console.warn('[landing]', err));
+    if (document.documentElement.dataset.design !== 'point' && !matchMedia('(pointer: coarse)').matches) {
+      import('./welcomeScenes.js').then((m) => m.mountScenes(root)).then((st) => { if (st) root.addEventListener('zuena-welcome-out', () => st.destroy(), { once: true }); }).catch((err) => console.warn('[landing]', err));
+    }
 
     // cuenta regresiva decorativa de la maqueta; se detiene al salir
     const counters = root.querySelectorAll('[data-ld-count]');

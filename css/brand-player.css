@@ -14,6 +14,9 @@ html[data-design="point"] .island-panel::before { opacity: .1; }
 html[data-design="point"] .island-brand { display: flex; align-items: center; gap: 12px; }
 html[data-design="point"] .island-brand svg { width: 28px; height: 28px; }
 html[data-design="point"] .island-brand b { font-size: 11px; letter-spacing: .24em; }
+html[data-design="point"] :is(.island-grabber,.np-grabber) { background: var(--z-line); }
+html[data-design="point"] .island-nav .island-item { color: var(--z-muted); background: var(--z-surface); border: 1px solid var(--z-line); }
+html[data-design="point"] .island-nav .island-item.active { color: var(--z-on-action); background: var(--z-action); border-color: transparent; box-shadow: none; }
 html[data-design="point"] .island-panel .search { border-radius: 15px; height: 52px; }
 html[data-design="point"] .island-search-filters { gap: 3px; padding-bottom: 8px; border-bottom: 1px solid var(--z-line); }
 html[data-design="point"] .island-search-filters button { color: var(--z-muted); border-radius: 999px; min-height: 44px; padding: 0 13px; font-size: 12px; }
@@ -67,14 +70,16 @@ html[data-design="point"] .np .np-extra .link-chip { color: var(--z-muted); back
 html[data-design="point"] .island-live { background: var(--z-glass); color: var(--z-ink); box-shadow: var(--z-shadow); }
 @media(max-width:600px) {
   html[data-design="point"] .floatbar { bottom: calc(12px + var(--sab,0px)); gap: 7px; }
-  html[data-design="point"] .floatbar .island-core { gap: 8px; padding-inline: 10px; min-height: 62px; border-radius: 21px; }
-  html[data-design="point"] .island-core .island-mark,html[data-design="point"] .island-mark svg { width: 30px; height: 30px; }
-  html[data-design="point"] .floatbar .island-panel,html[data-design="point"] .floatbar .island[data-island-compact] .island-panel { padding: 17px; gap: 10px; border-radius: 24px; }
+  html[data-design="point"] .floatbar .island-core { gap: 8px; padding-inline: 10px; min-height: 58px; border-radius: 20px; }
+  html[data-design="point"] .floatbar .island-np.mini-player { height: 58px; border-radius: 20px; }
+  html[data-design="point"] .island-core .island-mark,html[data-design="point"] .island-mark svg { width: 28px; height: 28px; }
+  html[data-design="point"] .floatbar .island-panel,html[data-design="point"] .floatbar .island[data-island-compact] .island-panel { padding: 14px; gap: 8px; border-radius: 24px; }
+  html[data-design="point"] .island-panel .search { height: 46px; }
   html[data-design="point"] .island-search-filters button { padding: 0 7px; }
-  html[data-design="point"] .island-search-filters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 3px; }
-  html[data-design="point"] .np .np-top { padding: calc(16px + var(--sat,0px)) max(20px,var(--sar,0px)) 16px max(20px,var(--sal,0px)); }
-  html[data-design="point"] .np .np-body { padding-inline: 24px; gap: 24px; padding-bottom: 110px; }
-  html[data-design="point"] .np .np-title-row .js-title { font-size: 34px; }
+  html[data-design="point"] .island-search-filters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 3px; padding-bottom: 6px; }
+  html[data-design="point"] .np .np-top { padding: calc(20px + var(--sat,0px)) max(20px,var(--sar,0px)) 14px max(20px,var(--sal,0px)); }
+  html[data-design="point"] .np .np-body { padding-inline: 20px; gap: 20px; padding-bottom: calc(24px + var(--sab,0px)); }
+  html[data-design="point"] .np .np-title-row .js-title { font-size: clamp(26px,7.5vw,34px); }
 }
 @media(prefers-reduced-transparency:reduce) {
   html[data-design="point"] .floatbar :is(.island-core,.island-panel,.mini-player) { background: var(--z-raised); backdrop-filter: none; -webkit-backdrop-filter: none; }

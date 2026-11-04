@@ -106,6 +106,6 @@ body.legal-open .cookie-banner { visibility: hidden; }
   .cookie-actions [data-cookie="all"] { grid-column: 1 / -1; grid-row: 1; }
 }
 
-/* el aviso se lee primero: fondo casi opaco, para que no se confunda con el texto de atrás */
-body .cookie-banner { background: color-mix(in oklab, var(--tint) 96%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+/* el aviso se lee primero: fondo opaco para que no se confunda con el texto de atrás */
+body .cookie-banner { z-index: 170; background: var(--z-raised, var(--surface-strong, #181a20)); backdrop-filter: none; -webkit-backdrop-filter: none; }
 

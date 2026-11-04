@@ -34,12 +34,15 @@ export function refreshIslandPosts(root) {
   if (unseen && !feed.querySelector('[data-island-refresh]')) feed.insertAdjacentHTML('afterbegin', '<button class="btn-glass lit ic-more" data-island-refresh>Actualizar publicaciones</button>');
 }
 
+let snapCache = { key: '', at: 0, data: null };
 export function islandSnapshot(context, now = Date.now()) {
+  const uid = context.user?.uid;
+  const sig = context === app ? `${uid || ''}:${context.posts?.list?.length || 0}:${context.posts?.derived?.size || 0}:${context.playlists?.list?.length || 0}:${context.releases?.all?.length || 0}:${context.stats?.data?.recent?.[0] || ''}:${context.stats?.data?.recent?.length || 0}` : '';
+  if (sig && snapCache.key === sig && now - snapCache.at < 1500 && snapCache.data) return snapCache.data;
   const artists = [...(context.posts?.authors?.values() || [])].filter((p) => p.role === 'artist').map((p) => ({ id: `zu:${p.uid}`, name: p.displayName, avatar: p.avatar, sim: p.sim, verified: !p.sim }));
   if (context.profile?.role === 'artist' && !artists.some((a) => a.id === `zu:${context.profile.uid}`)) artists.unshift({ id: `zu:${context.profile.uid}`, name: context.profile.displayName, avatar: context.profile.avatar, verified: true });
   if (TEST_CATALOG) artists.push(...TEST_ARTISTS.map((a) => ({ id: `am:${a.id}`, name: a.name, appleId: a.id })));
   artists.sort((a, b) => Number(!!a.sim) - Number(!!b.sim));
-  const uid = context.user?.uid;
   const recent = uid && (!context.stats?.uid || context.stats.uid === uid) ? [...new Set(context.stats?.data?.recent || [])].map((id) => context.resolve(id)).filter((t) => t && context.isAvailable(t)) : [];
   const playlists = uid ? (context.playlists?.list || []).filter((p) => p.owner === uid || (!p.owner && context.playlists.uid === uid)).sort((a, b) => (b.updated || b.created || 0) - (a.updated || a.created || 0) || String(a.id).localeCompare(String(b.id))) : [];
   const upcoming = context.releases.upcoming(now);
@@ -50,7 +53,9 @@ export function islandSnapshot(context, now = Date.now()) {
     const root = context.posts.rootOf(p) || p;
     return canView(root, context.subs?.tier(context.user?.uid, root.uid) || 0, { isAuthor: !!context.user && root.uid === context.user.uid });
   }).sort((a, b) => b.created - a.created);
-  return { artists, recent, playlists, upcoming, featured, posts };
+  const data = { artists, recent, playlists, upcoming, featured, posts };
+  if (sig) snapCache = { key: sig, at: now, data };
+  return data;
 }
 
 function artistCard(a, small = false) {

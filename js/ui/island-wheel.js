@@ -78,5 +78,39 @@ export function bindIslandWheel(root, { items, current, canUse, onInteract, onPr
     const core = coreOf(event.target);
     if (core && !core.contains(event.relatedTarget)) reset();
   }, options);
+  // Gestos táctiles sobre la píldora cerrada: deslizar horizontalmente cambia de sección.
+  let touchStart = null, suppressClickUntil = 0;
+  root.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'mouse' || root.classList.contains('open') || !coreOf(event.target) || !canUse()) {
+      touchStart = null;
+      return;
+    }
+    touchStart = { id: event.pointerId, x: event.clientX, y: event.clientY, t: performance.now() };
+  }, { ...options, passive: true });
+  root.addEventListener('pointerup', (event) => {
+    if (!touchStart || event.pointerId !== touchStart.id) return;
+    const dx = event.clientX - touchStart.x;
+    const dy = event.clientY - touchStart.y;
+    const dt = performance.now() - touchStart.t;
+    touchStart = null;
+    if (dt > 700 || root.classList.contains('open') || !canUse() || !items.length) return;
+    if (Math.abs(dx) >= 38 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+      suppressClickUntil = performance.now() + 450;
+      const navItems = items.filter(([id]) => id !== 'search');
+      if (!navItems.length) return;
+      const curIdx = Math.max(0, navItems.findIndex(([id]) => id === current()));
+      const step = dx < 0 ? 1 : -1;
+      const next = navItems[(curIdx + step + navItems.length) % navItems.length];
+      if (next) onCommit(next[0]);
+    }
+  }, { ...options, passive: true });
+  root.addEventListener('pointercancel', () => { touchStart = null; }, { ...options, passive: true });
+  root.addEventListener('click', (event) => {
+    if (suppressClickUntil > performance.now() && coreOf(event.target)) {
+      suppressClickUntil = 0;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, { ...options, capture: true });
   return { reset, destroy() { listeners.abort(); reset(); } };
 }

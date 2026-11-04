@@ -415,7 +415,8 @@ function renderIsland() {
   const lists = playlists.list.slice(0, 5);
   els.island.innerHTML = `
     <div class="island-panel" role="dialog" aria-label="Centro de ZUENA" aria-modal="true" tabindex="-1">
-      <div class="island-heading"><span class="island-brand">${logo()}<b>ZUENA</b></span><button type="button" class="btn-icon lit" data-island-close aria-label="Cerrar centro de ZUENA">${icon('close')}</button></div>
+      <div class="island-heading"><span class="island-grabber" aria-hidden="true"></span><span class="island-brand">${logo()}<b>ZUENA</b></span><button type="button" class="btn-icon lit" data-island-close aria-label="Cerrar centro de ZUENA">${icon('close')}</button></div>
+      <nav class="island-nav" aria-label="Ir a una sección">${ISLAND.filter(([id]) => !['search', 'import'].includes(id)).map(([id, label, ic]) => `<button type="button" class="island-item lit" data-island="${id}">${icon(ic)}<span>${label}</span></button>`).join('')}</nav>
       <div class="island-search-slot"></div>
       <div class="island-search-filters" aria-label="Secciones de la isla">${['Todo', 'Perfiles', 'Canciones', 'Estrenos', 'Playlists', 'Feed'].map((label, i) => `<button type="button" class="lit" data-search-filter="${i}" aria-pressed="${i === 0}">${label}</button>`).join('')}</div>
       <div class="island-content"><div class="island-results" aria-live="polite" hidden></div><div class="island-discovery">
@@ -435,7 +436,9 @@ function renderIsland() {
       <span class="mini-progress" aria-hidden="true"><i></i></span>
     </div>`;
   if (searchBox) els.island.querySelector('.island-search-slot').append(searchBox);
-  els.island.querySelector('.island-audio-slot').append(dock);
+  const audioSlot = els.island.querySelector('.island-audio-slot');
+  audioSlot.append(dock);
+  audioSlot.hidden = !player.current;
   const input = $('#search');
   if (input) { input.maxLength = 120; input.placeholder = 'Buscar música, perfiles, playlists y publicaciones'; input.setAttribute('aria-label', 'Buscar en ZUENA'); }
   els.island.querySelector('.island-panel').inert = !els.island.classList.contains('open');
@@ -473,6 +476,8 @@ function syncIslandNp() {
   if (!b) return;
   const t = player.current;
   b.hidden = !t;
+  const audioSlot = els.island.querySelector('.island-audio-slot');
+  if (audioSlot) audioSlot.hidden = !t;
   if (!t) { delete b.dataset.track; return; }
   if (b.dataset.track !== String(t.id)) {
     b.dataset.track = String(t.id);
@@ -563,12 +568,21 @@ function openIsland(focusFirst = false) {
   if (ui.npOpen) setNp(false);
   els.island.classList.add('open');
   els.main.inert = true;
-  els.dock.inert = !player.current;
-  els.dock.setAttribute('aria-hidden', 'false');
+  const hasTrack = !!player.current;
+  els.dock.inert = !hasTrack;
+  els.dock.setAttribute('aria-hidden', String(!hasTrack));
+  const audioSlot = els.island.querySelector('.island-audio-slot');
+  if (audioSlot) audioSlot.hidden = !hasTrack;
   els.island.querySelector('.island-panel').inert = false;
   els.floatbar.classList.add('island-open'); // en móvil el reproductor se repliega para no tapar el menú
   $('[data-island-core]')?.setAttribute('aria-expanded', 'true');
-  $('#search')?.focus({ preventScroll: true });
+  syncIsland();
+  // En pantallas táctiles no enfocar automáticamente el buscador al abrir la isla (evita desplegar el teclado virtual).
+  if (focusFirst === 'search' || (focusFirst && matchMedia('(pointer: fine)').matches)) {
+    $('#search')?.focus({ preventScroll: true });
+  } else {
+    els.island.querySelector('[data-island-close]')?.focus({ preventScroll: true });
+  }
   requestAnimationFrame(() => dockScrub?.resize());
   searchIsland();
 }
@@ -589,7 +603,7 @@ function islandGo(id) {
   closeIsland();
   // la isla queda por encima de "Ahora suena": al navegar desde ella se cierra la pantalla completa
   if (ui.npOpen) setNp(false);
-  if (id === 'search') { openIsland(true); $('#search').select(); return; }
+  if (id === 'search') { openIsland('search'); $('#search')?.select(); return; }
   if (id === 'settings') { openPanel('settings'); return; }
   if (id === 'import') { $('#pick-files').click(); return; }
   ui.back = [];
@@ -618,7 +632,47 @@ function bindIsland() {
     },
     onCommit: (id) => islandGo(id),
   });
+  let miniSwipe = null, miniSuppressUntil = 0;
+  isl.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    const np = e.target.closest('#island-np');
+    if (np) {
+      miniSwipe = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), kind: 'mini' };
+      return;
+    }
+    if (isl.classList.contains('open') && e.target.closest('.island-heading, .island-nav, .island-search-filters')) {
+      miniSwipe = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), kind: 'panel' };
+    }
+  }, { passive: true });
+  isl.addEventListener('pointerup', (e) => {
+    if (!miniSwipe || e.pointerId !== miniSwipe.id) return;
+    const dx = e.clientX - miniSwipe.x, dy = e.clientY - miniSwipe.y, dt = performance.now() - miniSwipe.t;
+    const kind = miniSwipe.kind;
+    miniSwipe = null;
+    if (dt > 700) return;
+    if (kind === 'mini' && player.current) {
+      if (dy < -36 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+        miniSuppressUntil = performance.now() + 450;
+        setNp(true);
+      } else if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+        miniSuppressUntil = performance.now() + 450;
+        playback.dispatch(dx < 0 ? 'next' : 'prev');
+      }
+    } else if (kind === 'panel' && isl.classList.contains('open')) {
+      if (dy > 48 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+        miniSuppressUntil = performance.now() + 450;
+        closeIsland();
+      }
+    }
+  }, { passive: true });
+  isl.addEventListener('pointercancel', () => { miniSwipe = null; }, { passive: true });
   isl.addEventListener('click', (e) => {
+    if (miniSuppressUntil > performance.now()) {
+      miniSuppressUntil = 0;
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     if (!auth.checkGuest() || ui.accountLoading) { e.preventDefault(); e.stopPropagation(); return; }
     if (e.target.closest('[data-island-close]')) { closeIsland(); $('[data-island-core]')?.focus(); return; }
     const filter = e.target.closest('[data-search-filter]');
@@ -661,7 +715,20 @@ function bindIsland() {
     isl.classList.remove('charging');
     // El panel permanece abierto mientras se usa búsqueda o audio.
   });
-  document.addEventListener('pointerdown', (e) => { if (isl.classList.contains('open') && !isl.contains(e.target)) closeIsland(); }, true);
+  let swallowOutsideClick = 0;
+  document.addEventListener('pointerdown', (e) => {
+    if (isl.classList.contains('open') && !isl.contains(e.target)) {
+      if (e.pointerType !== 'mouse') swallowOutsideClick = performance.now() + 600;
+      closeIsland();
+    }
+  }, true);
+  document.addEventListener('click', (e) => {
+    if (swallowOutsideClick > performance.now() && !isl.contains(e.target)) {
+      swallowOutsideClick = 0;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
 }
 
 // ---------- reproductor (arriba) y "Ahora suena" ----------
@@ -722,6 +789,7 @@ function renderNowPlaying() {
     <div class="np-bg" id="np-bg"></div>
     <canvas class="np-viz" id="np-viz" aria-hidden="true"></canvas>
     <header class="np-top">
+      <span class="np-grabber" aria-hidden="true"></span>
       <button class="btn-icon lit" data-action="close-np" title="Cerrar (Esc)">${icon('chevronDown')}</button>
       <div class="np-tabs" role="tablist" aria-label="Vista">
         <span class="np-tab-indicator" aria-hidden="true"></span>
@@ -762,6 +830,33 @@ function renderNowPlaying() {
   viz = new Visualizer($('#np-viz'), engine.analyser);
   setNpTab(ui.npTab || 'now');
   scheduleTransportView();
+  bindNowPlayingTouch();
+}
+
+function bindNowPlayingTouch() {
+  let start = null;
+  els.np.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' || !ui.npOpen || e.target.closest('canvas.scrub, input[type=range], button, a')) {
+      start = null;
+      return;
+    }
+    const zone = e.target.closest('.np-top, .np-stage, .np-titles') ? 'stage' : e.target.closest('#np-pane') ? 'pane' : 'body';
+    start = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), zone };
+  }, { passive: true });
+  els.np.addEventListener('pointerup', (e) => {
+    if (!start || e.pointerId !== start.id) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y, dt = performance.now() - start.t;
+    const zone = start.zone;
+    start = null;
+    if (dt > 750 || !ui.npOpen) return;
+    const body = els.np.querySelector('.np-body');
+    if (dy > 58 && Math.abs(dy) > Math.abs(dx) * 1.25 && (zone === 'stage' || (body && body.scrollTop <= 2 && zone !== 'pane'))) {
+      setNp(false);
+    } else if (zone === 'stage' && Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+      playback.dispatch(dx < 0 ? 'next' : 'prev');
+    }
+  }, { passive: true });
+  els.np.addEventListener('pointercancel', () => { start = null; }, { passive: true });
 }
 
 // ----- pestañas de "Ahora suena": reproducción, letra sincronizada y cola -----
@@ -1452,7 +1547,7 @@ Object.assign(app.actions, {
       ...(on ? ['-', { label: 'Desactivar temporizador', icon: 'close', run: () => setSleep(0) }] : []),
     ]);
   },
-  'player-open': () => setPlayer(true, true),
+  'player-open': () => (window.innerWidth <= 720 || matchMedia('(pointer: coarse)').matches ? setNp(true) : setPlayer(true, true)),
   'player-close': () => setPlayer(false, true),
   'close-np': () => setNp(false),
   panel: (el) => openPanel(el.dataset.panel),

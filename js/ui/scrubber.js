@@ -37,29 +37,51 @@ export class Scrubber {
 
     const frac = (e) => {
       const r = canvas.getBoundingClientRect();
-      return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+      return r.width > 0 ? Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) : 0;
     };
     canvas.addEventListener('pointerdown', (e) => {
-      if (!this.dur || canvas.getAttribute('aria-disabled') === 'true' || e.button !== 0) return;
-      canvas.setPointerCapture(e.pointerId);
-      this.drag = frac(e);
+      if (!this.dur || canvas.getAttribute('aria-disabled') === 'true' || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      try { canvas.setPointerCapture(e.pointerId); } catch {}
+      this.hover = this.drag = frac(e);
+      this.showTip(e);
       this.dirty = true;
+      this.draw();
     });
     canvas.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch' && this.drag < 0) return;
       this.hover = frac(e);
       if (this.drag >= 0) this.drag = this.hover;
       this.showTip(e);
       this.dirty = true;
+      this.draw();
     });
     canvas.addEventListener('pointerup', (e) => {
       if (this.drag < 0) return;
       const f = frac(e);
       this.drag = -1;
+      if (e.pointerType !== 'mouse') {
+        this.hover = -1;
+        this.tip.classList.remove('show');
+      }
       this.onSeek?.(f * this.dur);
       this.dirty = true;
+      this.draw();
     });
-    canvas.addEventListener('pointerleave', () => { this.hover = -1; this.tip.classList.remove('show'); this.dirty = true; });
-    const cancelDrag = () => { this.drag = -1; this.hover = -1; this.tip.classList.remove('show'); this.dirty = true; };
+    canvas.addEventListener('pointerleave', (e) => {
+      if (this.drag >= 0) return;
+      this.hover = -1;
+      this.tip.classList.remove('show');
+      this.dirty = true;
+      this.draw();
+    });
+    const cancelDrag = () => {
+      if (this.drag < 0 && this.hover < 0) return;
+      this.drag = -1;
+      this.hover = -1;
+      this.tip.classList.remove('show');
+      this.dirty = true;
+      this.draw();
+    };
     canvas.addEventListener('pointercancel', cancelDrag);
     canvas.addEventListener('lostpointercapture', cancelDrag);
     canvas.addEventListener('keydown', (e) => {
@@ -77,8 +99,9 @@ export class Scrubber {
   showTip(e) {
     if (!this.dur) return;
     const r = this.cv.getBoundingClientRect();
+    const x = Math.min(Math.max(20, e.clientX - r.left), Math.max(20, r.width - 20));
     this.tip.textContent = fmtTime(this.hover * this.dur);
-    this.tip.style.left = `${this.cv.offsetLeft + (e.clientX - r.left)}px`;
+    this.tip.style.left = `${this.cv.offsetLeft + x}px`;
     this.tip.classList.add('show');
   }
 
@@ -117,10 +140,17 @@ export class Scrubber {
     const hx = this.hover >= 0 ? this.hover * W : -1;
 
     if (!this.wave) {
-      const h = Math.round(4 * dpr), y = (H - h) / 2;
+      const h = Math.round((this.drag >= 0 ? 6 : 4) * dpr), y = (H - h) / 2;
       cx.globalAlpha = 0.22; cx.fillStyle = text; round(cx, 0, y, W, h, h / 2);
       if (hx >= 0) { cx.globalAlpha = 0.18; round(cx, 0, y, hx, h, h / 2); }
       cx.globalAlpha = 1; cx.fillStyle = accent; round(cx, 0, y, px, h, h / 2);
+      if (this.dur > 0) {
+        const rad = (this.drag >= 0 ? 7 : 5) * dpr;
+        const cxPos = Math.min(W - rad, Math.max(rad, px));
+        cx.beginPath();
+        cx.arc(cxPos, H / 2, rad, 0, Math.PI * 2);
+        cx.fill();
+      }
       return;
     }
 

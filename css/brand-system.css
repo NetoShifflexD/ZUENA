@@ -158,4 +158,10 @@ html[data-design="point"] #boot-cover { background: var(--z-paper); }
 html[data-design="point"][data-glass="solid"] { --z-glass: var(--z-raised); }
 html[data-design="point"][data-glass="solid"] .panel { backdrop-filter: none; -webkit-backdrop-filter: none; }
 html[data-design="point"][data-glass="clear"] { --z-glass: color-mix(in srgb,var(--z-raised) 82%,transparent); }
+html[data-design="point"] :is(button,a,[role="button"],input,select,textarea,summary) { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+html[data-design="point"] :is(.shelf,.h-scroll,.chips.scroll,.lib-tabs) { -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
+@media(pointer:coarse) {
+  html[data-design="point"] input[type="range"].range { touch-action: none; }
+  html[data-design="point"] input[type="range"].range::-webkit-slider-thumb { width: 22px; height: 22px; }
+}
 @media(display-mode:window-controls-overlay) { html[data-design="point"] .topbar { padding-top: max(calc(14px + var(--sat,0px)),env(titlebar-area-height,32px)); } }

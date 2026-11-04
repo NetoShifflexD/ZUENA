@@ -19,9 +19,16 @@
 .floatbar .island.open .island-panel { transform: none; }
 .island.open .island-live { display: none; }
 .floatbar.island-open::before { content: ''; position: fixed; inset: 0; background: rgb(5 12 20 / .14); pointer-events: auto; }
-.island-heading { display: flex; justify-content: space-between; align-items: center; min-height: 44px; flex: none; }
+.island-heading { position: relative; display: flex; justify-content: space-between; align-items: center; min-height: 44px; flex: none; touch-action: none; }
+.island-grabber { display: none; position: absolute; top: -6px; left: 50%; translate: -50% 0; width: 36px; height: 4px; border-radius: 99px; background: var(--stroke); pointer-events: none; }
 .island-heading b { font-size: 12px; letter-spacing: .2em; font-weight: 600; }
 .island-heading .btn-icon { width: 44px; height: 44px; }
+.island-nav { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; flex: none; }
+.island-nav .island-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 48px; min-width: 44px; padding: 5px 2px; border-radius: 12px; font-size: 11px; font-weight: 500; color: var(--muted); background: var(--glass-hi); transition: background .16s, color .16s; }
+.island-nav .island-item .ico { width: 16px; height: 16px; flex: none; }
+.island-nav .island-item > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.island-nav .island-item:hover { color: var(--text); background: var(--glass-hi-2); }
+.island-nav .island-item.active { color: var(--text); background: var(--glass-hi-2); box-shadow: var(--rim); font-weight: 600; }
 .island-search-slot { flex: none; min-width: 0; }
 .island-search-slot .search { display: flex; width: 100%; height: 46px; margin: 0; }
 .island-search-slot #search { min-width: 0; width: 100%; font-size: 16px; }
@@ -31,15 +38,20 @@
 .island-search-filters button[aria-pressed=true] { color: var(--text); background: var(--glass-hi-2); box-shadow: var(--rim); }
 /* Móvil: las seis secciones se ven todas, sin carril oculto; en pantallas angostas van en dos filas de tres. */
 @media(max-width: 600px) {
+  .island-grabber { display: block; }
+  .island-nav .island-item { min-height: 44px; font-size: 10.5px; }
   .island-search-filters { flex-wrap: wrap; gap: 2px; overflow: visible; padding-bottom: 0; }
   .island-search-filters button { flex: 1 1 auto; padding: 0 2px; }
 }
-@media(max-width: 363px) { .island-search-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.island-content { flex: 1; min-height: 44px; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
-.island-content [hidden] { display: none !important; }
+@media(max-width: 363px) {
+  .island-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .island-search-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.island-content { flex: 1; min-height: 80px; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.island-content [hidden], .island-audio-slot[hidden] { display: none !important; }
 .island-content .island-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .island-content .island-item { padding: 10px 4px; min-height: 66px; font-size: 11px; }
-.island-audio-slot { flex: none; border-top: 1px solid var(--stroke); padding-top: 10px; min-height: 90px; }
+.island-audio-slot { flex: none; border-top: 1px solid var(--stroke); padding-top: 10px; min-height: 0; }
 .floatbar .island-audio-slot #dock.player {
   --pw: 100%; display: block; width: 100%; height: 114px; margin: 0; border-radius: 18px;
   opacity: 1; visibility: visible; background: var(--plate); backdrop-filter: none; -webkit-backdrop-filter: none; transition: none;
@@ -88,6 +100,7 @@
   height: min(560px, calc(var(--island-height) - 2 * var(--island-space-y)));
   padding: 14px; gap: 8px; border-radius: 24px;
 }
+.floatbar .island[data-island-compact] :is(.island-nav, .island-audio-slot) { display: none !important; }
 @media(prefers-reduced-motion: reduce) {
   .floatbar .island-panel, .floatbar .island-panel * { animation: none !important; transition: none !important; }
   .floatbar .island-panel, .floatbar .island-panel .island-item:hover .ico { transform: none; }
