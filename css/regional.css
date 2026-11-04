@@ -1,0 +1,73 @@
+/* Capa posterior a glass.css: portada editorial y ranking de fuente externa. */
+.hc .hc-slide:not(.on) {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+.hc .hc-slide.on { z-index: 1; }
+.hc .hc-nav { z-index: 4; }
+.hc .hc-dot i { animation: none; }
+.hc-position { color: rgb(255 255 255 / .8); font-size: 12px; white-space: nowrap; }
+.hc .hc-post { align-items: center; background: #151d2b; color: #fff; }
+.hc .hc-post .hc-copy { width: min(100%, 780px); max-width: 100%; gap: 12px; }
+.hc .hc-post h2.hc-post-heading { font-size: clamp(22px, 2.4vw, 34px); line-height: 1.12; }
+.hc-post-card {
+  display: grid;
+  gap: 14px;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid rgb(255 255 255 / .18);
+  border-radius: 18px;
+  background: rgb(255 255 255 / .07);
+  box-shadow: 0 12px 40px rgb(0 0 0 / .12);
+}
+.hc .hc-author { align-items: center; min-width: 0; }
+.hc .hc-author > span:last-child { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 0; }
+.hc-author b { overflow-wrap: anywhere; }
+.hc-author time, .hc-author > span > span { font-size: 12px; color: rgb(255 255 255 / .7); }
+.hc .hc-post .hc-quote {
+  margin: 0;
+  font-size: clamp(17px, 1.9vw, 26px);
+  line-height: 1.35;
+  letter-spacing: -.015em;
+  font-weight: 500;
+  -webkit-line-clamp: 3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.hc-post-context { display: flex; align-items: center; gap: 7px; margin: 0; color: rgb(255 255 255 / .8); font-size: 12px; }
+.hc-post-context svg { width: 16px; height: 16px; flex-shrink: 0; }
+.hc .hc-stats { margin: 0; }
+.hc :is(button, a):focus-visible, .regional-top :is(a, button, select):focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.regional-top { min-width: 0; }
+.regional-kicker, .regional-source, .regional-date { font-size: 12px; line-height: 1.5; color: var(--muted); }
+.regional-kicker { margin: 0 0 5px; }
+.regional-top header h2 { margin-bottom: 16px; }
+.regional-region { display: grid; gap: 7px; font-size: 12px; }
+.regional-region select { width: 100%; min-width: 0; min-height: 44px; }
+.regional-list { list-style: none; padding: 0; margin: 12px 0; }
+.regional-list li + li { border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
+.regional-list a, .regional-row { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 8px 0; color: inherit; text-decoration: none; }
+.regional-list a:hover { background: color-mix(in srgb, currentColor 5%, transparent); border-radius: 8px; }
+.regional-rank { width: 18px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; color: var(--muted); }
+.regional-list img { width: 42px; height: 42px; object-fit: cover; border-radius: 7px; flex-shrink: 0; }
+.regional-song { display: grid; gap: 3px; min-width: 0; }
+.regional-song b, .regional-song > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.regional-song b { font-size: 13px; font-weight: 600; }
+.regional-song > span { font-size: 12px; color: var(--muted); }
+.regional-status { font-size: 13px; line-height: 1.5; margin: 16px 0; }
+.regional-source { margin-bottom: 0; }
+@media (max-width: 600px) {
+  .hc .hc-post { padding: 18px 18px 62px; }
+  .hc .hc-post .hc-copy { gap: 8px; }
+  .hc-post-card { gap: 10px; padding: 12px; }
+  .hc .hc-post .hc-quote { font-size: 17px; -webkit-line-clamp: 2; }
+  .hc-post .hero-actions { flex-wrap: wrap; gap: 8px; }
+  .hc-post .hero-actions button { min-height: 44px; padding: 8px 12px; }
+  .hc .hc-author .avatar { width: 30px; height: 30px; flex-shrink: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hc .hc-slide, .hc .hc-slide.on { transition: none; transform: none; }
+}

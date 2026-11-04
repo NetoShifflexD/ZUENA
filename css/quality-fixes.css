@@ -1,0 +1,12 @@
+/* Correcciones verificables del informe Escéptico, sin desenfoques adicionales por tarjeta.
+   Las de la landing y el acceso pasaron a css/landing.css con la landing v4 (2026-11-03). */
+.card-sub:has(.artist-link) { min-height: 36px; overflow: visible; white-space: normal; display: flex; align-items: center; flex-wrap: wrap; gap: 0 3px; }
+.card-sub .artist-link { display: inline-block; min-width: 32px; min-height: 36px; max-width: 100%; padding: 0; margin: 0; line-height: 36px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media(pointer: coarse) {
+  .card-sub:has(.artist-link) { min-height: 44px; }
+  .card-sub .artist-link { min-width: 44px; min-height: 44px; line-height: 44px; }
+  .hc-dot { width: 44px; height: 44px; margin: 0; --dot: 17px; }
+  .hc-dots { gap: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .hc-nav { max-width: calc(100% - 28px); }
+  .np-dur { min-height: 44px; min-width: 44px; margin: 0; padding: 8px; }
+}

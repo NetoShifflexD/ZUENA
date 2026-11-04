@@ -1,0 +1,68 @@
+/* Perfiles con rol (Oyente / Artista), reclamo de artista v2 y Suscripciones v2.
+   Se carga después de landing.css. Movimiento con los tokens de Prisma Motion (--m-*). */
+
+/* ---------- "¿Cómo vas a usar ZUENA?" ---------- */
+.prf-modal { width: min(720px, calc(100vw - 32px)); }
+.prf-choose { display: grid; gap: 18px; padding: 6px 4px 2px; }
+.prf-choose header h2 { margin: 0 0 6px; font-size: clamp(1.3rem, 2.4vw, 1.7rem); }
+.prf-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.prf-role {
+  display: grid; gap: 8px; align-content: start; text-align: left; min-height: 44px;
+  padding: 18px; border-radius: 18px; cursor: pointer; color: inherit; font: inherit;
+  background: color-mix(in srgb, var(--surface, #fff) 55%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  transition: border-color var(--m-dur-fast) var(--m-ease-out), box-shadow var(--m-dur-base) var(--m-ease-out), transform var(--m-dur-fast) var(--m-ease-out);
+}
+.prf-role:hover { border-color: color-mix(in srgb, var(--accent, #7c5cff) 45%, transparent); }
+.prf-role:focus-visible { outline: 2px solid var(--accent, #7c5cff); outline-offset: 2px; }
+.prf-role.on {
+  border-color: var(--accent, #7c5cff);
+  box-shadow: 0 0 0 1px var(--accent, #7c5cff), 0 10px 30px -14px color-mix(in srgb, var(--accent, #7c5cff) 70%, transparent);
+}
+.prf-role-ico { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: color-mix(in srgb, var(--accent, #7c5cff) 16%, transparent); }
+.prf-role-ico svg { width: 20px; height: 20px; }
+.prf-role-title { font-weight: 700; font-size: 1.1rem; }
+.prf-role-text { opacity: .82; line-height: 1.4; }
+.prf-role-perks { display: grid; gap: 4px; margin-top: 4px; font-size: .88rem; opacity: .9; }
+.prf-role-perks svg { width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; }
+.prf-role-k { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; opacity: .6; }
+.prf-foot { margin: 0; }
+@media (max-width: 600px) { .prf-roles { grid-template-columns: 1fr; } }
+
+/* ---------- perfil y editor ---------- */
+.prf-step { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prf-step p { flex: 1 1 220px; margin: 0; }
+.prf-step .pill { margin-left: 6px; }
+.prf-type .seg.two { display: grid; grid-template-columns: 1fr 1fr; }
+.prf-type .seg-btn, .prf-type .btn-glass { min-height: 44px; }
+
+/* ---------- reclamo ---------- */
+.claim-local { display: flex; align-items: center; gap: 8px; }
+.claim-local svg { width: 16px; height: 16px; flex: none; }
+.claim-ev-off { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; opacity: .7; border: 1px dashed color-mix(in srgb, currentColor 22%, transparent); margin: 6px 0 10px; }
+.claim-ev-off span { display: inline-flex; align-items: center; gap: 6px; }
+.claim-ev-off svg { width: 14px; height: 14px; }
+.ap-claim { margin: 10px 0 0; }
+
+/* ---------- revisión ---------- */
+.review-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.review-filters .seg-btn { min-height: 40px; }
+.review-claim h3 { font-size: .95rem; margin: 12px 0 6px; }
+.review-ev ul, .review-signals ul, .review-hist ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.review-ev li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.review-ev li > span:first-child { flex: 1 1 200px; }
+.review-ev li.bad > span:first-child { color: var(--bad, #e5484d); }
+.review-signals li::before { content: "· "; opacity: .6; }
+.review-hist { margin-top: 10px; font-size: .88rem; opacity: .85; }
+
+/* ---------- suscripciones v2 ---------- */
+.tier-perks.ro { opacity: .85; }
+.tier .pill.muted { opacity: .8; }
+.sub-count { margin: 0 0 10px; }
+.pay-down { color: var(--warn, #c98a00); }
+.link.disabled { opacity: .55; pointer-events: none; text-decoration: none; cursor: default; }
+.tier-drafts .row-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.tier .btn-primary, .tier .btn-glass, .tier-drafts .btn-glass, .tier-drafts .btn-primary { min-height: 44px; }
+@media (max-width: 600px) { .support-panel .tiers { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: reduce) { .prf-role { transition: none; } }

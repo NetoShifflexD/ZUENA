@@ -1,0 +1,104 @@
+/* Inicio: portada con pestañas de miniaturas y carruseles con formatos distintos (js/views/discover.js, homeHero.js).
+   Cada carrusel usa .shelf (flechas y deslizamiento de enhanceShelves) y agrega sólo su formato de tarjeta. */
+
+/* ---------- portada ---------- */
+/* la presentación en tema claro: un velo a la izquierda sostiene el texto blanco sobre la luz */
+.hc-intro::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(95deg, rgb(16 26 40 / .46), rgb(16 26 40 / .1) 62%, transparent); }
+/* portada fuera de pantalla o en otra diapositiva: las animaciones en bucle de la presentación quedan quietas */
+.hc.hc-idle :is(.hc-aura i, .hc-ribbon path, .hc-eq i) { animation-play-state: paused; }
+
+@media (min-width: 900px) { .hc { min-height: clamp(400px, 32vw, 440px); } }
+
+/* en ancho, los puntos pasan a pestañas con miniatura y título */
+.hc-dot .hc-tab { display: none; }
+@container hc (min-width: 720px) {
+  .hc .hc-slide { padding-bottom: 92px; }
+  .hc .hc-nav { left: 14px; right: 14px; bottom: 12px; max-width: none; gap: 8px; }
+  .hc .hc-dots { flex: 1; min-width: 0; gap: 6px; justify-content: safe center; overflow-x: auto; scrollbar-width: none; }
+  .hc .hc-dots::-webkit-scrollbar { display: none; }
+  .hc .hc-dot { flex: 0 1 164px; min-width: 112px; width: auto; height: 48px; margin: 0; display: block; position: relative; border-radius: 14px;
+    color: rgb(255 255 255 / .82); transition: background var(--m-dur-base) var(--m-ease-out), color var(--m-dur-base) var(--m-ease-out); }
+  .hc .hc-dot:hover { background: rgb(255 255 255 / .12); color: #fff; }
+  .hc .hc-dot.on { background: rgb(255 255 255 / .2); color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .26), inset 0 1px 0 rgb(255 255 255 / .3); }
+  .hc .hc-dot > i { position: absolute; left: 12px; right: 12px; bottom: 2px; width: auto; height: 2px; background: transparent; }
+  .hc .hc-dot.on > i { background: #fff; }
+  .hc .hc-dot .hc-tab { display: flex; align-items: center; gap: 8px; height: 100%; padding: 6px 10px 6px 6px; min-width: 0; text-align: left; }
+  .hc-tab-art { flex: none; width: 34px; height: 34px; border-radius: 9px; object-fit: cover; background: rgb(255 255 255 / .2); }
+  .hc-tab-art.round { border-radius: 50%; }
+  span.hc-tab-art { background: linear-gradient(135deg, color-mix(in oklab, var(--iri-1) 60%, transparent), color-mix(in oklab, var(--iri-3) 50%, transparent)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .4); }
+  .hc-tab b { flex: 1; min-width: 0; font-size: 12px; font-weight: 550; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hc .hc-position { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .hc .hc-nav .btn-icon { flex: none; }
+  .hc .hc-post .hc-copy { gap: 8px; }
+  .hc .hc-post .hc-quote { -webkit-line-clamp: 2; }
+}
+
+/* ---------- carruseles ---------- */
+.shelf.rl { padding-bottom: 14px; }
+.shelf.rl > * { scroll-snap-align: start; min-width: 0; }
+.shelf-wrap:has(> .rl) .shelf-nav { top: calc(50% - 28px); }
+
+.rl-title { font-size: 14.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-tag { justify-self: start; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 550; color: var(--muted); background: var(--plate-hi); box-shadow: var(--rim-plate); }
+.rl-card { position: relative; cursor: pointer; border-radius: 20px; background: var(--plate); box-shadow: var(--rim-plate), 0 10px 24px -18px var(--shadow);
+  transition: background var(--m-dur-base) var(--m-ease-out), box-shadow var(--m-dur-base) var(--m-ease-out), translate var(--m-spring-snappy-dur) var(--m-spring-snappy); }
+@media (hover: hover) { .rl-card:hover { background: var(--plate-hi); translate: 0 -2px; box-shadow: var(--rim-plate), 0 16px 30px -18px var(--shadow), var(--iri-glow); } }
+.rl-card:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }
+
+/* lanzamientos: tarjeta horizontal */
+.shelf.rl-rels { grid-auto-columns: min(320px, 84%); }
+.rl-rel { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px; }
+.rl-rel img { width: 88px; height: 88px; border-radius: 14px; object-fit: cover; }
+.rl-rel-meta { display: grid; gap: 4px; min-width: 0; }
+
+/* canciones: tres filas por columna */
+.shelf.rl-songs { grid-auto-flow: column; grid-template-rows: repeat(3, auto); grid-auto-columns: min(330px, 86%); gap: 8px 18px; }
+.rl-song { display: grid; grid-template-columns: 48px minmax(0, 1fr) 44px; align-items: center; gap: 12px; min-height: 64px; padding: 8px; border-radius: 16px; }
+.rl-song .art { width: 48px; height: 48px; }
+.rl-song-meta { display: grid; gap: 1px; min-width: 0; }
+.rl-song-play { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--muted); }
+.rl-song-play .ico { width: 18px; height: 18px; }
+.rl-song:hover .rl-song-play { color: var(--text); }
+
+/* playlists: carátulas apiladas y el país grande */
+.shelf.rl-lists { grid-auto-columns: 214px; }
+.rl-list { display: grid; align-content: space-between; gap: 18px; height: 276px; padding: 16px; border-radius: 24px; overflow: hidden; }
+.rl-stack { position: relative; height: 136px; }
+.rl-stack img { position: absolute; top: 0; left: calc(var(--k) * 26px); width: 124px; height: 124px; object-fit: cover; border-radius: 16px; z-index: calc(3 - var(--k));
+  rotate: calc((var(--k) - 1) * 4deg); translate: 0 calc(var(--k) * 5px); box-shadow: 0 14px 26px -16px rgb(10 20 30 / .6);
+  transition: left var(--m-spring-snappy-dur) var(--m-spring-snappy), rotate var(--m-spring-snappy-dur) var(--m-spring-snappy); }
+@media (hover: hover) { .rl-list:hover .rl-stack img { left: calc(var(--k) * 34px); rotate: calc((var(--k) - 1) * 6deg); } }
+.rl-list-name { margin: 0; font-family: var(--font-display); font-size: 25px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-list-foot { display: grid; gap: 2px; min-width: 0; padding-right: 48px; }
+.rl-list .card-play { position: absolute; right: 12px; bottom: 12px; width: 44px; height: 44px; opacity: 1; transform: none; translate: none; }
+
+/* artistas: sólo la cara y el nombre */
+.shelf.rl-faces { grid-auto-columns: 128px; gap: 12px; }
+.rl-face { display: grid; justify-items: center; gap: 8px; padding: 8px 4px; border-radius: 20px; cursor: pointer; text-align: center; }
+.rl-face .rl-title { max-width: 100%; font-size: 13.5px; }
+.rl-face img, .rl-face .rl-face-ph { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; background: var(--plate-hi); box-shadow: var(--rim-plate), 0 14px 26px -18px var(--shadow);
+  transition: scale var(--m-spring-snappy-dur) var(--m-spring-snappy), box-shadow var(--m-dur-base) var(--m-ease-out); }
+@media (hover: hover) { .rl-face:hover img { scale: 1.05; box-shadow: var(--rim-plate), var(--iri-glow); } }
+.rl-face:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }
+
+/* feed: tarjetas de vidrio con el texto de la publicación */
+.shelf.rl-posts { grid-auto-columns: min(340px, 86%); }
+.rl-post { display: grid; align-content: start; gap: 10px; min-height: 164px; padding: 14px 16px; border-radius: 22px; }
+.rl-post-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.rl-post-head .avatar { flex: none; width: 36px; height: 36px; }
+.rl-post-head .rl-title { flex: 1; min-width: 0; }
+.rl-post .post-sim { display: inline-block; flex: none; margin-left: 0; } /* el rótulo se ve siempre, también en móvil */
+.rl-post-text { margin: 0; font-size: 14px; line-height: 1.45; color: var(--text); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; overflow-wrap: anywhere; }
+.rl-post-foot { display: flex; gap: 14px; margin-top: auto; font-size: 12.5px; color: var(--muted); }
+.rl-post-foot span { display: inline-flex; align-items: center; gap: 5px; }
+.rl-post-foot .ico { width: 15px; height: 15px; }
+
+/* tendencias: pastillas en una fila */
+.shelf.rl-trends { grid-auto-columns: max-content; gap: 10px; padding-top: 6px; }
+.rl-trend { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 99px; font-size: 13.5px; }
+.rl-trend b { font-weight: 600; color: var(--text); }
+.rl-trend span { color: var(--muted); }
+
+body.no-motion :is(.rl-card, .rl-stack img, .rl-face img) { transition: none; }

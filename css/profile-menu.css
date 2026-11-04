@@ -1,0 +1,67 @@
+/* Botón redondo de perfil y burbuja de secciones (js/ui/profile-menu.js). Fuera de la isla, arriba a la derecha.
+   Va por debajo de "Ahora suena" (40), los paneles (50) y la isla (60): esos traen sus propios controles arriba. */
+.pm { position: fixed; z-index: 39; top: calc(25px + var(--sat, 0px)); right: calc(22px + var(--sar, 0px)); width: 44px; height: 44px; }
+.pm[hidden] { display: none; }
+/* el resto de la barra superior no se mete debajo del botón */
+#app .topbar { padding-right: calc(var(--gutter, 22px) + 56px); }
+
+.pm-btn, .pm-avatar { display: grid; place-items: center; overflow: hidden; border-radius: 50%; font-family: var(--font-display); font-weight: 600; color: var(--text);
+  background: var(--surface-strong); }
+.pm-btn { position: relative; width: 44px; height: 44px; padding: 0; font-size: 17px; cursor: pointer;
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--iri-2) 55%, transparent), var(--rim-plate), var(--depth);
+  transition: box-shadow var(--m-dur-base) var(--m-ease-out), scale var(--m-spring-snappy-dur) var(--m-spring-snappy); }
+.pm-btn img, .pm-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pm-btn:hover, .pm-btn[aria-expanded="true"] { box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--iri-1) 75%, transparent), var(--rim-plate), var(--depth), var(--iri-glow); }
+.pm-btn:focus-visible, .pm-item:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }
+@media (hover: hover) { .pm-btn:hover { scale: 1.05; } }
+
+.pm-bubble { position: absolute; top: calc(100% + 12px); right: 0; width: min(316px, calc(100vw - 24px)); padding: 14px;
+  /* nunca llega a la isla ni al reproductor de abajo */
+  max-height: calc(100dvh - 240px - var(--sat, 0px) - var(--sab, 0px)); overflow-y: auto; overscroll-behavior: contain;
+  border-radius: 24px; color: var(--text); background: var(--surface-strong); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: var(--rim), var(--depth), var(--iri-glow); transform-origin: calc(100% - 22px) -8px;
+  opacity: 0; visibility: hidden; scale: .92; translate: 0 -6px;
+  transition: opacity var(--m-dur-fast) var(--m-ease-out), scale var(--m-dur-fast) var(--m-ease-out), translate var(--m-dur-fast) var(--m-ease-out), visibility 0s var(--m-dur-fast); }
+.pm-bubble.on { opacity: 1; visibility: visible; scale: 1; translate: 0 0;
+  transition: opacity var(--m-dur-base) var(--m-ease-out), scale var(--m-spring-snappy-dur) var(--m-spring-snappy), translate var(--m-spring-snappy-dur) var(--m-spring-snappy), visibility 0s; }
+/* cola de la burbuja: dibujada con un degradado para no recortarla con overflow */
+.pm::after { content: ''; position: absolute; top: calc(100% + 6px); right: 15px; width: 14px; height: 14px; rotate: 45deg; border-radius: 3px 0 0 0;
+  background: var(--surface-strong); box-shadow: inset 1px 1px 0 var(--line-hi); opacity: 0; pointer-events: none; transition: opacity var(--m-dur-fast) var(--m-ease-out); }
+.pm:has(.pm-bubble.on)::after { opacity: 1; }
+
+.pm-head { display: flex; align-items: center; gap: 10px; padding: 2px 4px 12px; border-bottom: 1px solid var(--line); }
+.pm-avatar { flex: none; width: 40px; height: 40px; font-size: 16px; box-shadow: var(--rim-plate); background: var(--plate-hi); }
+.pm-id { display: grid; gap: 1px; min-width: 0; }
+.pm-id b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pm-id span { font-size: 12px; color: var(--muted); }
+
+.pm-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding-top: 10px; }
+.pm-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 66px; padding: 8px 2px; border-radius: 16px;
+  font-size: 11.5px; line-height: 1.15; text-align: center; color: var(--muted); cursor: pointer;
+  transition: color var(--m-dur-fast) var(--m-ease-out), background var(--m-dur-fast) var(--m-ease-out); }
+.pm-item .ico { width: 21px; height: 21px; }
+.pm-item:hover { color: var(--text); background: var(--plate); }
+.pm-item[aria-current="page"] { color: var(--text); background: var(--plate-hi); box-shadow: var(--rim-plate); }
+.pm-item[aria-current="page"] .ico { filter: drop-shadow(0 0 7px color-mix(in oklab, var(--iri-1) 80%, transparent)); }
+.pm-bubble.on .pm-item { animation: pm-item var(--m-spring-snappy-dur) var(--m-spring-snappy) backwards; animation-delay: calc(var(--i) * 18ms); }
+@keyframes pm-item { from { opacity: 0; transform: translateY(6px) scale(.96); } }
+
+@media (max-width: 700px) {
+  .pm { top: calc(14px + var(--sat, 0px)); right: calc(12px + var(--sar, 0px)); }
+  #app .topbar { padding-right: calc(14px + 54px); min-height: 60px; }
+  .pm-bubble { width: min(316px, calc(100vw - 24px - var(--sal, 0px) - var(--sar, 0px))); }
+}
+body.no-motion .pm-bubble, body.no-motion .pm-bubble.on { transition: none; scale: 1; translate: none; }
+body.no-motion .pm-bubble.on .pm-item { animation: none; }
+body.no-motion .pm-btn { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .pm-bubble, .pm-bubble.on { transition: none; scale: 1; translate: none; }
+  .pm-bubble.on .pm-item { animation: none; }
+}
+
+/* cuenta: cerrar sesión y cambiar de cuenta, separadas de la navegación */
+.pm-account { display: grid; gap: 2px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.pm-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px; border-radius: 12px; color: var(--text); font-size: 14px; font-weight: 500; text-align: left; transition: background var(--m-dur-fast); }
+.pm-row:hover, .pm-row:focus-visible { background: var(--plate-hi); }
+.pm-row .ico, .pm-row svg { width: 18px; height: 18px; flex: none; }
+

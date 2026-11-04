@@ -1,0 +1,169 @@
+/* ==========================================================================
+   Prisma Motion — capa CSS del motor de animaciones (js/motion/).
+   · @property: variables tipadas que el navegador puede interpolar (transiciones de color, ángulos, progreso).
+   · [data-reveal]: entradas al desplazar. Con soporte nativo se atan al scroll (animation-timeline: view()),
+     sin JS; si no, js/motion/reveal.js usa un IntersectionObserver y la API de Animaciones Web.
+   · View Transitions: navegación con fundido y elementos compartidos (view-transition-name).
+   Las curvas de resorte llegan como variables --m-spring-* desde js/motion/tokens.js.
+   ========================================================================== */
+@property --m-scroll { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --m-hue { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --m-glow { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+@property --m-x { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --m-y { syntax: '<number>'; inherits: true; initial-value: 0; }
+/* luz que sigue al puntero (main.js / interact.js): NO heredables. Heredadas, cada movimiento sobre una
+   superficie grande (.fx-main, el feed entero) recalculaba el estilo de sus ~2000 descendientes (≈ 19 ms
+   por fotograma en PC, > 80 ms en móvil). Sólo las leen el propio elemento y sus ::before/::after. */
+@property --mx { syntax: '*'; inherits: false; }
+@property --my { syntax: '*'; inherits: false; }
+@property --sx { syntax: '*'; inherits: false; }
+@property --sy { syntax: '*'; inherits: false; }
+@property --gx { syntax: '*'; inherits: false; }
+@property --gy { syntax: '*'; inherits: false; }
+@property --m-light-x { syntax: '*'; inherits: false; }
+@property --m-light-y { syntax: '*'; inherits: false; }
+::before, ::after { --mx: inherit; --my: inherit; --sx: inherit; --sy: inherit; --gx: inherit; --gy: inherit; }
+
+:root {
+  /* valores de respaldo hasta que tokens.js instala las curvas de resorte */
+  --m-spring-snappy: cubic-bezier(.2, .9, .2, 1.1); --m-spring-snappy-dur: 280ms;
+  --m-spring-smooth: cubic-bezier(.2, .8, .2, 1); --m-spring-smooth-dur: 520ms;
+  --m-spring-gentle: cubic-bezier(.2, .8, .2, 1); --m-spring-gentle-dur: 760ms;
+  --m-spring-bouncy: cubic-bezier(.3, 1.4, .5, 1); --m-spring-bouncy-dur: 620ms;
+  --m-dur-fast: 160ms; --m-dur-base: 260ms; --m-dur-slow: 420ms;
+  --m-ease-out: cubic-bezier(.2, .8, .2, 1);
+}
+
+/* ---------- entradas al desplazar ---------- */
+@keyframes m-fade-up { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes m-scale-in { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+@keyframes m-blur-in { from { opacity: 0; filter: blur(12px); transform: scale(1.04); } to { opacity: 1; filter: none; transform: none; } }
+@keyframes m-slide-left { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
+
+.m-wait:not([data-reveal-children]), .m-wait[data-reveal-children] > * { opacity: 0; }
+@supports (animation-timeline: view()) {
+  [data-reveal].m-native:not([data-reveal-children]), [data-reveal-children].m-native > * {
+    animation: m-fade-up linear both; animation-timeline: view(); animation-range: entry 0% entry 75%;
+  }
+  [data-reveal="scaleIn"].m-native:not([data-reveal-children]), [data-reveal="scaleIn"][data-reveal-children].m-native > * { animation-name: m-scale-in; }
+  [data-reveal="blurIn"].m-native:not([data-reveal-children]), [data-reveal="blurIn"][data-reveal-children].m-native > * { animation-name: m-blur-in; }
+  [data-reveal="slideLeft"].m-native:not([data-reveal-children]), [data-reveal="slideLeft"][data-reveal-children].m-native > * { animation-name: m-slide-left; }
+  /* escalonado nativo: cada hijo arranca un poco después dentro del rango de entrada */
+  [data-reveal-children].m-native > :nth-child(2) { animation-range: entry 4% entry 79%; }
+  [data-reveal-children].m-native > :nth-child(3) { animation-range: entry 8% entry 83%; }
+  [data-reveal-children].m-native > :nth-child(4) { animation-range: entry 12% entry 87%; }
+  [data-reveal-children].m-native > :nth-child(n+5) { animation-range: entry 16% entry 91%; }
+}
+
+/* ---------- microinteracciones (los resortes los mueve js/motion/interact.js) ---------- */
+[data-magnet]:hover, [data-tilt]:hover { will-change: transform; }
+[data-tilt] { transform-style: preserve-3d; }
+
+/* Luz localizada y profundidad contenida, sin desenfoque adicional. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  body:not(.no-motion) :is([data-tilt], [data-magnet], .hc-stack, .controls.big .btn-play):hover {
+    background-image: radial-gradient(circle at var(--m-light-x, 50%) var(--m-light-y, 35%), rgb(255 255 255 / .18), transparent 65%);
+  }
+  body:not(.no-motion) [data-tilt]:hover {
+    box-shadow: var(--rim-plate), 0 18px 42px -24px color-mix(in oklab, var(--accent) 35%, transparent);
+  }
+}
+
+/* ---------- transiciones de navegación (View Transitions) ---------- */
+::view-transition-old(root) { animation: var(--m-dur-base) var(--m-ease-out) both m-vt-out; }
+::view-transition-new(root) { animation: var(--m-spring-smooth-dur) var(--m-spring-smooth) both m-vt-in; }
+@keyframes m-vt-out { to { opacity: 0; transform: scale(.985); } }
+@keyframes m-vt-in { from { opacity: 0; transform: translateY(10px) scale(1.01); } }
+/* elementos compartidos: la carátula viaja de la barra a "Ahora suena", la portada de la tarjeta al perfil */
+::view-transition-group(*) { animation-duration: var(--m-spring-smooth-dur); animation-timing-function: var(--m-spring-smooth); }
+
+/* sin movimiento: todo en su estado final */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal], [data-reveal] > * { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+body.no-motion [data-reveal], body.no-motion [data-reveal] > * { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+
+/* ==========================================================================
+   0.2 · Migración: las curvas globales de la app salen del motor.
+   Todo lo que usaba var(--spring) / var(--ease) (≈ 40 transiciones en app, components, discover y glass)
+   ahora se mueve con los resortes reales del motor, sin tocar cada regla.
+   ========================================================================== */
+:root {
+  --m-spring-ui: cubic-bezier(.34, 1.56, .64, 1); --m-spring-ui-dur: 600ms;
+  --spring: var(--m-spring-ui);
+  --ease: var(--m-ease-out);
+  --m-stagger: 32ms;
+}
+@keyframes m-enter { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+.enter { animation: m-enter var(--m-spring-gentle-dur) var(--m-spring-gentle) backwards; animation-delay: calc(var(--i, 0) * var(--m-stagger)); }
+.hero-in { animation-duration: var(--m-spring-gentle-dur); animation-timing-function: var(--m-spring-gentle); }
+.hc-slide, .hc-slide.on { transition-timing-function: var(--m-spring-heavy); }
+.fx-new { animation: fx-drop var(--m-spring-bouncy-dur) var(--m-spring-bouncy); }
+.panel { transition-timing-function: var(--m-spring-smooth); }
+.np, .np.open { transition-timing-function: var(--m-spring-heavy); }
+.modal { transition-timing-function: var(--m-spring-smooth); }
+body.no-motion .enter { animation: none; }
+
+/* ==========================================================================
+   0.2 · Luz y vidrio
+   · Brillo difuso y reflejo de borde que siguen al puntero (--sx/--sy los escribe main.js, sólo en la
+     superficie bajo el mouse). El reflejo es un borde de 1 px enmascarado: vidrio con canto iluminado.
+   · Grano fino en el fondo: rompe las bandas de los degradados oscuros.
+   ========================================================================== */
+/* :where = especificidad 0: si una superficie ya está posicionada (absolute, sticky…), gana su regla */
+:where(.glass-soft, .fx-card, .fx-main, .hc, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty) { position: relative; --sx: 50%; --sy: -30%; }
+:is(.glass-soft, .fx-card, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty):not(.lit)::before,
+:is(.glass-soft, .fx-card, .fx-main, .hc, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty):not(.lit)::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  transition: opacity var(--m-dur-slow) var(--m-ease-out);
+}
+/* brillo difuso */
+:is(.glass-soft, .fx-card, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty):not(.lit)::before {
+  background: radial-gradient(340px circle at var(--sx) var(--sy), rgb(255 255 255 / .07), transparent 65%);
+}
+/* canto iluminado */
+:is(.glass-soft, .fx-card, .fx-main, .hc, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty):not(.lit)::after {
+  padding: 1px; z-index: 4;
+  background: radial-gradient(260px circle at var(--sx) var(--sy), rgb(255 255 255 / .55), color-mix(in oklab, var(--iri-1) 30%, transparent) 40%, transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+@media (hover: hover) {
+  :is(.glass-soft, .fx-card, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty):not(.lit):hover::before,
+  :is(.glass-soft, .fx-card, .fx-main, .hc, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty):not(.lit):hover::after { opacity: 1; }
+}
+:root[data-scheme="light"] :is(.glass-soft, .fx-card, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty):not(.lit)::before { background: radial-gradient(340px circle at var(--sx) var(--sy), rgb(255 255 255 / .55), transparent 65%); }
+.scrolling :is(.glass-soft, .fx-card, .fx-main, .hc, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty)::before,
+.scrolling :is(.glass-soft, .fx-card, .fx-main, .hc, .wl-card, .fa-card, .tier, .ap-popular, .zu-empty)::after { opacity: 0 !important; }
+
+/* grano del fondo (SVG de ruido, 3 % — se pinta una vez, no cuesta por fotograma) */
+#bg::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .035; z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+
+/* ==========================================================================
+   0.2 · Sangrado de perfiles
+   · La portada se desvanece con una curva suave de muchos tramos (sin el "corte" de un degradado lineal).
+   · Los colores de la imagen (--ap-c1/--ap-c2, de js/ui/artcolor.js) bañan la página hacia abajo y
+     aparecen con una transición de color tipada (@property).
+   ========================================================================== */
+@property --ap-tint { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+.ap-v2 .ap-cover {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .99) 18%, rgb(0 0 0 / .95) 30%, rgb(0 0 0 / .86) 42%, rgb(0 0 0 / .72) 53%, rgb(0 0 0 / .54) 63%, rgb(0 0 0 / .36) 72%, rgb(0 0 0 / .2) 81%, rgb(0 0 0 / .08) 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .99) 18%, rgb(0 0 0 / .95) 30%, rgb(0 0 0 / .86) 42%, rgb(0 0 0 / .72) 53%, rgb(0 0 0 / .54) 63%, rgb(0 0 0 / .36) 72%, rgb(0 0 0 / .2) 81%, rgb(0 0 0 / .08) 90%, transparent 100%);
+}
+.ap { isolation: isolate; }
+.ap::before { content: ''; position: absolute; z-index: -2; pointer-events: none; left: calc(-1 * var(--ap-px)); right: calc(-1 * var(--ap-px)); top: -10px; height: min(150vh, 1400px);
+  background:
+    radial-gradient(80% 55% at 18% 8%, color-mix(in oklab, var(--ap-c1, transparent) var(--ap-tint), transparent), transparent 70%),
+    radial-gradient(70% 50% at 85% 18%, color-mix(in oklab, var(--ap-c2, transparent) var(--ap-tint), transparent), transparent 72%),
+    linear-gradient(to bottom, color-mix(in oklab, var(--ap-c1, transparent) calc(var(--ap-tint) * .5), transparent) 0%, transparent 85%);
+  -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent);
+  transition: --ap-tint 1.2s var(--m-ease-out); }
+.ap.ap-tinted { --ap-tint: 38%; }
+:root[data-scheme="light"] .ap.ap-tinted { --ap-tint: 26%; }
+/* el oscurecido bajo el nombre toma el tinte para que el sangrado sea continuo */
+.ap-tinted .ap-v2::after { background: linear-gradient(transparent, color-mix(in oklab, color-mix(in oklab, var(--ap-c1) 12%, var(--bg-base)) 72%, transparent)); }
+/* el nombre recibe una luz del color de la portada */
+.ap-tinted .ap-name { text-shadow: 0 2px 40px color-mix(in oklab, var(--ap-c1) 45%, transparent); }
+.ap-tinted .ap-popular { box-shadow: var(--rim-plate), 0 30px 80px -50px color-mix(in oklab, var(--ap-c1) 60%, transparent); }

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es" data-scheme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#dfe3ec">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com https://www.gstatic.com https://cdn.jsdelivr.net/npm/@supabase/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: https://dyymeqjqyjfqkxtbxmvg.supabase.co wss://dyymeqjqyjfqkxtbxmvg.supabase.co; frame-src https://accounts.google.com https://*.firebaseapp.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <!-- app instalable: escritorio (Edge/Chrome) y iPhone (Safari → Agregar a inicio) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ZUENA">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>ZUENA</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32'/%3E%3Cpath d='M19 20h26L19 44h26' fill='none' stroke='%23fff' stroke-width='6.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/discover.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&family=Inter+Tight:wght@300..800&display=swap">
+  <link rel="stylesheet" href="css/glass.css">
+  <link rel="stylesheet" href="css/motion.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/profiles.css">
+  <link rel="stylesheet" href="css/feed.css">
+  <link rel="stylesheet" href="css/island.css">
+  <link rel="stylesheet" href="css/appearance.css">
+  <link rel="stylesheet" href="css/legal.css">
+  <link rel="stylesheet" href="css/island-center.css">
+  <link rel="stylesheet" href="css/regional.css">
+  <link rel="stylesheet" href="css/island-content.css">
+  <link rel="stylesheet" href="css/quality-fixes.css">
+  <link rel="stylesheet" href="css/player-system.css">
+  <link rel="stylesheet" href="css/home-carousels.css">
+  <link rel="stylesheet" href="css/profile-menu.css">
+</head>
+<body>
+  <div id="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><span class="sph s1"></span><span class="sph s2"></span><span class="sph s3"></span></div>
+
+  <div id="app">
+    <main class="main glass" id="main">
+      <header class="topbar">
+        <label class="search lit">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" type="search" placeholder="Buscar en ZUENA y en tu música  ( / )" autocomplete="off">
+        </label>
+        <div class="status" id="status"></div>
+        <button type="button" class="btn-icon lit js-float" data-action="floating-player" aria-label="Abrir reproductor en otra ventana" title="Reproductor flotante" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M13 11h8v9h-8z"/></svg></button>
+      </header>
+      <div class="view" id="view"></div>
+    </main>
+  </div>
+
+  <!-- barra flotante: la isla de navegación y, a su derecha, el reproductor desplegable -->
+  <div class="floatbar" id="floatbar">
+    <nav class="island" id="island" aria-label="Navegación principal"></nav>
+    <section class="player glass spot" id="dock" aria-label="Reproductor"></section>
+  </div>
+
+  <section class="np" id="np" aria-hidden="true"></section>
+  <aside class="panel glass" id="panel" aria-hidden="true"></aside>
+
+  <div class="drop" id="drop">
+    <div class="drop-card glass">
+      <div class="drop-ring"></div>
+      <h2>Soltá tu música acá</h2>
+      <p>FLAC, ALAC, WAV, MP3, AAC, Opus, Ogg — archivos o carpetas completas</p>
+    </div>
+  </div>
+  <div class="toast glass" id="toast" role="status"></div>
+
+  <input type="file" id="pick-files" multiple accept="audio/*,.flac,.m4a,.alac,.opus,.ogg,.wav,.aif,.aiff" hidden>
+  <input type="file" id="pick-folder" webkitdirectory multiple hidden>
+
+  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/legal/index.js"></script>
+  <script type="module" src="js/ui/profile-menu.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+/* ==========================================================================
+   Apartados legales, aviso de cookies y casilla de consentimiento (2026-11-02).
+   Vidrio Prisma (clase .glass / .glass-soft) y tiempos del motor (--m-*). Sin duraciones sueltas.
+   ========================================================================== */
+
+/* enlace en línea dentro de un texto (botón que abre un documento) */
+.link-inline { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.link-inline:hover, .link-inline:focus-visible { color: var(--text); }
+
+/* ---------- hoja de documentos ---------- */
+.lg-root { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 20px; }
+.lg-scrim { position: absolute; inset: 0; background: color-mix(in oklab, var(--bg-base) 40%, #0009); backdrop-filter: blur(12px) saturate(1.2); -webkit-backdrop-filter: blur(12px) saturate(1.2); }
+.lg-sheet { position: relative; display: grid; grid-template-columns: 260px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
+  width: min(1000px, 100%); height: min(760px, calc(100dvh - 40px)); border-radius: 30px; overflow: hidden; box-shadow: 0 50px 120px -40px #000b; }
+.lg-head { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 18px 14px 24px; border-bottom: 1px solid var(--line); }
+.lg-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.lg-brand h1 { margin: 0; font-family: var(--font-display); font-size: 22px; letter-spacing: -.02em; }
+.lg-badge { padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: #7a4b00; background: color-mix(in oklab, #ffb020 32%, transparent); border: 1px solid color-mix(in oklab, #ffb020 55%, transparent); }
+:root[data-scheme="dark"] .lg-badge { color: #ffd27a; }
+.lg-x { width: 44px; height: 44px; }
+
+.lg-nav { display: grid; align-content: start; gap: 4px; padding: 14px 12px; overflow-y: auto; border-right: 1px solid var(--line); }
+.lg-tab { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border-radius: 14px; text-align: left; font: inherit; font-size: 14px; font-weight: 560;
+  color: var(--muted); background: none; border: 0; cursor: pointer; transition: background var(--m-dur-fast) var(--m-ease-out), color var(--m-dur-fast) var(--m-ease-out); }
+.lg-tab .ico { width: 18px; height: 18px; flex: none; }
+.lg-tab:hover { color: var(--text); background: color-mix(in oklab, var(--text) 6%, transparent); }
+.lg-tab.on { color: var(--text); background: color-mix(in oklab, var(--accent) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent); }
+.lg-tab.on .ico { color: var(--accent); }
+
+.lg-body { overflow-y: auto; overscroll-behavior: contain; padding: 22px clamp(20px, 4vw, 44px) 40px; }
+.lg-doc { max-width: 680px; }
+.lg-doc h2 { margin: 14px 0 6px; font-family: var(--font-display); font-size: clamp(26px, 3vw, 34px); letter-spacing: -.03em; outline: none; }
+.lg-doc h3 { margin: 22px 0 6px; font-size: 16px; }
+.lg-doc p, .lg-doc li { color: var(--muted); font-size: 15px; line-height: 1.6; }
+.lg-doc p { margin: 0 0 8px; }
+.lg-doc ul { margin: 0 0 8px; padding-left: 20px; display: grid; gap: 4px; }
+.lg-lead { font-size: 16px !important; color: var(--text) !important; }
+.lg-muted { color: var(--faint); font-size: 13.5px; }
+.lg-draft { display: flex; align-items: flex-start; gap: 10px; margin: 0 !important; padding: 12px 14px; border-radius: 16px; font-size: 13.5px !important; line-height: 1.45 !important;
+  color: var(--text) !important; background: color-mix(in oklab, #ffb020 16%, transparent); border: 1px solid color-mix(in oklab, #ffb020 45%, transparent); }
+.lg-draft .ico { width: 18px; height: 18px; flex: none; color: #c27a00; margin-top: 1px; }
+:root[data-scheme="dark"] .lg-draft .ico { color: #ffc14d; }
+
+.lg-pill { flex: none; align-self: center; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--muted); background: color-mix(in oklab, var(--text) 8%, transparent); white-space: nowrap; }
+.lg-pill.off { color: var(--faint); }
+
+.lg-contacts { list-style: none; padding: 0 !important; margin: 18px 0 8px !important; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px !important; }
+.lg-contact { display: flex; gap: 12px; padding: 14px; border-radius: 18px; }
+.lg-contact > div { flex: 1; min-width: 0; }
+.lg-contact b { color: var(--text); }
+.lg-contact p { margin: 2px 0 6px; font-size: 13.5px; line-height: 1.45; }
+.lg-contact code { font-size: 13px; color: var(--faint); }
+.lg-c-ico { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 12px; color: var(--accent); background: color-mix(in oklab, var(--accent) 14%, transparent); }
+.lg-c-ico .ico { width: 18px; height: 18px; }
+.lg-contact .lg-pill { align-self: flex-start; }
+
+.lg-cookie-cfg { margin-top: 26px; padding: 18px; border-radius: 20px; background: color-mix(in oklab, var(--tint) 50%, transparent); border: 1px solid var(--line); }
+.lg-cookie-cfg h3 { margin-top: 0; }
+.lg-groups { list-style: none; padding: 0 !important; display: grid; gap: 0 !important; }
+.lg-group { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.lg-group:last-child { border-bottom: 0; }
+.lg-group b { color: var(--text); font-size: 14.5px; }
+.lg-group p { margin: 2px 0 0; font-size: 13.5px; line-height: 1.45; }
+.lg-cfg-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 8px; }
+.lg-cfg-actions [aria-pressed="true"] { box-shadow: 0 0 0 2px var(--accent); }
+
+/* ---------- aviso de cookies ---------- */
+.cookie-banner { position: fixed; z-index: 150; left: 50%; bottom: calc(16px + var(--sab, 0px)); translate: -50% 0; width: min(760px, calc(100vw - 24px));
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; padding: 16px 18px; border-radius: 24px; box-shadow: 0 30px 80px -30px #0009; }
+.cookie-ico { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; color: var(--accent); background: color-mix(in oklab, var(--accent) 14%, transparent); }
+.cookie-ico .ico { width: 20px; height: 20px; }
+.cookie-text h2 { margin: 2px 0 4px; font-size: 16px; }
+.cookie-text p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+.cookie-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.cookie-actions button { min-height: 44px; }
+body.legal-open .cookie-banner { visibility: hidden; }
+
+/* ---------- casilla de consentimiento del alta ---------- */
+.consent-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; font-size: 13.5px; line-height: 1.45; color: var(--muted); cursor: pointer; }
+.consent-row input { flex: none; width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--accent); cursor: pointer; }
+.consent-row input.invalid { outline: 2px solid var(--danger, #e5484d); outline-offset: 2px; }
+.consent-note { margin: -2px 0 0 30px; font-size: 12px; color: var(--faint); }
+
+/* línea legal del panel de acceso (sin aceptación: sólo enlaces) */
+.ld-auth-legal { margin: 8px 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; }
+.ld-auth-legal .link-inline { color: var(--faint); font-size: 12px; }
+.ld-foot-legal { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.ld-foot-legal .link-inline { color: var(--muted); text-decoration: none; font-size: 13px; }
+.ld-foot-legal .link-inline:hover, .ld-foot-legal .link-inline:focus-visible { color: var(--text); text-decoration: underline; }
+
+@media (pointer: coarse) {
+  .consent-row input { width: 24px; height: 24px; }
+  .link-inline { padding-block: 10px; margin-block: -10px; }
+}
+@media (max-width: 760px) {
+  .lg-root { padding: 0; place-items: end center; }
+  .lg-sheet { grid-template-columns: 1fr; grid-template-rows: auto auto minmax(0, 1fr); width: 100%; height: 100dvh; border-radius: 0; }
+  .lg-nav { display: flex; gap: 6px; padding: 10px 12px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+  .lg-tab { flex: none; white-space: nowrap; }
+  .lg-body { padding: 18px 18px calc(28px + var(--sab, 0px)); }
+  .lg-head { padding: calc(12px + var(--sat, 0px)) 12px 10px 18px; }
+  .cookie-banner { grid-template-columns: minmax(0, 1fr); bottom: calc(10px + var(--sab, 0px)); padding: 14px; }
+  .cookie-ico { display: none; }
+  .cookie-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .cookie-actions [data-cookie="all"] { grid-column: 1 / -1; grid-row: 1; }
+}
