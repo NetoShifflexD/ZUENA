@@ -1,6 +1,6 @@
 // Búsqueda unificada. Sólo datos accesibles de la cuenta y catálogo de prueba habilitado.
 import { TEST_CATALOG } from './config.js';
-import { TEST_ARTISTS, testSongs, testReleases } from './data/testArtists.js';
+import { TEST_ARTISTS, testSongs, testReleases, testArtistCards } from './data/testArtists.js';
 import { canView } from './data/subs.js';
 
 const fold = (value) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').trim().replace(/\s+/g, ' ');
@@ -13,6 +13,17 @@ export function searchRank(query, title, extra = '') {
 function bounded(promise) {
   let timer;
   return Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Fuente sin respuesta')), 8000); })]).finally(() => clearTimeout(timer));
+}
+function dedupTracks(list) {
+  const seen = new Set();
+  const out = [];
+  for (const t of list) {
+    const sig = `${fold(t.title)}|${fold(t.artist)}`;
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    out.push(t);
+  }
+  return out;
 }
 
 export async function searchEverything(app, query, { catalog = TEST_CATALOG, onPartial } = {}) {
@@ -30,15 +41,16 @@ export async function searchEverything(app, query, { catalog = TEST_CATALOG, onP
   };
   const profiles = [...(app.posts?.authors?.values() || [])];
   if (app.profile && !profiles.some((p) => p.uid === app.profile.uid)) profiles.push(app.profile);
-  add('Perfiles', [...profiles.filter((p) => p.role === 'artist' || p.uid === app.user?.uid).map((p) => ({
+  const zuProfiles = profiles.filter((p) => p.role === 'artist' || p.uid === app.user?.uid).map((p) => ({
     title: p.displayName || p.username || 'Perfil', extra: p.username, sub: p.role === 'artist' ? 'Artista de ZUENA' : 'Tu perfil',
-    action: p.role === 'artist' ? 'open-artist' : 'nav', id: `zu:${p.uid}`, view: 'profile',
-  })), ...(includeCatalog ? TEST_ARTISTS.map((p) => ({ title: p.name, sub: 'Catálogo de prueba · Apple Music', action: 'open-artist', id: `am:${p.id}` })) : [])]);
-  const remotePending = includeCatalog ? Promise.allSettled([bounded(testSongs()), bounded(testReleases())]) : Promise.resolve([]);
+    action: p.role === 'artist' ? 'open-artist' : 'nav', id: `zu:${p.uid}`, view: 'profile', art: p.avatar || null,
+  }));
+  add('Perfiles', [...zuProfiles, ...(includeCatalog ? TEST_ARTISTS.map((p) => ({ title: p.name, sub: 'Catálogo de prueba · Apple Music', action: 'open-artist', id: `am:${p.id}` })) : [])]);
+  const remotePending = includeCatalog ? Promise.allSettled([bounded(testSongs()), bounded(testReleases()), bounded(testArtistCards())]) : Promise.resolve([]);
   const tracks = new Map([...(app.library?.tracks || [])].filter((t) => !app.isAvailable || app.isAvailable(t)).map((t) => [t.id, t]));
-  add('Canciones', [...tracks.values()].map((t) => ({ title: t.title, extra: t.artist, sub: t.artist || 'Tu biblioteca', track: t })));
+  add('Canciones', dedupTracks([...tracks.values()]).map((t) => ({ title: t.title, extra: t.artist, sub: t.artist || 'Tu biblioteca', track: t, art: t.artwork || null })));
   add('Estrenos y lanzamientos', [...(app.releases?.upcoming() || []), ...(app.releases?.live() || [])].map((r) => ({
-    title: r.title, extra: r.artistName || r.artist, sub: r.status === 'scheduled' ? 'Próximo estreno' : 'Publicado en ZUENA', action: 'search-release', id: r.id,
+    title: r.title, extra: r.artistName || r.artist, sub: r.status === 'scheduled' ? 'Próximo estreno' : 'Publicado en ZUENA', action: 'search-release', id: r.id, art: r.coverThumb || r.artwork || null,
   })));
   add('Tus playlists', (app.playlists?.list || []).filter((p) => !p.owner || p.owner === app.user?.uid).map((p) => ({ title: p.name, sub: 'Playlist privada de tu biblioteca', action: 'playlist', id: p.id })));
   const posts = [...new Map([...(app.posts?.list || []), ...(app.posts?.derived?.values() || [])].map((p) => [p.id, p])).values()];
@@ -52,11 +64,16 @@ export async function searchEverything(app, query, { catalog = TEST_CATALOG, onP
   const remote = await remotePending;
   const songs = remote[0]?.status === 'fulfilled' ? remote[0].value : [];
   const releases = remote[1]?.status === 'fulfilled' ? remote[1].value : [];
+  const cards = remote[2]?.status === 'fulfilled' ? remote[2].value : [];
+  if (cards.length) {
+    const cardArt = new Map(cards.map((c) => [String(c.id), c.artwork]));
+    add('Perfiles', [...zuProfiles, ...(includeCatalog ? TEST_ARTISTS.map((p) => ({ title: p.name, sub: 'Catálogo de prueba · Apple Music', action: 'open-artist', id: `am:${p.id}`, art: cardArt.get(String(p.id)) || null })) : [])]);
+  }
   for (const t of songs) if (!app.isAvailable || app.isAvailable(t)) tracks.set(t.id, t);
-  add('Canciones', [...tracks.values()].map((t) => ({ title: t.title, extra: t.artist, sub: t.artist || 'Tu biblioteca', track: t })));
+  add('Canciones', dedupTracks([...tracks.values()]).map((t) => ({ title: t.title, extra: t.artist, sub: t.artist || 'Tu biblioteca', track: t, art: t.artwork || null })));
   const localReleases = groups.find((g) => g.label === 'Estrenos y lanzamientos')?.items || [];
-  add('Estrenos y lanzamientos', [...localReleases, ...releases.map((r) => ({ title: r.title, extra: r.artist, sub: r.artist, action: 'open-amc', id: r.collectionId }))]);
+  add('Estrenos y lanzamientos', [...localReleases, ...releases.map((r) => ({ title: r.title, extra: r.artist, sub: r.artist, action: 'open-amc', id: r.collectionId, art: r.artwork || null }))]);
   const order = ['Perfiles', 'Canciones', 'Estrenos y lanzamientos', 'Tus playlists', 'Publicaciones'];
   groups.sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label));
-  return { groups, partial: remote.some((r) => r.status === 'rejected') };
+  return { groups, partial: remote.slice(0, 2).some((r) => r.status === 'rejected') };
 }

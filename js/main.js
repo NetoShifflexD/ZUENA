@@ -1737,6 +1737,7 @@ function bindEvents() {
     await userLoads.catch(() => {});
     if (auth.user) return;
     await Promise.all([playlists.load(null), artist.load(null), stats.load(null), taste.load(null)]);
+    if (auth.user) return;
     ui.accountLoading = false;
     renderIsland();
     els.view.innerHTML = '';

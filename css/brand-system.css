@@ -63,6 +63,11 @@ html[data-design="point"] :is(.btn-glass,.btn-icon,.chip,.seg-btn,.tab):hover { 
 html[data-design="point"] :is(.btn-primary,.btn-play,.btn-glass.primary):hover { background: color-mix(in srgb,var(--z-action) 86%,var(--z-on-action)); color: var(--z-on-action); }
 html[data-design="point"] button:disabled { opacity: .42; }
 html[data-design="point"] :is(button,a,input,select,textarea,[tabindex]):focus-visible { outline: 2px solid var(--z-ink); outline-offset: 3px; }
+html[data-design="point"] [tabindex="-1"]:focus,
+html[data-design="point"] [tabindex="-1"]:focus-visible { outline: none !important; box-shadow: none !important; }
+html[data-design="point"] :is(.search input,#search):focus,
+html[data-design="point"] :is(.search input,#search):focus-visible { outline: none !important; box-shadow: none !important; }
+html[data-design="point"] .search:focus-within { border-color: var(--z-ink); box-shadow: 0 0 0 2px rgb(24 26 28 / .12); }
 html[data-design="point"] :is(.input,.select,textarea,.search) { background: var(--z-raised); color: var(--z-ink); border: 1px solid var(--z-line); box-shadow: none; border-radius: var(--z-radius-sm); }
 html[data-design="point"] :is(.input,.select,textarea) { min-height: 48px; padding: 13px 15px; font-size: 16px; }
 html[data-design="point"] .input-icon > .input { padding-left: 44px; }
@@ -160,6 +165,25 @@ html[data-design="point"][data-glass="solid"] .panel { backdrop-filter: none; -w
 html[data-design="point"][data-glass="clear"] { --z-glass: color-mix(in srgb,var(--z-raised) 82%,transparent); }
 html[data-design="point"] :is(button,a,[role="button"],input,select,textarea,summary) { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 html[data-design="point"] :is(.shelf,.h-scroll,.chips.scroll,.lib-tabs) { -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
+/* Barras de scroll ocultas en toda la interfaz para máxima inmersión */
+html, body, #view, .view, .welcome, .ld, .island-panel, .island-content, .panel, .panel-body, .np-body,
+.shelf, .h-scroll, .chips, .discovery-families, .hc-dots, .fx-tabs, .fx-stories, .ap-tabs, .lib-tabs,
+.pe-fields, .modal, .hp-results, .island-search-filters {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar, #view::-webkit-scrollbar, .view::-webkit-scrollbar,
+.welcome::-webkit-scrollbar, .ld::-webkit-scrollbar, .island-panel::-webkit-scrollbar,
+.island-content::-webkit-scrollbar, .panel::-webkit-scrollbar, .panel-body::-webkit-scrollbar,
+.np-body::-webkit-scrollbar, .shelf::-webkit-scrollbar, .h-scroll::-webkit-scrollbar,
+.chips::-webkit-scrollbar, .discovery-families::-webkit-scrollbar, .hc-dots::-webkit-scrollbar,
+.fx-tabs::-webkit-scrollbar, .fx-stories::-webkit-scrollbar, .ap-tabs::-webkit-scrollbar,
+.lib-tabs::-webkit-scrollbar, .pe-fields::-webkit-scrollbar, .modal::-webkit-scrollbar,
+.hp-results::-webkit-scrollbar, .island-search-filters::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
 @media(pointer:coarse) {
   html[data-design="point"] input[type="range"].range { touch-action: none; }
   html[data-design="point"] input[type="range"].range::-webkit-slider-thumb { width: 22px; height: 22px; }

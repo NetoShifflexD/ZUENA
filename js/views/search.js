@@ -10,7 +10,11 @@ export function searchMarkup(result) {
     if (r.track) see(r.track);
     const attrs = r.track ? `data-action="search-track" data-id="${esc(r.track.id)}" aria-label="Reproducir ${esc(r.title)}"`
       : `data-action="${r.action}" data-id="${esc(r.id)}"${r.view ? ` data-view="${r.view}"` : ''}`;
-    return `<button type="button" class="us-result lit" ${attrs}><span class="us-result-icon">${icon(r.track ? 'music' : g.label === 'Publicaciones' ? 'feed' : g.label === 'Perfiles' ? 'user' : 'disc')}</span><span><b>${esc(r.title)}</b><small>${esc(r.sub || r.extra || '')}</small></span>${icon('arrowRight')}</button>`;
+    const artUrl = r.art || r.track?.artwork || null;
+    const thumb = artUrl
+      ? `<img class="us-result-art${g.label === 'Perfiles' ? ' round' : ''}" src="${esc(artUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
+      : icon(r.track ? 'music' : g.label === 'Publicaciones' ? 'feed' : g.label === 'Perfiles' ? 'user' : 'disc');
+    return `<button type="button" class="us-result lit" ${attrs}><span class="us-result-icon${artUrl ? ' has-art' : ''}">${thumb}</span><span><b>${esc(r.title)}</b><small>${esc(r.sub || r.extra || '')}</small></span>${icon('arrowRight')}</button>`;
   }).join('')}</section>`).join('');
   return `${result.loading ? '<p class="muted" role="status">Completando resultados del catálogo…</p>' : ''}${result.partial ? '<p class="muted" role="status">Parte del catálogo no está disponible. Mostramos los resultados accesibles.</p>' : ''}${groups || (result.loading ? '' : '<p class="us-empty" role="status">No encontramos coincidencias. Probá con otro nombre.</p>')}`;
 }

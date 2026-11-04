@@ -161,11 +161,12 @@ html[data-design="point"] .community-post.post.pinned { border-top: 1px solid va
 html[data-design="point"] .community-post.post.exclusive { border-left: 2px solid var(--z-accent); padding-left: 12px; }
 html[data-design="point"] .community-post.post.compact { margin-bottom: 0; border-bottom: 0; }
 html[data-design="point"] .community-post.compact::before { left: 21px; background: var(--z-line); }
-html[data-design="point"] .community-post .post-head { flex-wrap: wrap; gap: 4px 8px; }
-html[data-design="point"] .community-post .post-who { max-width: calc(100% - 52px); color: var(--z-ink); min-height: 44px; }
-html[data-design="point"] .community-post .post-name { font-weight: 500; }
+html[data-design="point"] .community-post .post-head { flex-wrap: nowrap; gap: 6px; align-items: center; min-width: 0; overflow: hidden; }
+html[data-design="point"] .community-post .post-who { flex: 0 1 auto; min-width: 0; max-width: calc(100% - 88px); overflow: hidden; color: var(--z-ink); min-height: 36px; display: inline-flex; align-items: center; gap: 6px; }
+html[data-design="point"] .community-post .post-name { display: block; flex: 0 1 auto; font-weight: 550; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 html[data-design="point"] .community-post :is(.post-handle, .post-time, .post-context, .post-replying, .post-when) { color: var(--z-muted); }
-html[data-design="point"] .community-post .post-handle { max-width: 100%; }
+html[data-design="point"] .community-post .post-handle { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html[data-design="point"] .community-post .post-time { flex: 0 0 auto; white-space: nowrap; }
 html[data-design="point"] .community-post .post-more { width: 44px; height: 44px; min-width: 44px; color: var(--z-muted); }
 html[data-design="point"] .community-post .post-avatar .avatar { box-shadow: none; }
 html[data-design="point"] .community-post .post-text { font-size: 16px; line-height: 1.65; margin: 0 0 12px; overflow-wrap: anywhere; }
@@ -195,34 +196,44 @@ html[data-design="point"] .community-composer .composer-ring { margin-left: auto
 html[data-design="point"] .community-composer .composer-ring .fg { stroke: var(--z-accent); transition: stroke var(--m-dur-fast) var(--m-ease-out); }
 html[data-design="point"] .community-composer .composer-ring :is(.fg.warn, .fg.over) { stroke: var(--z-ink); }
 
-/* Portadas a sangre: el desvanecido termina antes del texto. Sin baño de color. */
+/* Portadas a sangre: el desvanecido termina antes del texto. Diseño editorial de artista y oyente. */
 html[data-design="point"] .community-artist::before { content: none; }
 html[data-design="point"] .community-artist .ap-hero {
   min-height: 0;
   margin-top: 0;
-  background: var(--z-paper);
+  margin-bottom: 28px;
+  border: 1px solid var(--z-line);
+  border-radius: var(--z-radius);
+  overflow: hidden;
+  background: var(--z-surface);
   color: var(--z-ink);
 }
 html[data-design="point"] .community-artist .ap-v2::after { content: none; }
-html[data-design="point"] .community-artist .ap-cover { height: clamp(240px, 40vw, 480px); mask-image: linear-gradient(var(--z-ink) 35%, transparent); -webkit-mask-image: linear-gradient(var(--z-ink) 35%, transparent); transform: none; opacity: 1; will-change: auto; }
-html[data-design="point"] .community-artist .ap-cover img { animation: none; transform: none; filter: none; }
-html[data-design="point"] .community-artist .ap-cover.none { background: linear-gradient(var(--z-raised), var(--z-paper)); mask-image: none; -webkit-mask-image: none; }
-html[data-design="point"] .community-artist .ap-head { grid-template-rows: auto; gap: 22px; padding: 20px var(--ap-px) 32px; }
-html[data-design="point"] .community-artist .ap-v2.kind-none .ap-head { padding-top: 20px; }
-html[data-design="point"] .community-artist .ap-v2.kind-cover .ap-row { margin-top: clamp(200px, 29vw, 360px); }
-html[data-design="point"] .community-artist .ap-row { justify-content: flex-start; text-align: left; margin-top: 0; }
-html[data-design="point"] .community-artist .ap-id { justify-items: start; max-width: 100%; gap: 10px; transform: none; opacity: 1; }
+html[data-design="point"] .community-artist .ap-cover { height: clamp(220px, 34vw, 380px); mask-image: linear-gradient(var(--z-ink) 25%, transparent 95%); -webkit-mask-image: linear-gradient(var(--z-ink) 25%, transparent 95%); transform: none; opacity: .45; will-change: auto; }
+html[data-design="point"] .community-artist .ap-cover img { animation: none; transform: none; filter: blur(18px) saturate(1.15); }
+html[data-design="point"] .community-artist .ap-cover.none { height: 140px; background: radial-gradient(circle at 20% 20%, hsl(var(--h, 200) 45% 84% / .45), transparent 65%), linear-gradient(135deg, var(--z-raised), var(--z-surface)); mask-image: none; -webkit-mask-image: none; opacity: 1; }
+html[data-design="point"] .community-artist .ap-head { grid-template-rows: auto; gap: 22px; padding: 24px clamp(20px, 4vw, 44px) 32px; }
+html[data-design="point"] .community-artist .ap-v2.kind-none .ap-head { padding-top: 24px; }
+html[data-design="point"] .community-artist .ap-v2.kind-cover .ap-row { margin-top: clamp(40px, 8vw, 96px); }
+html[data-design="point"] .community-artist .ap-row { display: flex; align-items: flex-end; gap: clamp(18px, 3vw, 32px); flex-wrap: wrap; justify-content: flex-start; text-align: left; margin-top: 0; }
+html[data-design="point"] .community-artist .ap-id { flex: 1 1 260px; justify-items: start; max-width: 100%; gap: 10px; transform: none; opacity: 1; }
 html[data-design="point"] .community-artist .ap-id .eyebrow { justify-content: flex-start; }
-html[data-design="point"] .community-artist .ap-name { margin: 0; font: 300 clamp(44px, 7vw, 104px)/1.02 var(--font-display); letter-spacing: -.055em; text-shadow: none; color: var(--z-ink); background: none; -webkit-text-fill-color: currentColor; }
-html[data-design="point"] .community-artist .ap-sub { max-width: 64ch; line-height: 1.6; color: var(--z-muted); }
-html[data-design="point"] .community-artist .ap-photo { justify-self: start; width: clamp(112px, 15vw, 180px); margin-top: 20px; transform: none; opacity: 1; }
-html[data-design="point"] .community-artist .ap-photo img { border-radius: var(--z-radius); box-shadow: none; animation: none; }
-html[data-design="point"] .community-artist .hero-actions { justify-content: flex-start; gap: 10px; margin: 0; }
+html[data-design="point"] .community-artist .ap-badge-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+  border-radius: 999px; background: var(--z-raised); border: 1px solid var(--z-line);
+  color: var(--z-ink); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+}
+html[data-design="point"] .community-artist .ap-name { margin: 0; font: 350 clamp(38px, 6vw, 84px)/1.02 var(--font-display); letter-spacing: -.05em; text-shadow: none; color: var(--z-ink); background: none; -webkit-text-fill-color: currentColor; }
+html[data-design="point"] .community-artist .ap-sub { max-width: 64ch; line-height: 1.6; color: var(--z-muted); font-size: 14px; }
+html[data-design="point"] .community-artist .ap-photo { flex: 0 0 auto; width: clamp(104px, 14vw, 156px); height: clamp(104px, 14vw, 156px); margin-top: 0; transform: none; opacity: 1; border-radius: var(--z-radius); overflow: hidden; border: 2px solid var(--z-raised); box-shadow: var(--z-shadow); background: var(--z-raised); }
+html[data-design="point"] .community-artist .ap-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; box-shadow: none; animation: none; }
+html[data-design="point"] .community-artist .ap-photo-ph .avatar { width: 100%; height: 100%; border-radius: inherit; font-size: clamp(36px, 5vw, 56px); }
+html[data-design="point"] .community-artist .hero-actions { justify-content: flex-start; gap: 10px; margin: 0; padding-top: 8px; border-top: 1px solid var(--z-line); }
 html[data-design="point"] .community-artist .ap-shuffle { order: 3; }
 html[data-design="point"] .community-artist .support-btn { order: 2; }
 html[data-design="point"] .community-artist .ap-fcount { order: 4; flex-basis: 100%; justify-content: flex-start; text-align: left; color: var(--z-muted); }
 html[data-design="point"] .community-artist .ap-body { width: min(100%, 1200px); padding-top: 0; gap: 32px; }
-html[data-design="point"] .community-artist .ap-tabs { display: flex; justify-self: stretch; width: 100%; gap: 28px; overflow-x: auto; border-radius: 0; border-bottom: 1px solid var(--z-line); padding: 0; background: none; box-shadow: none; scrollbar-width: thin; }
+html[data-design="point"] .community-artist .ap-tabs { display: flex; justify-self: stretch; width: 100%; gap: 28px; overflow-x: auto; border-radius: 0; border-bottom: 1px solid var(--z-line); padding: 0; background: none; box-shadow: none; scrollbar-width: none; }
 html[data-design="point"] .community-artist .ap-tab { flex: 0 0 auto; padding: 12px 0; border: 0; border-radius: 0; border-bottom: 2px solid transparent; background: none; color: var(--z-muted); font-weight: 400; box-shadow: none; }
 html[data-design="point"] .community-artist .ap-tab.on { color: var(--z-ink); border-bottom-color: var(--z-ink); font-weight: 500; }
 html[data-design="point"] .community-artist .ap-tab:hover { background: none; color: var(--z-ink); }
@@ -239,20 +250,61 @@ html[data-design="point"] .community-artist .ap-mini { color: var(--z-ink); back
 html[data-design="point"] .community-artist .ap-mini::before { background: var(--z-paper); border-bottom: 1px solid var(--z-line); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; transition: opacity var(--m-dur-fast) var(--m-ease-out); }
 html[data-design="point"] .community-artist .ap-mini > * { transition: opacity var(--m-dur-fast) var(--m-ease-out), transform var(--m-dur-fast) var(--m-ease-out); }
 
-/* El perfil propio conserva su colección y sus estadísticas privadas. */
-html[data-design="point"] .community-profile .pv2-hero { justify-items: start; text-align: left; align-content: end; padding-bottom: 32px; gap: 24px; background: var(--z-paper); }
-html[data-design="point"] .community-profile .pv2-hero.kind-cover { padding-top: clamp(220px, 28vw, 360px); min-height: 0; }
-html[data-design="point"] .community-profile .pv2-media { height: clamp(240px, 40vw, 480px); mask-image: linear-gradient(var(--z-ink) 35%, transparent); -webkit-mask-image: linear-gradient(var(--z-ink) 35%, transparent); }
-html[data-design="point"] .community-profile .pv2-media.none { background: none; }
-html[data-design="point"] .community-profile-identity { display: grid; gap: 10px; min-width: 0; }
-html[data-design="point"] .community-profile .profile-name { font-size: clamp(40px, 6vw, 88px); font-weight: 300; line-height: 1.04; letter-spacing: -.05em; }
-html[data-design="point"] .community-profile .profile-bio { margin: 0; line-height: 1.65; color: var(--z-muted); }
-html[data-design="point"] .community-profile .profile-handle { margin: 0; color: var(--z-muted); }
-html[data-design="point"] .community-profile .profile-stats { display: flex; justify-content: flex-start; flex-wrap: wrap; gap: 16px 28px; padding-top: 20px; border-top: 1px solid var(--z-line); color: var(--z-muted); }
-html[data-design="point"] .community-profile .profile-stats b { color: var(--z-ink); font-weight: 500; }
-html[data-design="point"] .community-profile .hero-actions { justify-content: flex-start; flex-wrap: wrap; }
-html[data-design="point"] .community-profile .pv2-photo { width: clamp(112px, 14vw, 160px); }
-html[data-design="point"] .community-profile .pv2-photo .avatar { box-shadow: none; border-radius: var(--z-radius); }
+/* El perfil propio conserva su colección y sus estadísticas privadas con diseño editorial bento. */
+html[data-design="point"] .community-profile .pv2-hero {
+  position: relative; display: grid; min-height: 0; padding: 0; margin-bottom: 28px;
+  border: 1px solid var(--z-line); border-radius: var(--z-radius); overflow: hidden;
+  background: var(--z-surface); text-align: left; justify-items: stretch;
+}
+html[data-design="point"] .community-profile .pv2-hero.kind-cover { padding-top: clamp(140px, 22vw, 240px); min-height: 0; }
+html[data-design="point"] .community-profile .pv2-media { height: clamp(180px, 28vw, 320px); mask-image: linear-gradient(var(--z-ink) 35%, transparent); -webkit-mask-image: linear-gradient(var(--z-ink) 35%, transparent); }
+html[data-design="point"] .community-profile .pv2-media.none {
+  position: relative; height: 88px; mask-image: none; -webkit-mask-image: none;
+  background: radial-gradient(circle at 18% 50%, hsl(var(--h, 210) 55% 82% / .45), transparent 60%),
+    linear-gradient(120deg, rgb(179 219 234 / .25), rgb(214 191 224 / .18) 55%, var(--z-surface));
+  border-bottom: 1px solid var(--z-line);
+}
+html[data-design="point"] .community-profile .pv2-card {
+  position: relative; z-index: 1; display: grid; gap: 24px;
+  padding: clamp(20px, 3.5vw, 36px);
+}
+html[data-design="point"] .community-profile .pv2-hero.kind-none .pv2-card,
+html[data-design="point"] .community-profile .pv2-hero.kind-photo .pv2-card {
+  margin-top: -52px;
+}
+html[data-design="point"] .community-profile .pv2-top {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 20px 24px;
+}
+html[data-design="point"] .community-profile .pv2-role-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+  border-radius: 999px; background: var(--z-raised); border: 1px solid var(--z-line);
+  color: var(--z-ink); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+}
+html[data-design="point"] .community-profile .pv2-role-pill.is-owner {
+  background: var(--z-action); color: var(--z-on-action); border-color: var(--z-action);
+}
+html[data-design="point"] .community-profile-identity { display: grid; gap: 8px; min-width: 0; }
+html[data-design="point"] .community-profile .profile-name { margin: 0; font-size: clamp(32px, 4.8vw, 64px); font-weight: 350; line-height: 1.04; letter-spacing: -.045em; }
+html[data-design="point"] .community-profile .profile-bio { margin: 4px 0 0; max-width: 62ch; line-height: 1.6; color: var(--z-muted); font-size: 14px; }
+html[data-design="point"] .community-profile .profile-handle { margin: 0; color: var(--z-muted); font-size: 14px; }
+html[data-design="point"] .community-profile .profile-email { color: var(--z-muted); font-size: 13px; }
+html[data-design="point"] .community-profile .profile-stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
+  padding-top: 20px; border-top: 1px solid var(--z-line); color: var(--z-muted);
+}
+html[data-design="point"] .community-profile .profile-stat-card {
+  display: flex; flex-direction: column; gap: 4px; padding: 14px 16px;
+  background: var(--z-raised); border: 1px solid var(--z-line); border-radius: var(--z-radius-sm);
+}
+html[data-design="point"] .community-profile .profile-stat-card b {
+  color: var(--z-ink); font: 450 clamp(22px, 2.8vw, 32px)/1.1 var(--font-display); letter-spacing: -.03em;
+}
+html[data-design="point"] .community-profile .profile-stat-card span {
+  color: var(--z-muted); font-size: 12px; font-weight: 500;
+}
+html[data-design="point"] .community-profile .hero-actions { justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+html[data-design="point"] .community-profile .pv2-photo { width: clamp(92px, 11vw, 128px); height: clamp(92px, 11vw, 128px); }
+html[data-design="point"] .community-profile .pv2-photo .avatar { width: 100%; height: 100%; box-shadow: var(--z-shadow); border: 3px solid var(--z-raised); border-radius: var(--z-radius); font-size: clamp(32px, 4vw, 44px); }
 html[data-design="point"] .community-profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 310px); gap: clamp(24px, 4vw, 64px); padding-top: 32px; border-top: 1px solid var(--z-line); }
 html[data-design="point"] :is(.community-profile-main, .community-profile-side) { min-width: 0; }
 html[data-design="point"] .community-profile-main > .section-title { margin-top: 32px; font-size: 32px; }
@@ -273,6 +325,8 @@ html[data-design="point"] .community-editor .pe-media { flex-wrap: wrap; }
   html[data-design="point"] :is(.community-feed, .community-profile-layout) { grid-template-columns: minmax(0, 1fr); }
   html[data-design="point"] .community-feed .fx-side { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 24px; padding-top: 0; }
   html[data-design="point"] .community-profile-side .shelf { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  html[data-design="point"] .community-profile .pv2-top { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  html[data-design="point"] .community-profile .profile-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 480px) {
   html[data-design="point"] .community-feed .fx-tabs { gap: 18px; }

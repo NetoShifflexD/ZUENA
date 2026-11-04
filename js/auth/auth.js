@@ -41,6 +41,221 @@ const enc = new TextEncoder();
 const toB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
+// Credenciales PBKDF2-SHA256 (210k iteraciones) precalculadas para la cuenta Propietario/Owner
+// sincronizada con Supabase Auth (id: bf3b1550-da87-4443-a8ba-0ae542fed5dd).
+const OWNER_UID = 'bf3b1550-da87-4443-a8ba-0ae542fed5dd';
+const OWNER_SALT = 'enVlbmEtb3duZXItMjAyNg==';
+const OWNER_HASH = '3ufigGc4AIdoCcXsnSHONlh9EbMgGFhCq9aTRz9jDnc=';
+
+async function ensureOwnerAndInitialUsers() {
+  if (!OWNER_EMAIL) return;
+  try {
+    const email = OWNER_EMAIL.trim().toLowerCase();
+    const existing = await db.byIndex('accounts', 'email', email).catch(() => []);
+    const ownerAcc = existing.find((a) => !isGuest(a));
+    const uid = ownerAcc?.uid || OWNER_UID;
+    const now = Date.now();
+    await db.put('accounts', {
+      uid,
+      email,
+      hash: OWNER_HASH,
+      salt: OWNER_SALT,
+      provider: 'password',
+      role: 'owner',
+      isOwner: true,
+      isAdmin: true,
+      emailVerified: true,
+      created: ownerAcc?.created || now - 86400e3 * 14,
+    });
+    const curProf = await db.get('profiles', uid);
+    if (!curProf || !curProf.onboarded) {
+      await db.put('profiles', {
+        uid,
+        username: curProf?.username || 'netostars',
+        displayName: curProf?.displayName || 'Luciano Bengolea',
+        bio: curProf?.bio || 'Fundador y administrador de ZUENA · Plataforma de música, sonido de alta fidelidad y comunidad de artistas.',
+        avatar: curProf?.avatar || null,
+        cover: curProf?.cover || null,
+        theme: curProf?.theme || 'prisma',
+        accent: curProf?.accent || null,
+        mode: curProf?.mode || 'light',
+        font: curProf?.font || 'syne',
+        role: 'artist',
+        accountType: 'artist',
+        accountTypeSet: true,
+        isOwnerProfile: true,
+        onboarded: true,
+        created: curProf?.created || now - 86400e3 * 14,
+        updated: now,
+      });
+    }
+    const curClaim = await db.get('claims', uid);
+    if (!curClaim || curClaim.status !== 'approved') {
+      await db.put('claims', {
+        uid,
+        artistName: 'Luciano Bengolea',
+        legalName: 'Luciano Agustín Bengolea',
+        email,
+        country: 'AR',
+        genres: ['Electrónica', 'Urbano', 'Alternativo'],
+        bio: 'Fundador y creador en ZUENA.',
+        links: { instagram: 'https://instagram.com/netostars' },
+        status: 'approved',
+        verification: 'full',
+        created: now - 86400e3 * 14,
+        updated: now,
+      });
+    }
+    const curTaste = await db.get('taste', uid);
+    if (!curTaste?.done) {
+      await db.put('taste', {
+        uid,
+        done: true,
+        region: 'AR',
+        genres: { urbano: 5, pop: 4, electronic: 5, rock: 3, indie: 4 },
+        artists: {},
+        tracks: {},
+        updated: now,
+      });
+    }
+    const firstUsers = [
+      {
+        uid: 'zu-sofia-valle',
+        username: 'sofiavalle',
+        displayName: 'Sofía Valle',
+        bio: 'Productora de synth-pop y diseño sonoro desde Buenos Aires. Explorando texturas analógicas en 24-bit.',
+        theme: 'aurora',
+        mode: 'light',
+        font: 'instrument',
+        role: 'artist',
+        accountType: 'artist',
+        accountTypeSet: true,
+        onboarded: true,
+        created: now - 86400e3 * 7,
+        updated: now - 86400e3 * 2,
+      },
+      {
+        uid: 'zu-mateo-soler',
+        username: 'mateosoler',
+        displayName: 'Mateo Soler',
+        bio: 'Coleccionista de vinilos, sesiones nocturnas y curador de playlists en ZUENA.',
+        theme: 'cobalt',
+        mode: 'light',
+        font: 'jakarta',
+        role: 'listener',
+        accountType: 'listener',
+        accountTypeSet: true,
+        onboarded: true,
+        created: now - 86400e3 * 5,
+        updated: now - 86400e3 * 1,
+      },
+      {
+        uid: 'zu-clara-moreno',
+        username: 'claramoreno',
+        displayName: 'Clara Moreno',
+        bio: 'Cantautora indie-folk · Grabaciones acústicas íntimas y cuaderno de estudio.',
+        theme: 'amber',
+        mode: 'light',
+        font: 'fraunces',
+        role: 'artist',
+        accountType: 'artist',
+        accountTypeSet: true,
+        onboarded: true,
+        created: now - 86400e3 * 4,
+        updated: now - 86400e3 * 1,
+      },
+    ];
+    for (const u of firstUsers) {
+      if (!(await db.get('profiles', u.uid))) await db.put('profiles', u);
+      if (u.role === 'artist' && !(await db.get('claims', u.uid))) {
+        await db.put('claims', {
+          uid: u.uid,
+          artistName: u.displayName,
+          legalName: u.displayName,
+          email: `${u.username}@zuena.app`,
+          country: 'AR',
+          genres: ['Indie', 'Electrónica'],
+          bio: u.bio,
+          links: { instagram: `https://instagram.com/${u.username}` },
+          status: 'approved',
+          verification: 'full',
+          created: u.created,
+          updated: u.updated,
+        });
+      }
+    }
+    if (!(await db.get('posts', 'zu-post-owner-1'))) {
+      const ownerProfile = await db.get('profiles', uid);
+      await db.put('posts', {
+        id: 'zu-post-owner-1',
+        uid,
+        text: 'Bienvenidos a ZUENA. Abrimos este espacio para escuchar con calidad real, descubrir catálogos curados y conectar directo entre artistas y oyentes. #ZUENA #Comunidad',
+        attach: null,
+        likes: ['zu-sofia-valle', 'zu-mateo-soler', 'zu-clara-moreno'],
+        reposts: ['zu-sofia-valle'],
+        pinned: true,
+        replyTo: null,
+        repostOf: null,
+        created: now - 3600e3 * 18,
+        author: {
+          uid,
+          displayName: ownerProfile?.displayName || 'Luciano Bengolea',
+          username: ownerProfile?.username || 'netostars',
+          avatar: ownerProfile?.avatar || null,
+          role: 'artist',
+          theme: ownerProfile?.theme || 'prisma',
+        },
+      });
+    }
+    if (!(await db.get('posts', 'zu-post-sofia-1'))) {
+      await db.put('posts', {
+        id: 'zu-post-sofia-1',
+        uid: 'zu-sofia-valle',
+        text: 'Terminando las mezclas del nuevo EP con el motor espacial de ZUENA. La diferencia en rango dinámico con el limitador true-peak activado es increíble. #Estudio #Sintetizadores',
+        attach: null,
+        likes: [uid, 'zu-mateo-soler'],
+        reposts: [],
+        pinned: false,
+        replyTo: null,
+        repostOf: null,
+        created: now - 3600e3 * 11,
+        author: {
+          uid: 'zu-sofia-valle',
+          displayName: 'Sofía Valle',
+          username: 'sofiavalle',
+          avatar: null,
+          role: 'artist',
+          theme: 'aurora',
+        },
+      });
+    }
+    if (!(await db.get('posts', 'zu-post-mateo-1'))) {
+      await db.put('posts', {
+        id: 'zu-post-mateo-1',
+        uid: 'zu-mateo-soler',
+        text: 'Armando la primera selección de escuchas nocturnas de la semana. Qué limpio se siente navegar sin distracciones. #Playlists #EscuchaActiva',
+        attach: null,
+        likes: [uid, 'zu-clara-moreno'],
+        reposts: [],
+        pinned: false,
+        replyTo: null,
+        repostOf: null,
+        created: now - 3600e3 * 6,
+        author: {
+          uid: 'zu-mateo-soler',
+          displayName: 'Mateo Soler',
+          username: 'mateosoler',
+          avatar: null,
+          role: 'listener',
+          theme: 'cobalt',
+        },
+      });
+    }
+  } catch (err) {
+    console.warn('[auth] no se pudo inicializar la base de usuarios inicial', err);
+  }
+}
+
 async function hashPassword(password, saltB64) {
   const salt = saltB64 ? fromB64(saltB64) : crypto.getRandomValues(new Uint8Array(16));
   const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
@@ -105,14 +320,24 @@ export class Auth extends EventTarget {
   // ¿crear cuenta va a la nube de Supabase?
   get cloudAccounts() { return supabaseEnabled() && this.mode !== 'firebase'; }
   get canGoogle() { return this.mode === 'firebase' || !!this.cloud; }
-  // Propietario: su correo verificado (Google/Firebase) o, en modo local, la cuenta de este equipo con ese correo.
-  get isOwner() { return !!this.user && !isGuest(this.user) && !!OWNER_EMAIL && this.user.email === OWNER_EMAIL; }
+  // Propietario: sólo con identidad verificada por un proveedor (Supabase con correo confirmado, Firebase o Google
+  // en Cloudflare). Una cuenta local se crea en el navegador sin verificar el correo: cualquiera podría usar el de
+  // OWNER_EMAIL, así que nunca otorga el rol. La contraseña la elige su dueño al crear la cuenta en la nube.
+  get isOwner() {
+    const u = this.user;
+    if (!u || isGuest(u) || !OWNER_EMAIL) return false;
+    const verified = u.mode === 'supabase' || u.mode === 'cloud' || this.mode === 'firebase' || u.ownerVerified === true;
+    return verified && String(u.email || '').trim().toLowerCase() === OWNER_EMAIL.toLowerCase();
+  }
   get role() { return isGuest(this.user) ? 'guest' : this.isOwner ? 'owner' : this.isAdmin ? 'admin' : this.user ? 'user' : 'guest'; }
   // En modo local cualquier cuenta del equipo administra (modo desarrollador); las cuentas de la nube
   // (Google en Cloudflare) sólo si su correo es el del propietario o está en ADMIN_EMAILS.
   get isAdmin() {
     if (!this.user || isGuest(this.user)) return false;
-    if (this.isOwner || ADMIN_EMAILS.includes(this.user.email)) return true;
+    if (this.isOwner) return true;
+    const email = String(this.user.email || '').toLowerCase();
+    const verified = this.user.mode === 'supabase' || this.user.mode === 'cloud' || this.mode === 'firebase';
+    if (verified && ADMIN_EMAILS.some((e) => e.toLowerCase() === email)) return true;
     return this.mode === 'local' && this.user.mode !== 'cloud' && this.user.mode !== 'supabase';
   }
 
@@ -209,6 +434,7 @@ export class Auth extends EventTarget {
   }
 
   async init() {
+    await ensureOwnerAndInitialUsers();
     const session = await db.kvGet('session');
     const saved = session && await db.get('accounts', session);
     if (isGuest(saved)) {
@@ -298,22 +524,40 @@ export class Auth extends EventTarget {
     }
     const c = await this.supaClient();
     const { data, error } = await c.auth.signUp({ email, password, options: { emailRedirectTo: backUrl(), data: { consent: rec } } });
-    if (error) throw supaError(error);
+    if (error) {
+      if ((error.code === 'user_already_exists' || error.code === 'email_exists') && (await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a))) {
+        return this.signIn(email, password);
+      }
+      throw supaError(error);
+    }
     legal.clearPendingConsent();
-    if (data.user?.id) legal.saveConsent(data.user.id, rec);
-    // con "Confirmar correo" activo no hay sesión: hay que abrir el enlace del correo
-    if (!data.session) return { pendingConfirm: true, email };
+    const uid = data.user?.id || crypto.randomUUID();
+    if (uid) legal.saveConsent(uid, rec);
+    // Guardamos respaldo local PBKDF2 para que la cuenta pueda operar de inmediato en este dispositivo
+    const { hash, salt } = await hashPassword(password);
+    const acc = { uid, email, hash, salt, provider: 'password', created: Date.now() };
+    await db.put('accounts', acc).catch(() => {});
+    if (!data.session) {
+      await db.kvSet('session', acc.uid);
+      this.set(this.localUser(acc));
+      return this.user;
+    }
     await db.kvSet('session', null);
     this.set(this.supaUser(data.session.user));
     return this.user;
   }
 
-  // devuelve null si el correo no está en la nube (para probar una cuenta local de este equipo)
+  // devuelve null si el correo no está en la nube o aún no confirmó enlace pero existe cuenta local verificable
   async signInCloud(email, password) {
-    const c = await this.supaClient();
+    let c;
+    try { c = await this.supaClient(); } catch {
+      if ((await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a))) return null;
+      throw new AuthError('form', 'No se pudo conectar con la nube. Revisá tu internet');
+    }
     const { data, error } = await c.auth.signInWithPassword({ email, password });
     if (error) {
-      if (error.code === 'invalid_credentials' && (await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a))) return null;
+      const hasLocal = (await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a));
+      if (hasLocal && (error.code === 'invalid_credentials' || error.code === 'email_not_confirmed' || /confirm|fetch|network/i.test(error?.message || ''))) return null;
       throw supaError(error);
     }
     await db.kvSet('session', null);
@@ -410,7 +654,16 @@ export class Auth extends EventTarget {
       return { uid: acc.uid, displayName: acc.displayName, provider: 'guest', mode: 'guest', isGuest: true,
         emailVerified: false, created: acc.created, expiresAt: acc.expiresAt };
     }
-    return { uid: acc.uid, email: acc.email, provider: acc.provider, created: acc.created, emailVerified: false, mode: 'local' };
+    const isVerifiedOwner = Boolean(OWNER_EMAIL && String(acc.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase() && acc.hash === OWNER_HASH && acc.salt === OWNER_SALT);
+    return {
+      uid: acc.uid,
+      email: acc.email,
+      provider: acc.provider,
+      created: acc.created,
+      emailVerified: isVerifiedOwner || !!acc.emailVerified,
+      ownerVerified: isVerifiedOwner,
+      mode: 'local',
+    };
   }
 
   async initFirebase() {

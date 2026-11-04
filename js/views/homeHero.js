@@ -16,7 +16,11 @@ export function heroCarousel(p) {
   return `<div class="bento-hero hc" role="region" aria-roledescription="carrusel" aria-label="Destacados">
     <div class="hc-track">
       <article class="hc-slide hc-intro on" data-tab="ZUENA" aria-roledescription="diapositiva" aria-label="Presentación de ZUENA">
-        <span class="hc-editorial-disc" aria-hidden="true"></span>
+        <div class="hc-editorial-disc" aria-hidden="true">
+          <span class="hc-disc-ring"></span>
+          <span class="hc-disc-grooves"></span>
+          <span class="hc-disc-core"><b>ZUENA</b><small>24-BIT · AUDIO</small></span>
+        </div>
         <div class="hc-copy">
           <p class="eyebrow">${greeting()}${p?.displayName ? `, ${esc(p.displayName)}` : ''}</p>
           <div class="hc-scene" aria-live="off"><div class="hc-sc in"><h2>Poné algo<br>que te mueva.</h2><p>Tu próxima escucha empieza acá.</p></div></div>

@@ -17,9 +17,9 @@ import * as src from '../catalog/sources.js';
 import { appleArtist, appleCollection, appleTopArtists } from '../catalog/artists.js';
 import { isLive, isUpcoming } from '../data/releases.js';
 import { TEST_CATALOG } from '../config.js';
-import { testArtistById } from '../data/testArtists.js';
+import { testArtistById, testReleases, testSongs } from '../data/testArtists.js';
 import { payments, parseAmount, donationError, formatEUR, PRESETS, MESSAGE_MAX } from '../data/payments.js';
-import { trackList, backBtn, tick, compact } from './common.js';
+import { trackList, backBtn, tick, compact, avatar } from './common.js';
 import { postCard, releaseCard, followToggle } from './feed.js';
 
 const KIND_TITLE = { single: 'Singles', ep: 'EPs', album: 'Álbumes' };
@@ -28,29 +28,68 @@ const tokenize = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLow
 
 // ---------- normalizadores: cada fuente → el mismo modelo ----------
 async function loadApple(id) {
+  const known = testArtistById(id);
   // los eventos "Nuevo lanzamiento" del catálogo de prueba se derivan en paralelo (no frenan el perfil)
-  const cat = TEST_CATALOG && testArtistById(id) ? app.posts.loadCatalog().catch(() => {}) : null;
-  const a = await appleArtist(id, country());
-  await cat;
-  // populares: primero lo que está en el ranking del país; si no hay nada del ranking, se rotula "Canciones"
-  let inChart = [];
-  try { inChart = (await src.appleChart(country(), 100)).filter((t) => t.artistId === a.id); } catch { /* sin ranking */ }
-  const seen = new Set(inChart.map((t) => t.id));
-  const popular = [...inChart, ...a.popular.filter((t) => !seen.has(t.id))].slice(0, 10);
+  if (TEST_CATALOG && known) app.posts.loadCatalog().catch(() => {});
+  let a = null;
+  try {
+    a = await Promise.race([
+      appleArtist(id, country()),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 2600)),
+    ]);
+  } catch { /* respaldamos con catálogo de prueba cacheado */ }
+  const [cachedSongs, cachedRels] = known
+    ? await Promise.all([testSongs().catch(() => []), testReleases().catch(() => [])])
+    : [[], []];
+  const ownSongs = cachedSongs.filter((t) => String(t.artistId) === String(id) || (known && tokenize(t.artist).includes(tokenize(known.name)[0])));
+  const ownRels = cachedRels.filter((r) => String(r.artistId) === String(id));
+  if (!a) {
+    if (!known && !ownSongs.length && !ownRels.length) throw new Error('No se pudo cargar el artista.');
+    const topArt = ownRels[0]?.artwork || ownSongs[0]?.artworkLarge || ownSongs[0]?.artwork || null;
+    a = {
+      id: String(id),
+      name: known?.name || ownRels[0]?.artist || ownSongs[0]?.artist || 'Artista',
+      genre: ownSongs[0]?.genre || 'Música',
+      url: `https://music.apple.com/${country()}/artist/${id}`,
+      cover: topArt ? topArt.replace(/\d+x\d+bb/, '1000x1000bb') : null,
+      popular: ownSongs.slice(0, 12),
+      albums: ownRels.filter((r) => r.kind === 'album'),
+      eps: ownRels.filter((r) => r.kind === 'ep'),
+      singles: ownRels.filter((r) => r.kind === 'single'),
+      collabs: [],
+    };
+  } else {
+    if (!a.popular?.length && ownSongs.length) a.popular = ownSongs.slice(0, 12);
+    if (!a.singles?.length && !a.albums?.length && !a.eps?.length && ownRels.length) {
+      a.albums = ownRels.filter((r) => r.kind === 'album');
+      a.eps = ownRels.filter((r) => r.kind === 'ep');
+      a.singles = ownRels.filter((r) => r.kind === 'single');
+    }
+  }
+  const seen = new Set();
+  const popular = [...(a.popular || []), ...ownSongs].filter((t) => {
+    if (!t || seen.has(t.id)) return false;
+    seen.add(t.id);
+    return true;
+  }).slice(0, 10);
+  const heroArt = a.cover || popular[0]?.artworkLarge || popular[0]?.artwork || ownRels[0]?.artwork || null;
+  const avatarArt = popular[0]?.artworkLarge || popular[0]?.artwork || ownRels[0]?.artwork || a.cover || null;
   // ¿alguna cuenta de este equipo reclamó y verificó este perfil? (sólo rótulo; el catálogo sigue siendo de Apple)
   const claimedBy = (await db.all('claims').catch(() => [])).find((c) => !c.sim && c.status === 'approved' && c.target?.key === `am:${id}`)?.uid || null;
   return {
     claimedBy,
     name: a.name,
-    badge: 'Perfil no reclamado · datos de Apple Music',
-    sub: [a.genre, 'Vistas previas de 30 segundos'].filter(Boolean).join(' · '),
-    popularTitle: inChart.length ? 'Populares' : 'Canciones',
+    badge: 'Perfil de catálogo · Apple Music',
+    sub: [a.genre, `${popular.length || ownSongs.length || 10} pistas destacadas · Vistas previas de 30 s`].filter(Boolean).join(' · '),
+    cover: heroArt,
+    avatar: avatarArt,
+    popularTitle: 'Populares',
     popular,
-    shelves: ['single', 'ep', 'album'].map((k) => ({ kind: k, items: a[{ single: 'singles', ep: 'eps', album: 'albums' }[k]].map((r) => ({ ...r, source: 'apple' })) })),
-    collabs: a.collabs,
+    shelves: ['single', 'ep', 'album'].map((k) => ({ kind: k, items: (a[{ single: 'singles', ep: 'eps', album: 'albums' }[k]] || []).map((r) => ({ ...r, source: 'apple' })) })),
+    collabs: a.collabs || [],
     external: a.url && { label: 'Abrir en Apple Music', url: a.url },
     claim: true,
-    catalog: !!(TEST_CATALOG && testArtistById(id)),
+    catalog: !!(TEST_CATALOG && known),
   };
 }
 
@@ -90,14 +129,16 @@ async function loadZuena(uid) {
   // colaboraciones: lanzamientos de otros artistas con su nombre en "invitados"
   const tok = tokenize(name)[0];
   const collabs = app.releases.live().filter((r) => r.uid !== uid && tokenize(r.featuring).includes(tok)).flatMap(tracksOf);
+  const isOwnerProfile = Boolean(p.isOwnerProfile || (mine && app.auth?.isOwner));
+  const genresLabel = Array.isArray(claim?.genres) && claim.genres.length ? claim.genres.join(' · ') : '';
   return {
     name,
     verified,
     localVerified: verified && !claim?.sim && claim?.verification !== 'full',
     tierOptions: claim?.tierOptions || {},
     sim: !!(p.sim || claim?.sim),
-    badge: verified ? 'Artista verificado' : 'En ZUENA',
-    sub: `@${p.username}`,
+    badge: isOwnerProfile ? 'Propietario · Artista verificado' : verified ? 'Artista verificado' : 'En ZUENA',
+    sub: [`@${p.username}`, genresLabel, p.bio].filter(Boolean).join(' · '),
     cover: p.cover,
     avatar: p.avatar,
     themed: p,
@@ -183,14 +224,15 @@ function hero(m, source, id) {
   const media = kind === 'cover'
     ? `<div class="ap-cover" aria-hidden="true"><img src="${esc(m.cover)}" alt="" decoding="async" loading="eager" referrerpolicy="no-referrer"></div>`
     : `<div class="ap-cover none" style="--h:${hueOf(m.name)}" aria-hidden="true"></div>`;
+  const thumb = m.avatar || m.cover || null;
   return `<header class="ap-hero ap-v2 kind-${kind}">
     ${media}
     <div class="ap-head">
       ${backBtn()}
-      ${kind === 'photo' ? `<div class="ap-photo"><img src="${esc(m.avatar)}" alt="Foto de ${esc(m.name)}" decoding="async" referrerpolicy="no-referrer"></div>` : ''}
       <div class="ap-row">
+        ${thumb ? `<div class="ap-photo"><img src="${esc(thumb)}" alt="Foto de ${esc(m.name)}" decoding="async" referrerpolicy="no-referrer"></div>` : `<div class="ap-photo ap-photo-ph">${avatar(m.themed || { displayName: m.name }, 'xl')}</div>`}
         <div class="ap-id">
-          <p class="eyebrow">${esc(source === 'am' ? 'Catálogo de Apple Music' : m.badge)}</p>
+          <p class="eyebrow"><span class="ap-badge-pill">${esc(source === 'am' ? 'Catálogo de Apple Music' : m.badge)}</span></p>
           <h1 class="ap-name" tabindex="-1">${esc(m.name)}${tick(m.verified, m.badge)}</h1>
           ${m.sub ? `<p class="ap-sub">${esc(m.sub)}</p>` : ''}
         </div>
@@ -199,6 +241,7 @@ function hero(m, source, id) {
         ${m.popular.length ? `<button class="btn-primary lit" data-action="artist-play">${icon('play')}Reproducir</button><button class="btn-icon lit ap-shuffle" data-action="artist-shuffle" aria-label="Reproducir en orden aleatorio" title="Aleatorio">${icon('shuffle')}</button>` : ''}
         ${followBtn(m, source, id)}
         ${m.owner ? `<button class="btn-glass lit" data-action="edit-profile">${icon('edit')}Editar perfil</button>` : ''}
+        ${m.owner && app.auth?.isOwner ? `<button class="btn-glass lit" data-action="nav" data-view="review">${icon('shield')}Administración</button>` : ''}
       </div>
     </div>
   </header>`;

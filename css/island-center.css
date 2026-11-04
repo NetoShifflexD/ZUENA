@@ -72,17 +72,21 @@
 .floatbar .island-np { margin: 0; }
 .us-group { margin-bottom: 14px; }
 .us-group h3 { font-size: 11px; color: var(--muted); letter-spacing: .06em; padding: 4px 7px; }
-.us-result { width: 100%; min-height: 55px; display: grid; grid-template-columns: 32px minmax(0, 1fr) 18px; gap: 9px; align-items: center; text-align: left; padding: 7px; border-radius: 12px; }
+.us-result { width: 100%; min-height: 56px; display: grid; grid-template-columns: 40px minmax(0, 1fr) 18px; gap: 11px; align-items: center; text-align: left; padding: 7px 9px; border-radius: 12px; }
 .us-result:hover { background: var(--glass-hi); }
 .us-result > span:nth-child(2) { min-width: 0; display: grid; gap: 3px; }
 .us-result b { font-size: 13px; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .us-result small { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.us-result-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--glass-hi); color: var(--accent); }
+.us-result-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--glass-hi); color: var(--accent); overflow: hidden; flex-shrink: 0; }
+.us-result-icon.has-art { background: var(--plate); border: 1px solid var(--stroke); }
+.us-result-art { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: inherit; }
+.us-result-art.round { border-radius: 50%; }
 .us-result > .ico { width: 15px; color: var(--muted); }
 .us-empty { padding: 20px 8px; font-size: 13px; color: var(--muted); }
 .topbar { justify-content: flex-end; min-height: 48px; }
 .topbar .status { margin-right: auto; }
 .island-panel :focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.island-panel #search:focus, .island-panel #search:focus-visible { outline: none !important; box-shadow: none !important; }
 @media(max-width: 600px), (max-height: 560px) {
   .floatbar .island-panel {
     --island-space-x: max(12px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));

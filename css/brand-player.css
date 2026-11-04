@@ -15,12 +15,12 @@ html[data-design="point"] .island-brand { display: flex; align-items: center; ga
 html[data-design="point"] .island-brand svg { width: 28px; height: 28px; }
 html[data-design="point"] .island-brand b { font-size: 11px; letter-spacing: .24em; }
 html[data-design="point"] :is(.island-grabber,.np-grabber) { background: var(--z-line); }
-html[data-design="point"] .island-nav .island-item { color: var(--z-muted); background: var(--z-surface); border: 1px solid var(--z-line); }
-html[data-design="point"] .island-nav .island-item.active { color: var(--z-on-action); background: var(--z-action); border-color: transparent; box-shadow: none; }
+html[data-design="point"] .island-nav .island-item { color: var(--z-ink); background: var(--z-surface); border: 1px solid var(--z-line); font-weight: 550; }
+html[data-design="point"] .island-nav .island-item.active { color: var(--z-on-action); background: var(--z-action); border-color: transparent; box-shadow: none; font-weight: 600; }
 html[data-design="point"] .island-panel .search { border-radius: 15px; height: 52px; }
-html[data-design="point"] .island-search-filters { gap: 3px; padding-bottom: 8px; border-bottom: 1px solid var(--z-line); }
-html[data-design="point"] .island-search-filters button { color: var(--z-muted); border-radius: 999px; min-height: 44px; padding: 0 13px; font-size: 12px; }
-html[data-design="point"] .island-search-filters button[aria-pressed="true"] { color: var(--z-on-action); background: var(--z-action); box-shadow: none; }
+html[data-design="point"] .island-search-filters { gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--z-line); }
+html[data-design="point"] .island-search-filters button { color: var(--z-ink); background: var(--z-surface); border: 1px solid var(--z-line); border-radius: 999px; min-height: 40px; padding: 0 13px; font-size: 12px; font-weight: 550; }
+html[data-design="point"] .island-search-filters button[aria-pressed="true"] { color: var(--z-on-action); background: var(--z-action); border-color: var(--z-action); box-shadow: none; }
 html[data-design="point"] .island-content { padding-top: 4px; }
 html[data-design="point"] :is(.ic-tile,.ic-profile,.ic-playlist,.ic-release,.ic-premiere,.ic-post.fx-post,.ic-mosaic) { background: var(--z-surface); border-color: var(--z-line); box-shadow: none; }
 html[data-design="point"] .island-content :is(h2,h3) { font-family: var(--font-display); letter-spacing: -.035em; font-weight: 450; }

@@ -19,33 +19,45 @@ function hours(sec) {
 
 // etiqueta de la cabecera propia. "Artista · sin verificar" es privada: sólo la ve la propia cuenta
 // (profileHeader sólo dibuja el perfil propio y la vista previa del editor).
-const roleLabel = (p, verified) => (verified ? `${icon('verified', 'verified-ico')} Artista verificado` : p.accountType === 'artist' ? 'Artista · sin verificar' : 'Oyente');
+const roleLabel = (p, verified) => {
+  const ownerTag = app.auth?.isOwner && p?.uid === app.user?.uid ? 'Propietario · Administrador · ' : '';
+  return `${ownerTag}${verified ? `${icon('verified', 'verified-ico')} Artista verificado` : p.accountType === 'artist' ? 'Artista · sin verificar' : 'Oyente'}`;
+};
 
 export function profileHeader(p, { preview = false } = {}) {
   loadFont(p.font);
   const verified = p.role === 'artist';
+  const isOwner = Boolean(app.auth?.isOwner && p?.uid === app.user?.uid);
   const st = app.stats.data || { seconds: 0, plays: {} };
   const plays = Object.values(st.plays).reduce((a, b) => a + b, 0);
-  // perfil abierto: sólo la portada; sin portada, la foto de perfil grande y centrada (la vista previa del editor sigue igual)
+  const postsCount = app.posts.byUser(p.uid).length;
+  // perfil abierto: cabecera editorial estructurada con tarjeta de identidad y métricas
   if (!preview) {
     const kind = p.cover ? 'cover' : p.avatar ? 'photo' : 'none';
     const media = kind === 'cover' ? `<div class="pv2-media" aria-hidden="true"><img src="${esc(p.cover)}" alt="" decoding="async"></div>`
       : `<div class="pv2-media none" style="--h:${hueOf(p.uid || p.displayName)}" aria-hidden="true"></div>`;
     return `<header class="pv2-hero kind-${kind}">${media}
-      ${kind === 'cover' ? '' : `<div class="pv2-photo">${avatar(p, 'xl')}</div>`}
-      <div class="community-profile-identity"><p class="eyebrow">Tu perfil / ${roleLabel(p, verified)}</p>
-      <h1 class="profile-name" style="font-family:${esc(fontStack(p.font))}">${esc(p.displayName)}${tick(verified, 'Artista verificado')}</h1>
-      <p class="profile-handle">@${esc(p.username)}</p>
-      ${p.bio ? `<p class="profile-bio">${esc(p.bio)}</p>` : ''}</div>
-      <div class="profile-stats">
-        <span><b>${app.playlists.mine.length}</b> playlists</span>
-        <span><b>${plays}</b> reproducciones</span>
-        <span><b>${hours(st.seconds)}</b> escuchadas</span>
-        <span><b>${app.posts.byUser(p.uid).length}</b> publicaciones</span>
-      </div>
-      <div class="hero-actions">
-        <button class="btn-primary lit" data-action="edit-profile">${icon('edit')}Editar perfil</button>
-        ${verified ? `<button class="btn-glass lit" data-action="nav" data-view="studio">${icon('disc')}Estudio</button>` : ''}
+      <div class="pv2-card">
+        <div class="pv2-top">
+          <div class="pv2-photo">${avatar(p, 'xl')}</div>
+          <div class="community-profile-identity">
+            <p class="eyebrow"><span class="pv2-role-pill${isOwner ? ' is-owner' : ''}">${roleLabel(p, verified)}</span></p>
+            <h1 class="profile-name" style="font-family:${esc(fontStack(p.font))}">${esc(p.displayName)}${tick(verified, 'Artista verificado')}</h1>
+            <p class="profile-handle">@${esc(p.username)}${app.user?.email ? ` · <span class="profile-email">${esc(app.user.email)}</span>` : ''}</p>
+            ${p.bio ? `<p class="profile-bio">${esc(p.bio)}</p>` : '<p class="profile-bio muted">Agregá una bio desde Editar perfil para contar qué música te mueve.</p>'}
+          </div>
+          <div class="hero-actions">
+            <button class="btn-primary lit" data-action="edit-profile">${icon('edit')}Editar perfil</button>
+            ${verified ? `<button class="btn-glass lit" data-action="nav" data-view="studio">${icon('disc')}Estudio</button>` : ''}
+            ${isOwner || app.auth?.isAdmin ? `<button class="btn-glass lit" data-action="nav" data-view="review">${icon('shield')}Moderación</button>` : ''}
+          </div>
+        </div>
+        <div class="profile-stats">
+          <div class="profile-stat-card"><b>${app.playlists.mine.length}</b><span>Playlists</span></div>
+          <div class="profile-stat-card"><b>${plays}</b><span>Reproducciones</span></div>
+          <div class="profile-stat-card"><b>${hours(st.seconds)}</b><span>Tiempo escuchado</span></div>
+          <div class="profile-stat-card"><b>${postsCount}</b><span>Publicaciones</span></div>
+        </div>
       </div>
     </header>`;
   }

@@ -114,11 +114,12 @@ export function settingsCategories() {
     { id: 'inicio', icon: 'sparkle', name: 'Inicio y recomendaciones', sub: `${REGIONS.find((r) => r.id === app.taste.data.region)?.label || 'Global'}${app.taste.data.done ? ' · con tus gustos' : ''}` },
     { id: 'biblioteca', icon: 'library', name: 'Biblioteca', sub: n ? `${n} canciones` : 'Vacía' },
   ];
-  if (p) list.push({ id: 'cuenta', icon: 'user', name: 'Cuenta', sub: app.user?.mode === 'cloud' ? 'Google · nube' : app.auth.mode === 'local' ? 'Cuenta local' : app.user?.providerId === 'google.com' ? 'Google' : 'Correo' });
+  if (p) list.push({ id: 'cuenta', icon: 'user', name: 'Cuenta', sub: app.auth.isOwner ? 'Propietario · Administrador' : app.user?.mode === 'cloud' ? 'Google · nube' : app.auth.mode === 'local' ? 'Cuenta local' : app.user?.providerId === 'google.com' ? 'Google' : 'Correo' });
   if (p) list.push({ id: 'artista', icon: claim?.status === 'approved' ? 'disc' : 'mic', name: 'Artista', sub: claim?.status === 'approved' ? 'Estudio de artista' : claim?.status === 'rejected' ? 'Reclamo rechazado' : claim ? 'Reclamo en revisión' : 'Subí tu música gratis' });
   list.push({ id: 'legal', icon: 'shield', name: 'Privacidad y legal', sub: `Cookies: ${cookieChoiceLabel().toLowerCase()} · textos en borrador` });
   list.push({ id: 'avanzado', icon: 'gauge', name: 'Avanzado', sub: adv ? 'Activado' : 'Desactivado' });
-  if (app.auth.mode === 'local') list.push({ id: 'desarrollo', icon: 'code', name: 'Desarrollo', sub: app.prefs.dev ? 'Activado' : 'Desactivado' });
+  if (app.auth.isOwner) list.push({ id: 'desarrollo', icon: 'shield', name: 'Administración · Propietario', sub: 'Control total, moderación y reclamos' });
+  else if (app.auth.mode === 'local') list.push({ id: 'desarrollo', icon: 'code', name: 'Desarrollo', sub: app.prefs.dev ? 'Activado' : 'Desactivado' });
   else if (app.auth.isAdmin) list.push({ id: 'desarrollo', icon: 'shield', name: 'Administración', sub: 'Revisión de reclamos' });
   return list;
 }
@@ -258,6 +259,13 @@ const SECTIONS = {
       <details class="versions"><summary>Versiones de cada función</summary><ul>${staleness().map((f) => `<li><span>${esc(f.name)}</span><b>${f.version}</b><small>${f.days ? `hace ${f.days} d` : 'hoy'}</small></li>`).join('')}</ul></details>` : '</p>'}`;
   },
   desarrollo() {
+    if (app.auth.isOwner) {
+      return `<div class="glass-soft notice" style="margin-bottom:16px"><p><b>Cuenta Propietario / Owner</b> (${esc(app.user?.email || '')}) · Acceso administrativo completo.</p></div>
+        <div class="row-btns"><button class="btn-primary lit" data-action="nav" data-view="review">${icon('shield')}Panel de Revisión y Moderación</button>
+        <button class="btn-glass lit" data-action="nav" data-view="studio">${icon('disc')}ZUENA Studio</button>
+        <a class="btn-glass lit" href="tests.html" target="_blank">${icon('code')}Suite de Tests</a></div>
+        ${app.auth.mode === 'local' ? toggleRow('dev', 'Herramientas de desarrollo local', 'Controles adicionales de depuración en este equipo.', !!app.prefs.dev) : ''}`;
+    }
     if (app.auth.mode !== 'local') return `<button class="btn-glass lit" data-action="nav" data-view="review">${icon('shield')}Revisión</button>`;
     return `${toggleRow('dev', 'Modo desarrollador', 'Panel de revisión para aprobar reclamos y lanzamientos en este equipo.', !!app.prefs.dev)}
       ${app.prefs.dev ? `<div class="row-btns"><button class="btn-glass lit" data-action="nav" data-view="review">${icon('shield')}Revisión</button><a class="btn-glass lit" href="tests.html" target="_blank">${icon('code')}Tests</a></div>` : ''}`;
