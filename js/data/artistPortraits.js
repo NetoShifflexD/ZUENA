@@ -8,7 +8,7 @@ const COMMONS = 'https://commons.wikimedia.org/w/api.php';
 const TTL = 7 * 24 * 3600e3;
 const TIMEOUT = 6000;
 const CACHE_KEY = 'artistPortraits:commons:v1';
-const LOCAL_CATALOG = '/js/data/artistPortraits.catalog.json';
+const LOCAL_CATALOG = new URL('./artistPortraits.catalog.json', import.meta.url).href; // relativa: el sitio publicado vive en /ZUENA/
 const WIKI_TITLES = Object.freeze({
   'Taylor Swift': 'Taylor Swift',
   'The Weeknd': 'The Weeknd',
