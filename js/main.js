@@ -11,7 +11,7 @@ import { Auth } from './auth/auth.js';
 import { Playlists, Stats } from './data/playlists.js';
 import { Artist } from './data/artist.js';
 import { Posts } from './data/posts.js';
-import { Releases, countdown } from './data/releases.js';
+import { Releases, countdown, countdownParts } from './data/releases.js';
 import { loadProfile, saveProfile, syncAccount } from './data/profiles.js';
 import { Taste, Catalog } from './catalog/recommend.js';
 import { defaultRegion } from './catalog/genres.js';
@@ -256,6 +256,15 @@ setInterval(() => {
     const at = +el.dataset.countdown;
     el.textContent = at > now ? countdown(at, now) : 'Disponible ahora';
     if (at <= now && !el.dataset.done) { el.dataset.done = '1'; checkPremieres(); }
+  }
+  for (const box of document.querySelectorAll('[data-countdown-parts]')) {
+    const at = +box.dataset.countdownParts;
+    const parts = countdownParts(at, now);
+    for (const k of ['d', 'h', 'm', 's']) {
+      const node = box.querySelector(`[data-cd="${k}"]`);
+      if (node && node.textContent !== parts[k]) node.textContent = parts[k];
+    }
+    if (parts.live && !box.dataset.done) { box.dataset.done = '1'; checkPremieres(); }
   }
 }, 1000);
 

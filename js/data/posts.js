@@ -254,7 +254,16 @@ export class Posts extends EventTarget {
       created: opts.created || Date.now(),
       ...(opts.audience && opts.audience !== 'public' ? { audience: opts.audience, teaser: String(opts.teaser || '').slice(0, 80) } : {}),
       // copia mínima del autor para mostrarlo en otros equipos (modo nube)
-      author: { uid: profile.uid, displayName: profile.displayName, username: profile.username, avatar: profile.avatar, role: profile.role },
+      author: {
+        uid: profile.uid,
+        displayName: profile.displayName,
+        username: profile.username,
+        avatar: profile.avatar,
+        role: profile.role,
+        isOfficialTeam: !!profile.isOfficialTeam,
+        isOwnerProfile: !!profile.isOwnerProfile,
+        isAdminProfile: !!profile.isAdminProfile,
+      },
     };
     await db.put('posts', post);
     this.authors.set(profile.uid, profile);

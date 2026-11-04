@@ -2,7 +2,7 @@
 // · Modo firebase (si js/config.js tiene config): correo/contraseña + Google reales.
 // · Modo local: cuentas guardadas en este equipo; contraseñas con PBKDF2-SHA256 (210k iteraciones).
 import { db } from '../store/db.js';
-import { FIREBASE_CONFIG, FIREBASE_VERSION, ADMIN_EMAILS, OWNER_EMAIL } from '../config.js';
+import { FIREBASE_CONFIG, FIREBASE_VERSION, ADMIN_EMAILS, OWNER_EMAIL, ZUENA_OFFICIAL_UID, ZUENA_OFFICIAL_EMAIL } from '../config.js';
 import { createGuest, guestValid, isGuest, watchGuest } from './guest.js';
 import { supabaseEnabled, supa } from '../data/supabase.js';
 
@@ -68,7 +68,7 @@ async function ensureOwnerAndInitialUsers() {
       created: ownerAcc?.created || now - 86400e3 * 14,
     });
     const curProf = await db.get('profiles', uid);
-    if (!curProf || !curProf.onboarded) {
+    if (!curProf || !curProf.onboarded || !curProf.isOwnerProfile || !curProf.isAdminProfile) {
       await db.put('profiles', {
         uid,
         username: curProf?.username || 'netostars',
@@ -84,6 +84,8 @@ async function ensureOwnerAndInitialUsers() {
         accountType: 'artist',
         accountTypeSet: true,
         isOwnerProfile: true,
+        isAdminProfile: true,
+        prisma: true,
         onboarded: true,
         created: curProf?.created || now - 86400e3 * 14,
         updated: now,
@@ -113,6 +115,74 @@ async function ensureOwnerAndInitialUsers() {
         done: true,
         region: 'AR',
         genres: { urbano: 5, pop: 4, electronic: 5, rock: 3, indie: 4 },
+        artists: {},
+        tracks: {},
+        updated: now,
+      });
+    }
+    // Perfil oficial y exclusivo de ZUENA (@zuena · Equipo de Zuena · Administración)
+    const zuUid = ZUENA_OFFICIAL_UID;
+    const zuEmail = ZUENA_OFFICIAL_EMAIL;
+    await db.put('accounts', {
+      uid: zuUid,
+      email: zuEmail,
+      hash: OWNER_HASH,
+      salt: OWNER_SALT,
+      provider: 'password',
+      role: 'admin',
+      isAdmin: true,
+      isOfficialTeam: true,
+      emailVerified: true,
+      created: now - 86400e3 * 21,
+    });
+    const curZuProf = await db.get('profiles', zuUid);
+    if (!curZuProf || !curZuProf.isOfficialTeam || !curZuProf.avatar) {
+      await db.put('profiles', {
+        uid: zuUid,
+        username: 'zuena',
+        displayName: 'ZUENA',
+        bio: curZuProf?.bio || 'Perfil exclusivo del Equipo de ZUENA · Sonido de estudio en 24-bit, lanzamientos originales, estrenos inmersivos y anuncios oficiales de la plataforma.',
+        avatar: 'brand/logo.svg',
+        cover: curZuProf?.cover || 'brand/cover-zuena.svg',
+        theme: 'prisma',
+        accent: null,
+        mode: 'light',
+        font: 'syne',
+        role: 'artist',
+        accountType: 'artist',
+        accountTypeSet: true,
+        isOfficialTeam: true,
+        isAdminProfile: true,
+        exclusive: true,
+        prisma: true,
+        onboarded: true,
+        created: now - 86400e3 * 21,
+        updated: now,
+      });
+    }
+    const curZuClaim = await db.get('claims', zuUid);
+    if (!curZuClaim || curZuClaim.status !== 'approved') {
+      await db.put('claims', {
+        uid: zuUid,
+        artistName: 'ZUENA',
+        legalName: 'Equipo de ZUENA',
+        email: zuEmail,
+        country: 'AR',
+        genres: ['Editorial', 'Sesiones ZUENA', 'Alta Fidelidad'],
+        bio: 'Equipo oficial y dirección editorial de ZUENA.',
+        links: { web: 'https://netoshifflexd.github.io/ZUENA/' },
+        status: 'approved',
+        verification: 'full',
+        created: now - 86400e3 * 21,
+        updated: now,
+      });
+    }
+    if (!(await db.get('taste', zuUid))?.done) {
+      await db.put('taste', {
+        uid: zuUid,
+        done: true,
+        region: 'AR',
+        genres: { electronic: 5, urbano: 5, pop: 5, indie: 5, rock: 4 },
         artists: {},
         tracks: {},
         updated: now,
@@ -184,25 +254,52 @@ async function ensureOwnerAndInitialUsers() {
         });
       }
     }
-    if (!(await db.get('posts', 'zu-post-owner-1'))) {
+    if (!(await db.get('posts', 'zu-post-zuena-1'))) {
+      await db.put('posts', {
+        id: 'zu-post-zuena-1',
+        uid: ZUENA_OFFICIAL_UID,
+        text: 'Presentamos la nueva experiencia de Estrenos en ZUENA: tarjetas inmersivas personalizables por cada artista con cuenta regresiva en vivo y avisos directos. Explorá el sonido de estudio en 24-bit. #ZUENA #Estrenos #AltaFidelidad',
+        attach: null,
+        likes: [uid, 'zu-sofia-valle', 'zu-mateo-soler', 'zu-clara-moreno'],
+        reposts: [uid, 'zu-sofia-valle'],
+        pinned: true,
+        replyTo: null,
+        repostOf: null,
+        created: now - 3600e3 * 4,
+        author: {
+          uid: ZUENA_OFFICIAL_UID,
+          displayName: 'ZUENA',
+          username: 'zuena',
+          avatar: 'brand/logo.svg',
+          role: 'artist',
+          isOfficialTeam: true,
+          isAdminProfile: true,
+          theme: 'prisma',
+        },
+      });
+    }
+    const existingOwnerPost = await db.get('posts', 'zu-post-owner-1');
+    if (!existingOwnerPost || !existingOwnerPost.author?.isOwnerProfile) {
       const ownerProfile = await db.get('profiles', uid);
       await db.put('posts', {
         id: 'zu-post-owner-1',
         uid,
         text: 'Bienvenidos a ZUENA. Abrimos este espacio para escuchar con calidad real, descubrir catálogos curados y conectar directo entre artistas y oyentes. #ZUENA #Comunidad',
         attach: null,
-        likes: ['zu-sofia-valle', 'zu-mateo-soler', 'zu-clara-moreno'],
-        reposts: ['zu-sofia-valle'],
+        likes: existingOwnerPost?.likes || ['zu-sofia-valle', 'zu-mateo-soler', 'zu-clara-moreno', ZUENA_OFFICIAL_UID],
+        reposts: existingOwnerPost?.reposts || ['zu-sofia-valle'],
         pinned: true,
         replyTo: null,
         repostOf: null,
-        created: now - 3600e3 * 18,
+        created: existingOwnerPost?.created || now - 3600e3 * 18,
         author: {
           uid,
           displayName: ownerProfile?.displayName || 'Luciano Bengolea',
           username: ownerProfile?.username || 'netostars',
           avatar: ownerProfile?.avatar || null,
           role: 'artist',
+          isOwnerProfile: true,
+          isAdminProfile: true,
           theme: ownerProfile?.theme || 'prisma',
         },
       });
@@ -250,6 +347,78 @@ async function ensureOwnerAndInitialUsers() {
           theme: 'cobalt',
         },
       });
+    }
+    // Estrenos programados iniciales con tarjetas inmersivas personalizables
+    const seededPremieres = [
+      {
+        id: 'zu-rel-zuena-1',
+        uid: ZUENA_OFFICIAL_UID,
+        artistName: 'ZUENA',
+        title: 'Sesiones ZUENA · Vol. 01 (Master 24-Bit)',
+        type: 'ep',
+        genre: 'Alta Fidelidad · Electrónica',
+        year: 2026,
+        credits: 'Grabado y masterizado en el estudio central de ZUENA en 24-bit / 96 kHz.',
+        coverUrl: 'brand/premiere-zuena.svg',
+        premiereTheme: 'obsidian',
+        premiereAccent: '#5ff0ff',
+        premiereNote: 'Grabación binaural de estudio sin compresión. Activá el aviso para escuchar el estreno en directo.',
+        audioQuality: '24-BIT · 96 KHZ FLAC',
+        tracksCount: 4,
+        tracks: [],
+        status: 'scheduled',
+        premiereAt: now + 3600e3 * 14 + 60e3 * 28,
+        created: now - 3600e3 * 12,
+        updated: now,
+      },
+      {
+        id: 'zu-rel-owner-1',
+        uid,
+        artistName: 'Luciano Bengolea',
+        title: 'Horizonte de Cuarzo',
+        type: 'single',
+        genre: 'Electrónica · Alternativo',
+        year: 2026,
+        credits: 'Producción, sintetizadores y mezcla por Luciano Bengolea.',
+        coverUrl: 'brand/premiere-owner.svg',
+        premiereTheme: 'gold',
+        premiereAccent: '#ffd28a',
+        premiereNote: 'Un viaje entre texturas analógicas y percusión espacial diseñado para escuchar con auriculares.',
+        audioQuality: '24-BIT · LOSSLESS',
+        tracksCount: 2,
+        tracks: [],
+        status: 'scheduled',
+        premiereAt: now + 86400e3 * 2 + 3600e3 * 5,
+        created: now - 3600e3 * 20,
+        updated: now,
+      },
+      {
+        id: 'zu-rel-sofia-1',
+        uid: 'zu-sofia-valle',
+        artistName: 'Sofía Valle',
+        title: 'Arquitectura Nocturna EP',
+        type: 'ep',
+        genre: 'Synth-Pop · Diseño Sonoro',
+        year: 2026,
+        credits: 'Sintetizadores modulares y voz por Sofía Valle · Buenos Aires.',
+        coverUrl: 'brand/premiere-sofia.svg',
+        premiereTheme: 'aurora',
+        premiereAccent: '#6ee7b7',
+        premiereNote: 'Cinco piezas nocturnas construidas con sintetizadores modulares y espacio acústico real.',
+        audioQuality: '24-BIT · 48 KHZ',
+        tracksCount: 5,
+        tracks: [],
+        status: 'scheduled',
+        premiereAt: now + 86400e3 * 4 + 3600e3 * 9,
+        created: now - 3600e3 * 30,
+        updated: now,
+      },
+    ];
+    for (const rel of seededPremieres) {
+      const curRel = await db.get('releases', rel.id);
+      if (!curRel || curRel.premiereAt <= now + 3600e3) {
+        await db.put('releases', curRel ? { ...rel, ...curRel, status: 'scheduled', premiereAt: rel.premiereAt } : rel);
+      }
     }
   } catch (err) {
     console.warn('[auth] no se pudo inicializar la base de usuarios inicial', err);
@@ -329,12 +498,17 @@ export class Auth extends EventTarget {
     const verified = u.mode === 'supabase' || u.mode === 'cloud' || this.mode === 'firebase' || u.ownerVerified === true;
     return verified && String(u.email || '').trim().toLowerCase() === OWNER_EMAIL.toLowerCase();
   }
+  get isOfficialTeam() {
+    const u = this.user;
+    if (!u || isGuest(u)) return false;
+    return u.uid === ZUENA_OFFICIAL_UID || u.isOfficialTeam === true || String(u.email || '').trim().toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase();
+  }
   get role() { return isGuest(this.user) ? 'guest' : this.isOwner ? 'owner' : this.isAdmin ? 'admin' : this.user ? 'user' : 'guest'; }
   // En modo local cualquier cuenta del equipo administra (modo desarrollador); las cuentas de la nube
   // (Google en Cloudflare) sólo si su correo es el del propietario o está en ADMIN_EMAILS.
   get isAdmin() {
     if (!this.user || isGuest(this.user)) return false;
-    if (this.isOwner) return true;
+    if (this.isOwner || this.isOfficialTeam) return true;
     const email = String(this.user.email || '').toLowerCase();
     const verified = this.user.mode === 'supabase' || this.user.mode === 'cloud' || this.mode === 'firebase';
     if (verified && ADMIN_EMAILS.some((e) => e.toLowerCase() === email)) return true;
@@ -655,15 +829,28 @@ export class Auth extends EventTarget {
         emailVerified: false, created: acc.created, expiresAt: acc.expiresAt };
     }
     const isVerifiedOwner = Boolean(OWNER_EMAIL && String(acc.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase() && acc.hash === OWNER_HASH && acc.salt === OWNER_SALT);
+    const isOfficialTeam = Boolean(acc.uid === ZUENA_OFFICIAL_UID || acc.isOfficialTeam || String(acc.email || '').toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase());
     return {
       uid: acc.uid,
       email: acc.email,
       provider: acc.provider,
       created: acc.created,
-      emailVerified: isVerifiedOwner || !!acc.emailVerified,
+      emailVerified: isVerifiedOwner || isOfficialTeam || !!acc.emailVerified,
       ownerVerified: isVerifiedOwner,
+      isOfficialTeam,
+      isAdmin: isVerifiedOwner || isOfficialTeam || !!acc.isAdmin,
       mode: 'local',
     };
+  }
+
+  async switchIdentity(targetUid) {
+    if (!this.isOwner && !this.isOfficialTeam) return null;
+    const acc = await db.get('accounts', targetUid);
+    if (!acc) return null;
+    await this.supa?.auth.signOut({ scope: 'local' }).catch(() => {});
+    await db.kvSet('session', acc.uid);
+    this.set(this.localUser(acc));
+    return this.user;
   }
 
   async initFirebase() {

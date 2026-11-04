@@ -6,11 +6,13 @@ import { app } from '../app.js';
 import { icon } from '../ui/icons.js';
 import { esc, greeting } from '../ui/format.js';
 import { sounds } from '../ui/sounds.js';
-import { TEST_CATALOG } from '../config.js';
+import { TEST_CATALOG, ZUENA_OFFICIAL_UID } from '../config.js';
 import { testReleases, testPlaylists, testArtistCards, linkArtistNames } from '../data/testArtists.js';
+import { countdown, premiereLabel } from '../data/releases.js';
+import { roleBadges } from './common.js';
 
-// Una presentación quieta: los destacados sólo cambian por una acción explícita.
 const INTRO_NOTE = 392;
+const AUTO_ADVANCE_MS = 7500;
 
 export function heroCarousel(p) {
   return `<div class="bento-hero hc" role="region" aria-roledescription="carrusel" aria-label="Destacados">
@@ -83,8 +85,20 @@ function go(i, user = false) {
     if (!post || !app.posts.visible(post)) slide.remove();
   }
   const all = slides();
-  state.idx = (i + all.length) % all.length;
-  all.forEach((s, k) => { s.classList.toggle('on', k === state.idx); s.inert = k !== state.idx; s.setAttribute('aria-hidden', String(k !== state.idx)); });
+  if (!all.length) return;
+  const prevIdx = state.idx;
+  const nextIdx = (i + all.length) % all.length;
+  const dir = i >= prevIdx ? 'next' : 'prev';
+  state.el.dataset.dir = dir;
+  state.idx = nextIdx;
+  all.forEach((s, k) => {
+    const isCurrent = k === state.idx;
+    const wasPrev = k === prevIdx && prevIdx !== state.idx;
+    s.classList.toggle('on', isCurrent);
+    s.classList.toggle('leaving', wasPrev);
+    s.inert = !isCurrent;
+    s.setAttribute('aria-hidden', String(!isCurrent));
+  });
   renderDots();
   syncScenes();
   if (focusedSlide && !focusedSlide.classList.contains('on')) state.el.querySelector('[data-hc="next"]')?.focus();
@@ -93,8 +107,13 @@ function go(i, user = false) {
 }
 
 function schedule() {
+  if (!state) return;
   clearTimeout(state.timer);
-  // Navegación manual: leer una publicación nunca tiene un tiempo límite.
+  const all = slides();
+  if (state.paused || !state.onScreen || document.hidden || app.prefs?.motion === false || all.length < 2) return;
+  state.timer = setTimeout(() => {
+    if (alive() && !state.paused && state.onScreen && !document.hidden) go(state.idx + 1, false);
+  }, AUTO_ADVANCE_MS);
 }
 
 function renderDots() {
@@ -143,17 +162,45 @@ function bind(el) {
     if (e.key === 'ArrowRight') { go(state.idx + 1, true); e.preventDefault(); }
     if (e.key === 'ArrowLeft') { go(state.idx - 1, true); e.preventDefault(); }
   }, { signal });
-  // deslizar en pantallas táctiles
+  // deslizar en pantallas táctiles y trackpad con seguimiento táctil en vivo
   let start = null;
-  el.addEventListener('pointercancel', () => { start = null; }, { passive: true, signal });
+  const resetDrag = () => {
+    start = null;
+    el.classList.remove('hc-dragging');
+    el.style.removeProperty('--hc-drag');
+    pause(false);
+  };
+  el.addEventListener('pointercancel', resetDrag, { passive: true, signal });
   el.addEventListener('pointerdown', (e) => {
-    start = e.pointerType !== 'mouse' && !e.target.closest('.hc-nav, button, a, [data-action]')
-      ? { x: e.clientX, y: e.clientY } : null;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.target.closest('.hc-nav, button, a, [data-action]')) return;
+    start = { x: e.clientX, y: e.clientY, t: performance.now(), locked: null };
+    if (e.pointerType !== 'mouse') pause(true);
+  }, { passive: true, signal });
+  el.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (!start.locked && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      start.locked = Math.abs(dx) > Math.abs(dy) * 1.1 ? 'x' : 'y';
+    }
+    if (start.locked === 'x') {
+      el.classList.add('hc-dragging');
+      const damped = Math.max(-88, Math.min(88, dx * 0.45));
+      el.style.setProperty('--hc-drag', `${damped.toFixed(1)}px`);
+    }
   }, { passive: true, signal });
   el.addEventListener('pointerup', (e) => {
     if (!start) return;
-    const dx = e.clientX - start.x, dy = e.clientY - start.y; start = null;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(state.idx + (dx < 0 ? 1 : -1), true);
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    const dt = Math.max(16, performance.now() - start.t);
+    const vx = Math.abs(dx) / dt;
+    const locked = start.locked;
+    resetDrag();
+    if (locked !== 'y' && (Math.abs(dx) > 36 || (Math.abs(dx) > 18 && vx > 0.35)) && Math.abs(dx) > Math.abs(dy)) {
+      go(state.idx + (dx < 0 ? 1 : -1), true);
+    }
   }, { passive: true, signal });
 }
 
@@ -163,6 +210,10 @@ async function loadSlides(el, registerMix, mixCovers) {
   const uid = app.user?.uid;
   const current = () => state === owner && el.isConnected && uid === app.user?.uid;
   const html = [];
+  const upcoming = app.releases.upcoming();
+  if (upcoming.length) {
+    html.push(slidePremiere(upcoming[0]));
+  }
   const zu = app.releases.live();
   if (zu.length) {
     const r = zu[0];
@@ -194,6 +245,27 @@ async function loadSlides(el, registerMix, mixCovers) {
 }
 
 const kindLabel = (k) => ({ single: 'Single', ep: 'EP', album: 'Álbum' }[k] || 'Lanzamiento');
+
+function slidePremiere(r) {
+  const art = r.coverUrl || r.coverThumb || 'brand/premiere-zuena.svg';
+  const prof = app.posts?.author?.(r.uid) || { uid: r.uid, displayName: r.primaryArtist, role: 'artist', isOfficialTeam: r.uid === ZUENA_OFFICIAL_UID };
+  return `<article class="hc-slide hc-rel hc-premiere" data-tab="Estreno · ${esc(r.title)}" data-thumb="${esc(art)}" aria-roledescription="diapositiva" aria-label="Próximo estreno: ${esc(r.title)}">
+    ${art ? `<div class="hc-bg" style="background-image:url('${esc(art)}')" aria-hidden="true"></div>` : ''}
+    <div class="hc-copy">
+      <div class="ap-badges-row">
+        <p class="eyebrow"><span class="p-live-dot" aria-hidden="true"></span>Estreno programado · <span data-countdown="${r.premiereAt}">${esc(countdown(r.premiereAt))}</span></p>
+        ${roleBadges(prof, { compact: true })}
+      </div>
+      <h2>${esc(r.title)}</h2>
+      <p class="hc-by">${esc(r.primaryArtist)} · ${esc(premiereLabel(r.premiereAt))}${r.audioQuality ? ` · ${esc(r.audioQuality)}` : ''}</p>
+      <div class="hero-actions">
+        <button class="btn-primary lit" data-action="discovery-jump" data-section="zu-premieres">${icon('clock')}Ver cuenta regresiva</button>
+        <button class="btn-glass lit" data-action="open-artist" data-id="zu:${esc(r.uid)}">Perfil de ${esc(r.primaryArtist)}</button>
+      </div>
+    </div>
+    ${art ? `<img class="hc-cover" src="${esc(art)}" alt="" loading="lazy" decoding="async">` : ''}
+  </article>`;
+}
 
 function slideRelease({ title, artist, art, eyebrow, action, cta }) {
   return `<article class="hc-slide hc-rel" data-tab="${esc(title)}" data-thumb="${esc(art)}" aria-roledescription="diapositiva" aria-label="${esc(eyebrow)}: ${esc(title)}">

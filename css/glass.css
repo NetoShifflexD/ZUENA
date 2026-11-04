@@ -857,12 +857,16 @@ body.no-motion .hc-dot.on i::after { animation: none; transform: none; }
 /* ==========================================================================
    Desplazamiento rápido en PC (2026-11-01)
    ========================================================================== */
-/* durante el scroll los elementos no reciben el puntero: no se disparan hovers (elevación, brillo, sonidos)
-   en cada tarjeta que pasa debajo del mouse. La rueda sigue llegando al contenedor .view. */
-.scrolling .view > *, .scrolling .welcome > * { pointer-events: none; }
+/* durante el scroll en PC los elementos no reciben el puntero: no se disparan hovers (elevación, brillo, sonidos)
+   en cada tarjeta que pasa debajo del mouse. En pantallas táctiles NUNCA se desactiva pointer-events para no bloquear toques ni swipes. */
+@media (hover: hover) and (pointer: fine) {
+  .scrolling .view > *, .scrolling .welcome > * { pointer-events: none; }
+}
 .scrolling .hc *, .scrolling .zac-glow, .scrolling .hc-eq i { animation-play-state: paused !important; }
-/* secciones fuera de pantalla: el navegador no las maqueta ni pinta hasta acercarse */
-.home-sec, .ap-sec { content-visibility: auto; contain-intrinsic-size: auto 380px; }
+/* secciones fuera de pantalla: sólo en escritorio (en móvil content-visibility causa saltos de anclaje al hacer scroll táctil) */
+@media (hover: hover) and (pointer: fine) {
+  .home-sec, .ap-sec { content-visibility: auto; contain-intrinsic-size: auto 380px; }
+}
 /* nombres de artista con perfil: se ven como texto y se subrayan al pasar el mouse */
 .artist-link, .link-sub-in { font: inherit; color: inherit; padding: 0; background: none; border: 0; cursor: pointer; text-underline-offset: 3px; }
 /* área táctil ≥ 32 px (44 px en pantallas táctiles) sin mover la línea: el padding vertical se compensa con margen negativo */

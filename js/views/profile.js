@@ -8,7 +8,7 @@ import { USERNAME_RE, usernameTaken, processImage, saveProfile, setAccountType, 
 import { claimStatus, inferAccountType, needsRoleChoice } from '../data/artist.js';
 import { payments } from '../data/payments.js';
 import { INTENDED_ROLE_KEY } from './welcome.js';
-import { avatar, playlistCard, trackList, tick } from './common.js';
+import { avatar, playlistCard, trackList, tick, roleBadges } from './common.js';
 import { postCard, releaseCard } from './feed.js';
 import { viewArtistPage } from './artistpage.js';
 
@@ -41,7 +41,10 @@ export function profileHeader(p, { preview = false } = {}) {
         <div class="pv2-top">
           <div class="pv2-photo">${avatar(p, 'xl')}</div>
           <div class="community-profile-identity">
-            <p class="eyebrow"><span class="pv2-role-pill${isOwner ? ' is-owner' : ''}">${roleLabel(p, verified)}</span></p>
+            <div class="ap-badges-row">
+              <p class="eyebrow"><span class="pv2-role-pill${isOwner ? ' is-owner' : ''}">${roleLabel(p, verified)}</span></p>
+              ${roleBadges(p)}
+            </div>
             <h1 class="profile-name" style="font-family:${esc(fontStack(p.font))}">${esc(p.displayName)}${tick(verified, 'Artista verificado')}</h1>
             <p class="profile-handle">@${esc(p.username)}${app.user?.email ? ` · <span class="profile-email">${esc(app.user.email)}</span>` : ''}</p>
             ${p.bio ? `<p class="profile-bio">${esc(p.bio)}</p>` : '<p class="profile-bio muted">Agregá una bio desde Editar perfil para contar qué música te mueve.</p>'}

@@ -13,7 +13,11 @@ export const FIREBASE_CONFIG = {
 */
 
 // Correos con permiso para revisar reclamos de artista y lanzamientos.
-export const ADMIN_EMAILS = [];
+export const ADMIN_EMAILS = ['equipo@zuena.app'];
+
+// Perfil oficial y exclusivo del Equipo de ZUENA (publicación en el feed + permisos de administración).
+export const ZUENA_OFFICIAL_UID = 'zuena-official';
+export const ZUENA_OFFICIAL_EMAIL = 'equipo@zuena.app';
 
 // Catálogo externo (Apple Music, Audius, podcasts de iTunes, radios). false = ZUENA arranca "desde cero":
 // sólo se ve lo que publican los artistas registrados en ZUENA y la música propia de cada oyente.

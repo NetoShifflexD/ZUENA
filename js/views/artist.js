@@ -14,7 +14,7 @@ import { TIER_BENEFITS, REF_CENTS, TIER_NAME_MAX, priceRule, referencePrice, can
 import { parseAmount, formatEUR } from '../data/payments.js';
 import { TEST_CATALOG } from '../config.js';
 import { TEST_ARTISTS, testArtistById } from '../data/testArtists.js';
-import { statusOnApprove, premiereLabel, premiereError, isUpcoming, RESCHEDULE_LOCK_MS } from '../data/releases.js';
+import { statusOnApprove, premiereLabel, premiereError, isUpcoming, RESCHEDULE_LOCK_MS, PREMIERE_THEMES } from '../data/releases.js';
 import { payments } from '../data/payments.js';
 import { backBtn, statusPill, fieldError } from './common.js';
 
@@ -405,7 +405,20 @@ function salidaFieldset(r, e) {
     <input type="hidden" name="releaseMode" value="${sched ? 'scheduled' : 'onApprove'}">
     ${sched || r.status === 'scheduled' ? `<label class="field"><span>Fecha y hora del estreno <small class="muted">hora de ${esc(tz)}</small></span>
       <input class="input" type="datetime-local" name="premiereAt" min="${min}" value="${toLocalInput(r.premiereAt)}">${fieldError(e, 'premiereAt')}
-      <span class="hint">${r.status === 'scheduled' && !canMove ? 'Falta menos de una hora: ya no se puede mover. Podés cancelar el estreno.' : 'Antes del estreno los oyentes ven la portada y una cuenta regresiva, sin audio.'}</span></label>` : ''}
+      <span class="hint">${r.status === 'scheduled' && !canMove ? 'Falta menos de una hora: ya no se puede mover. Podés cancelar el estreno.' : 'Antes del estreno los oyentes ven la portada y una cuenta regresiva, sin audio.'}</span></label>
+      <div class="form-grid tight">
+        <label class="field"><span>Atmósfera de tarjeta de estreno</span>
+          <select class="select lit" name="premiereTheme">
+            ${PREMIERE_THEMES.map((t) => `<option value="${t.id}" ${(r.premiereTheme || 'obsidian') === t.id ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}
+          </select>
+        </label>
+        <label class="field"><span>Color de acento del estreno</span>
+          <input class="input" type="color" name="premiereAccent" value="${esc(r.premiereAccent || '#5ff0ff')}" style="height:42px;padding:4px 8px">
+        </label>
+      </div>
+      <label class="field"><span>Nota del artista en la tarjeta de estreno <small class="muted">opcional · hasta 160 caracteres</small></span>
+        <input class="input" name="premiereNote" maxlength="160" placeholder="Contá qué hace único a este estreno durante la cuenta regresiva…" value="${esc(r.premiereNote || '')}">
+      </label>` : ''}
     ${r.status === 'scheduled' && canMove ? '<button type="button" class="btn-glass lit" data-action="release-reschedule">Guardar nueva fecha</button>' : ''}
     ${draft ? `<label class="check"><input type="checkbox" name="postAuto" ${r.postMode !== 'none' ? 'checked' : ''}><span>Publicar el lanzamiento en mi feed</span></label>
       <label class="field"><span>Texto de la publicación <small class="muted">opcional</small></span>
@@ -452,6 +465,9 @@ function readRelease(form, r) {
   for (const k of ['title', 'primaryArtist', 'featuring', 'genre', 'language', 'label', 'copyright']) if (form[k]) r[k] = form[k].value.trim();
   if (form.releaseMode) r.releaseMode = form.releaseMode.value;
   if (form.premiereAt) { r.premiereAt = fromLocalInput(form.premiereAt.value); r.premiereTz = Intl.DateTimeFormat().resolvedOptions().timeZone; }
+  if (form.premiereTheme) r.premiereTheme = form.premiereTheme.value || 'obsidian';
+  if (form.premiereAccent) r.premiereAccent = form.premiereAccent.value || '#5ff0ff';
+  if (form.premiereNote) r.premiereNote = form.premiereNote.value.trim().slice(0, 160);
   if (form.postAuto) r.postMode = form.postAuto.checked ? 'auto' : 'none';
   if (form.postText) r.postText = form.postText.value.trim().slice(0, 280);
   if (form.announce) r.announce = form.announce.checked;

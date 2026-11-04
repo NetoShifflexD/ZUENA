@@ -34,6 +34,25 @@ export function countdown(at, now = Date.now()) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+export function countdownParts(at, now = Date.now()) {
+  const ms = Math.max(0, at - now);
+  const totalSec = Math.floor(ms / 1000);
+  const d = Math.floor(totalSec / 86400);
+  const h = Math.floor((totalSec % 86400) / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return { d: pad(d), h: pad(h), m: pad(m), s: pad(s), live: ms <= 0 };
+}
+
+export const PREMIERE_THEMES = [
+  { id: 'obsidian', label: 'Obsidiana Studio', accent: '#5ff0ff' },
+  { id: 'aurora', label: 'Aurora Violeta', accent: '#a855f7' },
+  { id: 'gold', label: 'Cuarzo Dorado', accent: '#f5b841' },
+  { id: 'crimson', label: 'Pulso Carmesí', accent: '#f43f5e' },
+  { id: 'prism', label: 'Prisma Esmeralda', accent: '#34d399' },
+];
+
 export const premiereLabel = (at) => new Date(at).toLocaleString('es', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 export class Releases extends EventTarget {

@@ -35,6 +35,27 @@ export function avatar(p, cls = '') {
 
 export const tick = (on, title = 'Verificado') => (on ? `<span class="tick" title="${title}">${icon('verified')}</span>` : '');
 
+// Insignias personalizadas de rol: Equipo de Zuena (exclusivo), Dueño y Administración.
+export function roleBadges(entity, { compact = false } = {}) {
+  if (!entity) return '';
+  const uid = String(entity.uid || '');
+  const username = String(entity.username || '').toLowerCase();
+  const isTeam = Boolean(entity.isOfficialTeam || uid === 'zuena-official' || username === 'zuena');
+  const isOwner = Boolean(entity.isOwnerProfile || uid === 'bf3b1550-da87-4443-a8ba-0ae542fed5dd' || (app.auth?.isOwner && uid && uid === app.user?.uid));
+  const isAdmin = Boolean(entity.isAdminProfile || isOwner || isTeam);
+  const pills = [];
+  if (isTeam) {
+    pills.push(`<span class="z-badge z-badge-team${compact ? ' sm' : ''}" title="Perfil exclusivo oficial del Equipo de ZUENA"><span class="z-badge-logo" aria-hidden="true">Z</span><span>Equipo de Zuena</span></span>`);
+  }
+  if (isOwner) {
+    pills.push(`<span class="z-badge z-badge-owner${compact ? ' sm' : ''}" title="Dueño y fundador de ZUENA">${icon('crown', 'z-badge-ico')}<span>Dueño</span></span>`);
+  }
+  if (isAdmin) {
+    pills.push(`<span class="z-badge z-badge-admin${compact ? ' sm' : ''}" title="Permisos de administración">${icon('shield', 'z-badge-ico')}<span>Administración</span></span>`);
+  }
+  return pills.length ? `<span class="z-badges${compact ? ' sm' : ''}">${pills.join('')}</span>` : '';
+}
+
 export function playlistArt(p, cls = '') {
   if (p.cover) return `<div class="art ${cls}"><img src="${esc(p.cover)}" alt="" loading="lazy" decoding="async"></div>`;
   if (p.system === 'likes') return `<div class="art likes ${cls}">${icon('heartFill')}</div>`;

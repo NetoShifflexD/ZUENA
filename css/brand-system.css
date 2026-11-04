@@ -189,3 +189,361 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, #view::-webkit-scrollbar, .vie
   html[data-design="point"] input[type="range"].range::-webkit-slider-thumb { width: 22px; height: 22px; }
 }
 @media(display-mode:window-controls-overlay) { html[data-design="point"] .topbar { padding-top: max(calc(14px + var(--sat,0px)),env(titlebar-area-height,32px)); } }
+
+/* ==========================================================================
+   Desplazamiento táctil y arquitectura móvil sin bloqueos (v0.30)
+   ========================================================================== */
+html[data-design="point"] :is(#view, .view) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
+  scroll-behavior: smooth;
+}
+html[data-design="point"] :is(.shelf, .h-scroll, .chips, .discovery-families, .hc-dots, .fx-stories) {
+  margin-inline: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+html[data-design="point"] .shelf {
+  scroll-snap-type: x proximity;
+}
+html[data-design="point"] .shelf > * {
+  scroll-snap-align: start;
+}
+@media (max-width: 760px) {
+  html[data-design="point"] .fx-main { margin-inline: 0; }
+  html[data-design="point"] .pv2-hero { margin-inline: 0; }
+}
+
+/* ==========================================================================
+   Insignias Oficiales ("Equipo de Zuena", "Dueño", "Administración")
+   ========================================================================== */
+.ap-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.z-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+.z-badges.compact { gap: 4px; }
+.z-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font: 600 10.5px/1.2 var(--font);
+  letter-spacing: .04em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  user-select: none;
+}
+.z-badges.compact .z-badge {
+  padding: 2px 7px;
+  font-size: 10px;
+}
+.z-badge svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+.z-badge-logo {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-grid;
+  place-items: center;
+  background: #0b0d13;
+  color: #fff;
+  padding: 1.5px;
+}
+.z-badge-logo svg { width: 100%; height: 100%; }
+
+/* Insignia exclusiva: Equipo de Zuena */
+.z-badge-team {
+  background: linear-gradient(135deg, #0c1018 0%, #172033 100%);
+  color: #f8fafc;
+  border-color: rgb(95 240 255 / .45);
+  box-shadow: 0 2px 10px -2px rgb(95 240 255 / .28);
+}
+.z-badge-team span:last-child {
+  background: linear-gradient(90deg, #ffffff 0%, #9beeff 55%, #d8b4fe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+/* Insignia: Dueño */
+.z-badge-owner {
+  background: linear-gradient(135deg, #241b08 0%, #3b2a0a 100%);
+  color: #fde68a;
+  border-color: rgb(245 184 65 / .55);
+  box-shadow: 0 2px 10px -2px rgb(245 184 65 / .25);
+}
+.z-badge-owner svg { color: #fbbf24; }
+
+/* Insignia: Administración */
+.z-badge-admin {
+  background: color-mix(in srgb, var(--z-ink) 10%, var(--z-raised));
+  color: var(--z-ink);
+  border-color: color-mix(in srgb, var(--z-ink) 26%, var(--z-line));
+}
+.z-badge-admin svg { color: #38bdf8; }
+
+.pm-badges { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
+.pm-z-ico {
+  width: 18px; height: 18px; border-radius: 5px; display: inline-grid; place-items: center;
+  background: #0c0e14; color: #fff; padding: 2px; flex: none;
+}
+.pm-z-ico svg { width: 100%; height: 100%; }
+.ap-badge-pill.is-team {
+  background: linear-gradient(135deg, #0b0f17, #1a2438);
+  color: #e0f2fe;
+  border-color: rgb(95 240 255 / .4);
+}
+.ap-badge-pill.is-owner, .pv2-role-pill.is-owner {
+  background: linear-gradient(135deg, #241b08, #3b2a0a);
+  color: #fde68a;
+  border-color: rgb(245 184 65 / .45);
+}
+
+/* ==========================================================================
+   Sala de Estrenos · Tarjetas Inmersivas Personalizables + Cuenta Regresiva
+   ========================================================================== */
+.home-sec-premieres .sec-head-actions {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.fx-premieres-showcase {
+  margin: 0 0 24px; padding: 20px; border-radius: var(--z-radius);
+  border: 1px solid var(--z-line); background: var(--z-surface);
+}
+.fx-premieres-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.fx-premieres-head h2 { margin: 4px 0 0; font: 400 clamp(22px, 2.8vw, 30px)/1.1 var(--font-display); }
+
+.premiere-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  gap: 20px;
+}
+
+.premiere-card {
+  --p-accent: #5ff0ff;
+  --p-bg-1: #0b0e15;
+  --p-bg-2: #141b29;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 22px;
+  color: #f8fafc;
+  background: linear-gradient(155deg, var(--p-bg-1) 0%, var(--p-bg-2) 100%);
+  border: 1px solid color-mix(in srgb, var(--p-accent) 34%, rgb(255 255 255 / .12));
+  box-shadow: 0 22px 48px -22px rgb(6 10 18 / .55), inset 0 1px 0 rgb(255 255 255 / .1);
+  isolation: isolate;
+  transition: transform .28s cubic-bezier(0.22, 1, 0.36, 1), border-color .28s ease, box-shadow .28s ease;
+}
+.premiere-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--p-accent) 62%, rgb(255 255 255 / .24));
+  box-shadow: 0 28px 58px -20px rgb(6 10 18 / .68), 0 0 32px -12px color-mix(in srgb, var(--p-accent) 40%, transparent);
+}
+.premiere-card[data-p-theme="obsidian"] { --p-bg-1: #090d14; --p-bg-2: #131d2e; }
+.premiere-card[data-p-theme="aurora"]   { --p-bg-1: #140c24; --p-bg-2: #24133d; }
+.premiere-card[data-p-theme="gold"]     { --p-bg-1: #191308; --p-bg-2: #2c200d; }
+.premiere-card[data-p-theme="crimson"]  { --p-bg-1: #1c0b12; --p-bg-2: #31121e; }
+.premiere-card[data-p-theme="prism"]    { --p-bg-1: #081915; --p-bg-2: #0f2c24; }
+
+.p-card-backdrop {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+}
+.p-card-backdrop img {
+  position: absolute; inset: -20%; width: 140%; height: 140%; object-fit: cover;
+  filter: blur(42px) saturate(1.35); opacity: .24;
+}
+.p-card-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(80% 70% at 90% 10%, color-mix(in srgb, var(--p-accent) 26%, transparent), transparent 70%),
+    linear-gradient(180deg, rgb(8 10 15 / .25) 0%, rgb(8 10 15 / .82) 100%);
+}
+
+.p-card-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.p-status-pill {
+  display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 999px;
+  background: rgb(255 255 255 / .09); border: 1px solid rgb(255 255 255 / .14);
+  color: #f8fafc; font: 600 10.5px/1.2 var(--font); letter-spacing: .1em; text-transform: uppercase;
+}
+.p-live-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--p-accent, #5ff0ff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-accent, #5ff0ff) 28%, transparent);
+}
+.p-quality-pill {
+  padding: 4px 9px; border-radius: 999px;
+  background: color-mix(in srgb, var(--p-accent) 16%, rgb(0 0 0 / .4));
+  border: 1px solid color-mix(in srgb, var(--p-accent) 42%, transparent);
+  color: var(--p-accent); font: 700 10px/1.2 var(--font); letter-spacing: .11em; text-transform: uppercase;
+}
+
+.p-card-Stage {
+  display: grid; grid-template-columns: 108px minmax(0, 1fr); align-items: center; gap: 18px;
+}
+.p-card-art {
+  position: relative; width: 108px; height: 108px; flex: none;
+}
+.p-card-art .art {
+  position: relative; z-index: 2; width: 100%; height: 100%; border-radius: 14px; overflow: hidden;
+  border: 1px solid rgb(255 255 255 / .18); box-shadow: 0 14px 28px -10px rgb(0 0 0 / .65);
+}
+.p-card-art .art img { width: 100%; height: 100%; object-fit: cover; }
+.p-card-vinyl {
+  position: absolute; top: 6px; right: -14px; width: 96px; height: 96px; border-radius: 50%; z-index: 1;
+  background: radial-gradient(circle, var(--p-accent) 0 14%, #111318 15% 100%);
+  border: 1px solid rgb(255 255 255 / .16);
+  box-shadow: 0 8px 20px rgb(0 0 0 / .5);
+  transition: transform .35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.premiere-card:hover .p-card-vinyl {
+  transform: translateX(8px) rotate(24deg);
+}
+
+.p-card-info { min-width: 0; display: grid; gap: 6px; }
+.p-artist-chip {
+  display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 0; background: none; border: 0; color: #e2e8f0; cursor: pointer; text-align: left;
+  min-height: 28px !important; min-width: 0 !important;
+}
+.p-artist-chip:hover .p-artist-name { text-decoration: underline; }
+.p-artist-name { font: 600 12.5px/1.2 var(--font); color: #f8fafc; }
+.premiere-card .p-card-title {
+  margin: 0; font: 400 clamp(20px, 2.2vw, 25px)/1.12 var(--font-display) !important;
+  color: #ffffff !important; letter-spacing: -.025em;
+}
+.p-card-meta {
+  margin: 0; font: 500 12px/1.35 var(--font); color: rgb(226 232 240 / .74);
+}
+.p-card-note {
+  margin: 2px 0 0; font: italic 400 12.5px/1.45 var(--font); color: rgb(241 245 249 / .88);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.p-card-countdown-box {
+  padding: 12px 14px; border-radius: 16px;
+  background: rgb(6 9 15 / .58);
+  border: 1px solid rgb(255 255 255 / .1);
+  display: grid; gap: 10px;
+}
+.p-countdown-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font: 500 11px/1.2 var(--font); color: rgb(226 232 240 / .72);
+}
+.p-countdown-date {
+  color: var(--p-accent); font-weight: 600; text-transform: capitalize;
+}
+.p-timer {
+  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: center; gap: 6px;
+}
+.pt-seg {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 7px 6px; border-radius: 11px;
+  background: rgb(255 255 255 / .06);
+  border: 1px solid rgb(255 255 255 / .09);
+}
+.pt-seg b {
+  font: 600 clamp(18px, 2vw, 23px)/1.05 var(--font-mono, monospace);
+  color: #ffffff; letter-spacing: .04em; font-variant-numeric: tabular-nums;
+}
+.pt-seg small {
+  margin-top: 3px; font: 700 8.5px/1 var(--font); letter-spacing: .14em; color: rgb(226 232 240 / .62);
+}
+.pt-sep {
+  font: 700 16px/1 var(--font-mono, monospace); color: var(--p-accent); opacity: .75;
+}
+
+.p-card-actions {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.premiere-card .p-card-actions .btn-glass {
+  flex: 1 1 auto; justify-content: center; min-height: 42px;
+  background: rgb(255 255 255 / .09) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgb(255 255 255 / .16) !important;
+  border-radius: 12px; font-size: 12.5px; font-weight: 600;
+}
+.premiere-card .p-card-actions .btn-glass:hover {
+  background: rgb(255 255 255 / .16) !important;
+}
+.premiere-card .p-remind-btn.on, .premiere-inline .p-remind-btn.on {
+  background: var(--p-accent) !important;
+  color: #090d14 !important;
+  border-color: var(--p-accent) !important;
+}
+
+/* Tarjeta de estreno adjunta dentro de un post del feed */
+.premiere-inline {
+  --p-accent: #5ff0ff;
+  display: grid !important; gap: 12px !important; padding: 14px 16px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(145deg, #0b0f18, #161f30) !important;
+  border: 1px solid color-mix(in srgb, var(--p-accent) 38%, rgb(255 255 255 / .14)) !important;
+  color: #f8fafc !important;
+}
+.premiere-inline .pi-top, .premiere-inline .pi-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.premiere-inline .pi-quality {
+  font: 700 9.5px/1.2 var(--font); letter-spacing: .12em; color: var(--p-accent);
+}
+.premiere-inline .pi-main {
+  display: flex; align-items: center; gap: 12px; min-width: 0;
+}
+.premiere-inline .row-title { color: #ffffff !important; font-size: 16px; }
+.premiere-inline .row-sub { color: rgb(226 232 240 / .75) !important; }
+.premiere-inline .pi-note { margin: 4px 0 0; font: italic 12px/1.4 var(--font); color: rgb(241 245 249 / .88); }
+.premiere-inline .p-timer.compact { display: inline-flex; gap: 4px; }
+.premiere-inline .p-timer.compact .pt-seg { padding: 4px 7px; border-radius: 8px; }
+.premiere-inline .p-timer.compact .pt-seg b { font-size: 13px; }
+.premiere-inline .p-timer.compact .pt-seg small { font-size: 7.5px; }
+
+/* Modal personalizador de tarjeta de estreno */
+.p-theme-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 8px; margin-top: 6px;
+}
+.p-theme-opt {
+  display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-radius: 12px;
+  border: 1px solid var(--z-line); background: var(--z-surface); color: var(--z-ink);
+  font: 500 12px/1.2 var(--font); cursor: pointer;
+}
+.p-theme-opt.on {
+  border-color: var(--opt-accent, var(--z-ink));
+  background: color-mix(in srgb, var(--opt-accent, var(--z-ink)) 14%, var(--z-raised));
+  font-weight: 600;
+}
+.p-theme-swatch {
+  width: 14px; height: 14px; border-radius: 50%; background: var(--opt-accent, #5ff0ff); flex: none;
+}
+
+@media (max-width: 600px) {
+  .premiere-card { padding: 16px; gap: 14px; }
+  .p-card-Stage { grid-template-columns: 84px minmax(0, 1fr); gap: 14px; }
+  .p-card-art { width: 84px; height: 84px; }
+  .p-card-vinyl { width: 74px; height: 74px; right: -10px; }
+}

@@ -61,6 +61,8 @@ const STROKE = {
   disc: '<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3"/><path d="M12 9V2.5"/>',
   clock: '<circle cx="12" cy="12" r="9.5"/><path d="M12 6.5V12l3.5 2"/>',
   star: '<path d="m12 2.8 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9z"/>',
+  crown: '<path d="m2 5 3.5 12h13L22 5l-5.5 6L12 4 7.5 11 2 5z"/><path d="M5 20h14"/>',
+  bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
   code: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
   musicPlus: '<path d="M9 18V5l12-2v8"/><circle cx="6" cy="18" r="3"/><path d="M18 15v6"/><path d="M15 18h6"/>',
 };

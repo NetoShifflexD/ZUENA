@@ -19,7 +19,7 @@ import { isLive, isUpcoming } from '../data/releases.js';
 import { TEST_CATALOG } from '../config.js';
 import { testArtistById, testReleases, testSongs } from '../data/testArtists.js';
 import { payments, parseAmount, donationError, formatEUR, PRESETS, MESSAGE_MAX } from '../data/payments.js';
-import { trackList, backBtn, tick, compact, avatar } from './common.js';
+import { trackList, backBtn, tick, roleBadges, compact, avatar } from './common.js';
 import { postCard, releaseCard, followToggle } from './feed.js';
 
 const KIND_TITLE = { single: 'Singles', ep: 'EPs', album: 'Álbumes' };
@@ -130,14 +130,23 @@ async function loadZuena(uid) {
   const tok = tokenize(name)[0];
   const collabs = app.releases.live().filter((r) => r.uid !== uid && tokenize(r.featuring).includes(tok)).flatMap(tracksOf);
   const isOwnerProfile = Boolean(p.isOwnerProfile || (mine && app.auth?.isOwner));
+  const isOfficialTeam = Boolean(p.isOfficialTeam || p.username === 'zuena');
+  const isAdminProfile = Boolean(p.isAdminProfile || isOwnerProfile || isOfficialTeam);
   const genresLabel = Array.isArray(claim?.genres) && claim.genres.length ? claim.genres.join(' · ') : '';
   return {
     name,
     verified,
+    isOwnerProfile,
+    isOfficialTeam,
+    isAdminProfile,
     localVerified: verified && !claim?.sim && claim?.verification !== 'full',
     tierOptions: claim?.tierOptions || {},
     sim: !!(p.sim || claim?.sim),
-    badge: isOwnerProfile ? 'Propietario · Artista verificado' : verified ? 'Artista verificado' : 'En ZUENA',
+    badge: isOfficialTeam
+      ? 'Perfil exclusivo · Equipo oficial de ZUENA'
+      : isOwnerProfile
+        ? 'Propietario · Artista verificado'
+        : verified ? 'Artista verificado' : 'En ZUENA',
     sub: [`@${p.username}`, genresLabel, p.bio].filter(Boolean).join(' · '),
     cover: p.cover,
     avatar: p.avatar,
@@ -232,7 +241,10 @@ function hero(m, source, id) {
       <div class="ap-row">
         ${thumb ? `<div class="ap-photo"><img src="${esc(thumb)}" alt="Foto de ${esc(m.name)}" decoding="async" referrerpolicy="no-referrer"></div>` : `<div class="ap-photo ap-photo-ph">${avatar(m.themed || { displayName: m.name }, 'xl')}</div>`}
         <div class="ap-id">
-          <p class="eyebrow"><span class="ap-badge-pill">${esc(source === 'am' ? 'Catálogo de Apple Music' : m.badge)}</span></p>
+          <div class="ap-badges-row">
+            <p class="eyebrow"><span class="ap-badge-pill${m.isOfficialTeam ? ' is-team' : m.isOwnerProfile ? ' is-owner' : ''}">${esc(source === 'am' ? 'Catálogo de Apple Music' : m.badge)}</span></p>
+            ${source === 'zu' ? roleBadges(m.themed || m) : ''}
+          </div>
           <h1 class="ap-name" tabindex="-1">${esc(m.name)}${tick(m.verified, m.badge)}</h1>
           ${m.sub ? `<p class="ap-sub">${esc(m.sub)}</p>` : ''}
         </div>
@@ -241,7 +253,8 @@ function hero(m, source, id) {
         ${m.popular.length ? `<button class="btn-primary lit" data-action="artist-play">${icon('play')}Reproducir</button><button class="btn-icon lit ap-shuffle" data-action="artist-shuffle" aria-label="Reproducir en orden aleatorio" title="Aleatorio">${icon('shuffle')}</button>` : ''}
         ${followBtn(m, source, id)}
         ${m.owner ? `<button class="btn-glass lit" data-action="edit-profile">${icon('edit')}Editar perfil</button>` : ''}
-        ${m.owner && app.auth?.isOwner ? `<button class="btn-glass lit" data-action="nav" data-view="review">${icon('shield')}Administración</button>` : ''}
+        ${(m.owner || (m.isOfficialTeam && (app.auth?.isOwner || app.auth?.isAdmin))) ? `<button class="btn-glass lit" data-action="nav" data-view="feed">${icon('edit')}Publicar en Feed</button>` : ''}
+        ${(m.owner || m.isOfficialTeam) && (app.auth?.isOwner || app.auth?.isAdmin) ? `<button class="btn-glass lit" data-action="nav" data-view="review">${icon('shield')}Administración</button>` : ''}
       </div>
     </div>
   </header>`;

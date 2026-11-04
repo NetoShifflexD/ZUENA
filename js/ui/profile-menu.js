@@ -1,7 +1,11 @@
 // Botón redondo de perfil (arriba a la derecha, fuera de la isla) con una burbuja de vidrio que lleva a cada
 // sección. Reemplaza al desplegable "Ir a otra sección" que estaba dentro de la isla. Módulo aparte: sólo usa
 // lo que expone window.zuena y el DOM de la app. Sin sesión o en la landing no se muestra.
-import { icon } from './icons.js';
+import { icon, logo } from './icons.js';
+import { roleBadges } from '../views/common.js';
+import { ZUENA_OFFICIAL_UID } from '../config.js';
+
+const OWNER_UID = 'bf3b1550-da87-4443-a8ba-0ae542fed5dd';
 
 const ITEMS = [
   ['home', 'Inicio', 'home'], ['explore', 'Explorar', 'compass'], ['feed', 'Feed', 'feed'], ['search', 'Buscar', 'search'],
@@ -24,9 +28,11 @@ root.className = 'pm';
 root.hidden = true;
 root.innerHTML = `<button type="button" class="pm-btn" data-press aria-haspopup="true" aria-expanded="false" aria-controls="pm-bubble" aria-label="Tu perfil y secciones"></button>
   <div class="pm-bubble" id="pm-bubble" inert>
-    <div class="pm-head"><span class="pm-avatar" aria-hidden="true"></span><div class="pm-id"><b></b><span></span></div></div>
+    <div class="pm-head"><span class="pm-avatar" aria-hidden="true"></span><div class="pm-id"><b></b><span></span><div class="pm-badges"></div></div></div>
     <nav class="pm-grid" aria-label="Secciones">${ITEMS.map(([id, label, ic], i) => `<button type="button" class="pm-item" data-press data-pm="${id}" style="--i:${i}">${icon(ic)}<span>${label}</span></button>`).join('')}</nav>
     <div class="pm-account">
+      <button type="button" class="pm-row" data-press data-pm-account="zuena-profile"><span class="pm-z-ico" aria-hidden="true">${logo()}</span><span>Perfil oficial de ZUENA</span></button>
+      <button type="button" class="pm-row" data-press data-pm-account="identity-switch" hidden>${icon('shield')}<span class="js-pm-switch-label">Usar perfil Equipo de Zuena</span></button>
       <button type="button" class="pm-row" data-press data-pm-account="switch">${icon('user')}<span>Cambiar de cuenta</span></button>
       <button type="button" class="pm-row" data-press data-pm-account="logout">${icon('logout')}<span>Cerrar sesión</span></button>
     </div>
@@ -68,6 +74,18 @@ function refresh() {
   avatarInto(root.querySelector('.pm-avatar'));
   root.querySelector('.pm-id b').textContent = app.profile?.displayName || app.user?.displayName || 'Tu cuenta';
   root.querySelector('.pm-id span').textContent = app.profile?.username ? `@${app.profile.username}` : app.user?.email || '';
+  const badgesEl = root.querySelector('.pm-badges');
+  if (badgesEl) badgesEl.innerHTML = roleBadges(app.profile || app.user, { compact: true });
+  const swBtn = root.querySelector('[data-pm-account="identity-switch"]');
+  if (swBtn) {
+    const canSwitch = Boolean(app.auth?.isOwner || app.auth?.isOfficialTeam || app.auth?.isAdmin);
+    swBtn.hidden = !canSwitch;
+    if (canSwitch) {
+      const isZuena = app.user?.uid === ZUENA_OFFICIAL_UID || app.profile?.username === 'zuena';
+      const lbl = swBtn.querySelector('.js-pm-switch-label');
+      if (lbl) lbl.textContent = isZuena ? 'Volver a cuenta Dueño (@netostars)' : 'Usar perfil Equipo de Zuena (@zuena)';
+    }
+  }
 }
 
 function markCurrent() {
@@ -134,11 +152,26 @@ async function leave(toSignIn) {
 }
 
 btn.addEventListener('click', () => setOpen(!open));
-bubble.addEventListener('click', (e) => {
+bubble.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-pm]');
   if (b) navigate(b.dataset.pm);
   const a = e.target.closest('[data-pm-account]');
-  if (a) leave(a.dataset.pmAccount === 'switch');
+  if (!a) return;
+  const kind = a.dataset.pmAccount;
+  if (kind === 'zuena-profile') {
+    close({ focus: false });
+    if (islandOpen()) coreOf()?.click();
+    app.go('artistpage', `zu:${ZUENA_OFFICIAL_UID}`);
+    return;
+  }
+  if (kind === 'identity-switch') {
+    close({ focus: false });
+    const nextUid = app.user?.uid === ZUENA_OFFICIAL_UID ? OWNER_UID : ZUENA_OFFICIAL_UID;
+    const ok = await app.auth?.switchIdentity?.(nextUid);
+    if (ok) app.toast(nextUid === ZUENA_OFFICIAL_UID ? 'Actuando como Equipo de Zuena (@zuena)' : 'Sesión restaurada como Dueño (@netostars)');
+    return;
+  }
+  leave(kind === 'switch');
 });
 bubble.addEventListener('keydown', (e) => {
   const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: COLS, ArrowUp: -COLS }[e.key];

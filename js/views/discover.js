@@ -1,9 +1,9 @@
 // Inicio con recomendaciones, Explorar (música, podcasts, radio), mixes, podcasts, artistas y búsqueda.
 import { app, registerActions } from '../app.js';
-import { EXTERNAL_CATALOG, TEST_CATALOG } from '../config.js';
+import { EXTERNAL_CATALOG, TEST_CATALOG, ZUENA_OFFICIAL_UID } from '../config.js';
 import { heroCarousel, mountHero } from './homeHero.js';
 import { testReleases, testPlaylists, testArtistCards, testSongs, linkArtistNames } from '../data/testArtists.js';
-import { icon } from '../ui/icons.js';
+import { icon, logo } from '../ui/icons.js';
 import { esc, hueOf } from '../ui/format.js';
 import { GENRES, GENRE_BY_ID, TOPICS, REGIONS, genreOf } from '../catalog/genres.js';
 import { rank } from '../catalog/recommend.js';
@@ -18,10 +18,38 @@ import {
 const mixes = new Map();
 const retryLoads = new WeakMap();
 
-const discoveryHead = (title, sub, label) => `<header class="discovery-head">
-  <div><p class="eyebrow"><span class="discovery-point" aria-hidden="true"></span>${label}</p>
-  <h1 aria-label="${esc(title.replace(/<br\s*\/?>/gi, ' '))}">${title}</h1><p class="discovery-deck">${sub}</p></div>
-  <span class="discovery-wordmark" aria-hidden="true">ZUENA</span></header>`;
+const discoveryHead = (title, sub, label) => {
+  const upcomingCount = app.releases?.upcoming?.()?.length || 0;
+  const displayName = app.profile?.displayName || app.user?.displayName || '';
+  return `<header class="discovery-head">
+    <div class="discovery-head-main">
+      <div class="discovery-head-topline">
+        <p class="eyebrow"><span class="discovery-point" aria-hidden="true"></span>${label}</p>
+        <span class="dh-telemetry"><i class="dh-pulse" aria-hidden="true"></i>MOTOR 24-BIT LOSSLESS</span>
+        ${upcomingCount ? `<button type="button" class="dh-premiere-badge" data-action="discovery-jump" data-section="zu-premieres"><i class="p-live-dot" aria-hidden="true"></i>${upcomingCount} ${upcomingCount === 1 ? 'estreno en cuenta regresiva' : 'estrenos en cuenta regresiva'}</button>` : ''}
+      </div>
+      <h1 aria-label="${esc(title.replace(/<br\s*\/?>/gi, ' '))}">${title}</h1>
+      <p class="discovery-deck">${sub}${displayName ? ` <span class="dh-greeting">· Sesión activa: <b>${esc(displayName)}</b></span>` : ''}</p>
+    </div>
+    <div class="discovery-head-aside">
+      <div class="dh-quick-pills" role="navigation" aria-label="Accesos rápidos de estudio">
+        <button type="button" class="dh-pill dh-pill-zuena lit" data-action="open-artist" data-id="zu:${ZUENA_OFFICIAL_UID}">
+          <span class="dh-z-logo" aria-hidden="true">${logo()}</span>
+          <span><b>Perfil ZUENA</b><small>Equipo oficial · @zuena</small></span>
+        </button>
+        <button type="button" class="dh-pill lit" data-action="discovery-jump" data-section="zu-premieres">
+          ${icon('clock')}
+          <span><b>Sala de Estrenos</b><small>${upcomingCount} en cuenta regresiva</small></span>
+        </button>
+        <button type="button" class="dh-pill lit" data-action="nav" data-view="feed">
+          ${icon('feed')}
+          <span><b>Comunidad</b><small>Feed de artistas</small></span>
+        </button>
+      </div>
+      <span class="discovery-wordmark" aria-hidden="true">ZUENA</span>
+    </div>
+  </header>`;
+};
 
 const familyNav = () => `<nav class="discovery-families" aria-label="Secciones de Inicio">
   ${[['t-releases', 'Estrenos'], ['t-songs', 'Canciones'], ['t-playlists', 'Playlists'], ['t-artists', 'Artistas'], ['t-feed', 'Feed'], ['t-trends', 'Tendencias']].map(([id, label]) => `<button data-action="discovery-jump" data-section="${id}">${label}${icon('arrowRight')}</button>`).join('')}</nav>`;
@@ -155,7 +183,20 @@ function zuenaReleases() {
   const soon = app.releases.upcoming(), live = app.releases.live().slice(0, 16);
   if (!soon.length && !live.length) return '';
   const note = app.auth.mode === 'local' ? 'Publicados en este equipo por artistas verificados' : 'De artistas verificados en ZUENA';
-  return `${soon.length ? `<section class="home-sec"><header class="sec-head"><h2 class="section-title">Próximos estrenos</h2></header><div class="shelf">${soon.map(releaseCard).join('')}</div></section>` : ''}
+  return `${soon.length ? `<section class="home-sec home-sec-premieres" data-sec="zu-premieres" data-reveal="fadeUp">
+      <header class="sec-head">
+        <div>
+          <p class="eyebrow"><span class="p-live-dot" aria-hidden="true"></span>Sala de estrenos · Cuenta regresiva en tiempo real</p>
+          <h2 class="section-title" tabindex="-1">Próximos estrenos</h2>
+          <p class="sec-sub">Tarjetas inmersivas personalizadas por cada artista. Activá el recordatorio para escuchar en el segundo exacto del estreno.</p>
+        </div>
+        <div class="sec-head-actions">
+          ${app.artist?.verified ? `<button class="btn-glass lit sm" data-action="nav" data-view="studio">${icon('plus')}Programar estreno</button>` : ''}
+          <button class="link small" data-action="open-premieres-feed">Ver todos en el Feed</button>
+        </div>
+      </header>
+      <div class="premiere-grid">${soon.map((r, i) => releaseCard(r, i)).join('')}</div>
+    </section>` : ''}
     ${live.length ? `<section class="home-sec"><header class="sec-head"><div><h2 class="section-title">Nuevo en ZUENA</h2><p class="sec-sub">${note}</p></div></header><div class="shelf">${live.map(releaseCard).join('')}</div></section>` : ''}`;
 }
 
@@ -548,9 +589,16 @@ function creatorHead(u) {
 // ---------- acciones ----------
 
 registerActions({
+  'open-premieres-feed': () => {
+    app.ui.feedTab = 'releases';
+    app.go('feed');
+  },
   'discovery-jump': (el) => {
-    const section = el.closest('.z-discovery')?.querySelector(`[data-sec="${el.dataset.section}"]`);
-    section?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    const targetId = el.dataset.section === 't-releases' && el.closest('.z-discovery')?.querySelector('[data-sec="zu-premieres"]')
+      ? 'zu-premieres'
+      : el.dataset.section;
+    const section = el.closest('.z-discovery')?.querySelector(`[data-sec="${targetId}"]`);
+    section?.scrollIntoView({ behavior: app.motion?.enabled === false ? 'instant' : 'smooth', block: 'start' });
     section?.querySelector('.section-title')?.focus({ preventScroll: true });
   },
   'discovery-retry': (el) => retryLoads.get(el.closest('.sec-body'))?.(),

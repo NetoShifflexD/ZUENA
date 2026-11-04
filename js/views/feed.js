@@ -7,13 +7,14 @@
 import { app, registerActions } from '../app.js';
 import { icon } from '../ui/icons.js';
 import { esc } from '../ui/format.js';
-import { confirmModal } from '../ui/modal.js';
+import { confirmModal, openModal } from '../ui/modal.js';
 import { openMenu } from '../ui/menu.js';
 import { POST_MAX, richText, timeAgo, mixCatalog } from '../data/posts.js';
-import { isLive, isUpcoming, countdown, premiereLabel } from '../data/releases.js';
+import { isLive, isUpcoming, countdown, countdownParts, premiereLabel, PREMIERE_THEMES } from '../data/releases.js';
 import { tierOf, tierName, canView } from '../data/subs.js';
 import { TEST_CATALOG } from '../config.js';
-import { avatar, art, tick, listKey, see, backBtn } from './common.js';
+import { db } from '../store/db.js';
+import { avatar, art, tick, roleBadges, listKey, see, backBtn } from './common.js';
 import { regionalTopHtml, mountRegionalTop } from './regionalTop.js';
 import { cloudTracks, loadMyTracks } from './cloudUpload.js';
 export { mountRegionalTop, renderRegionalTop } from './regionalTop.js';
@@ -162,6 +163,7 @@ export function lockedCard(post, need, i = 0, by = null) {
     <div class="post-body">
       <header class="post-head">
         ${profileBtn(a, post.uid, `<b class="post-name">${esc(a.displayName || 'Usuario')}</b>${tick(a.role === 'artist', 'Artista verificado')}`, 'post-who')}
+        ${roleBadges(a, { compact: true })}
         <span class="post-handle">@${esc(a.username || '')}</span><span class="post-dot">·</span>${timeEl(post.created)}
         ${post.sim ? simTag : ''}
       </header>
@@ -239,7 +241,7 @@ export function postCard(post, i = 0, { detail = false, compact = false } = {}) 
     <div class="post-body">
       <header class="post-head">
         ${cat ? ce.who : `${profileBtn(a, post.uid, `<b class="post-name">${esc(a.displayName || 'Usuario')}</b>${tick(a.role === 'artist', 'Artista verificado')}`, 'post-who')}
-        ${tierBadge(post, acc.root)}<span class="post-handle">@${esc(a.username || '')}</span><span class="post-dot">·</span>${timeEl(post.created)}`}
+        ${roleBadges(a, { compact: true })}${tierBadge(post, acc.root)}<span class="post-handle">@${esc(a.username || '')}</span><span class="post-dot">·</span>${timeEl(post.created)}`}
         ${post.sim ? simTag : ''}
         <button class="post-more" data-action="post-menu" data-id="${esc(post.id)}" title="Opciones" aria-label="Opciones de la publicación">${icon('more')}</button>
       </header>
@@ -268,17 +270,41 @@ function attachHtml(post) {
 // lanzamiento adjunto: se resuelve en vivo contra su estado actual (no contra la copia del post)
 function releaseAttach(a) {
   const r = app.releases.get(a.releaseId);
-  const cover = r?.coverThumb || a.cover;
+  const cover = r?.coverUrl || r?.coverThumb || a.cover;
   const img = cover ? `<div class="art sm"><img src="${esc(cover)}" alt="" loading="lazy" decoding="async"></div>` : `<div class="art sm">${icon('disc')}</div>`;
   const title = esc(r?.title || a.title), artist = esc(r?.primaryArtist || a.artist || '');
   if (r && isUpcoming(r)) {
-    return `<div class="post-attach release-teaser"><span class="fx-live soon">Estreno</span>${img}
-      <div class="row-main"><div class="row-title">${title}</div><div class="row-sub">${artist} · Estreno ${esc(premiereLabel(r.premiereAt))}</div></div>
-      <span class="countdown" data-countdown="${r.premiereAt}">${esc(countdown(r.premiereAt))}</span></div>`;
+    const parts = countdownParts(r.premiereAt);
+    const theme = esc(r.premiereTheme || 'obsidian');
+    const accent = esc(r.premiereAccent || '#5ff0ff');
+    const reminded = isPremiereReminded(r.id);
+    return `<div class="post-attach release-teaser premiere-inline" data-p-theme="${theme}" style="--p-accent:${accent}">
+      <div class="pi-top">
+        <span class="fx-live soon">Estreno programado</span>
+        <span class="pi-quality">${esc(r.audioQuality || '24-BIT LOSSLESS')}</span>
+      </div>
+      <div class="pi-main">
+        ${img}
+        <div class="row-main">
+          <div class="row-title">${title}</div>
+          <div class="row-sub">${artist} · ${esc(premiereLabel(r.premiereAt))}</div>
+          ${r.premiereNote ? `<p class="pi-note">${esc(r.premiereNote)}</p>` : ''}
+        </div>
+      </div>
+      <div class="pi-foot">
+        <div class="p-timer compact" data-countdown-parts="${r.premiereAt}">
+          <span class="pt-seg"><b data-cd="d">${parts.d}</b><small>DÍAS</small></span><i class="pt-sep">:</i>
+          <span class="pt-seg"><b data-cd="h">${parts.h}</b><small>HRS</small></span><i class="pt-sep">:</i>
+          <span class="pt-seg"><b data-cd="m">${parts.m}</b><small>MIN</small></span><i class="pt-sep">:</i>
+          <span class="pt-seg"><b data-cd="s">${parts.s}</b><small>SEG</small></span>
+        </div>
+        <button type="button" class="btn-glass lit sm p-remind-btn ${reminded ? 'on' : ''}" data-action="premiere-remind" data-id="${esc(r.id)}" aria-pressed="${reminded}">${icon(reminded ? 'check' : 'bell')}<span>${reminded ? 'Aviso activo' : 'Recordarme'}</span></button>
+      </div>
+    </div>`;
   }
   if (r && isLive(r)) {
     return `<div class="post-attach lit" role="button" tabindex="0" data-action="play-release" data-id="${esc(r.id)}">${img}
-      <div class="row-main"><div class="row-title">${title}</div><div class="row-sub">${artist} · ${r.tracks.length} ${r.tracks.length === 1 ? 'canción' : 'canciones'}</div></div><span class="post-play">${icon('play')}</span></div>`;
+      <div class="row-main"><div class="row-title">${title}</div><div class="row-sub">${artist} · ${(r.tracksCount || r.tracks?.length || 1)} ${(r.tracksCount || r.tracks?.length || 1) === 1 ? 'canción' : 'canciones'}</div></div><span class="post-play">${icon('play')}</span></div>`;
   }
   return `<div class="post-attach unavailable">${img}<div class="row-main"><div class="row-title">${title}</div><div class="row-sub">No disponible</div></div></div>`;
 }
@@ -417,6 +443,7 @@ export function viewFeed() {
         ${tag ? `<div class="fx-filter"><span>#${esc(tag)}</span><button class="btn-icon lit sm" data-action="feed-tag" data-tag="" aria-label="Quitar filtro">${icon('close')}</button></div>` : ''}
       </header>
       ${tab === 'foryou' && !tag ? storiesHtml() : ''}
+      ${tab === 'releases' && !tag ? upcomingPremieresShowcase() : ''}
       ${composer()}
       <button class="fx-new" data-action="feed-new" hidden></button>
       <div class="fx-list">${page.length ? page.map((p, i) => postCard(p, i)).join('') : empty}</div>
@@ -435,7 +462,7 @@ function sideHtml() {
       <button class="fx-trend" data-action="feed-tag" data-tag="${esc(t.tag)}"><span class="muted">${i + 1} · Tendencia en ZUENA</span><b>#${esc(t.tag)}</b><span class="muted">${t.posts} ${t.posts === 1 ? 'publicación' : 'publicaciones'}</span></button>`).join('')}</section>` : ''}
     ${artists.length ? `<section class="fx-card glass-soft"><h2>A quién seguir</h2>${artists.map((a) => `
       <div class="fx-who">${profileBtn(a, a.uid, avatar(a, 'sm'), 'fx-who-av')}
-        <div class="row-main"><div class="row-title">${esc(a.displayName)}${tick(a.role === 'artist', 'Artista verificado')}</div><div class="row-sub">@${esc(a.username || '')}</div></div>
+        <div class="row-main"><div class="row-title">${esc(a.displayName)}${tick(a.role === 'artist', 'Artista verificado')}${roleBadges(a, { compact: true })}</div><div class="row-sub">@${esc(a.username || '')}</div></div>
         <button class="btn-primary lit sm" data-action="feed-follow" data-uid="${esc(a.uid)}" data-name="${esc(a.displayName || '')}">Seguir</button></div>`).join('')}</section>` : ''}
     ${sim ? `<section class="fx-card glass-soft fx-simcard"><h2>Simulación</h2><p class="muted">${esc(sim)}</p></section>` : ''}`;
 }
@@ -527,14 +554,180 @@ export function feedLive(root) {
 }
 const sideMemo = new WeakMap();
 
-// ---------- tarjeta de lanzamiento para estantes (Inicio, perfil) ----------
+// ---------- recordatorios y tarjeta inmersiva de estreno ----------
+const REMINDERS_KEY = 'zuena.premiereReminders.v1';
+function getPremiereReminders() {
+  try { return new Set(JSON.parse(localStorage.getItem(REMINDERS_KEY) || '[]')); } catch { return new Set(); }
+}
+export function isPremiereReminded(id) {
+  return getPremiereReminders().has(id);
+}
+function togglePremiereReminder(id) {
+  const set = getPremiereReminders();
+  const next = !set.has(id);
+  if (next) set.add(id); else set.delete(id);
+  try { localStorage.setItem(REMINDERS_KEY, JSON.stringify([...set])); } catch { /* ignore */ }
+  return next;
+}
+
+function upcomingPremieresShowcase() {
+  const soon = app.releases?.upcoming?.() || [];
+  if (!soon.length) return '';
+  return `<section class="fx-premieres-showcase enter" aria-label="Próximos estrenos en cuenta regresiva">
+    <header class="fx-premieres-head">
+      <div>
+        <p class="eyebrow"><span class="p-live-dot" aria-hidden="true"></span>Sala de estrenos · Cuenta regresiva en vivo</p>
+        <h2>Próximos estrenos en ZUENA</h2>
+      </div>
+      <span class="pill ok">${soon.length} ${soon.length === 1 ? 'programado' : 'programados'}</span>
+    </header>
+    <div class="premiere-grid">${soon.map((r, i) => releaseCard(r, i)).join('')}</div>
+  </section>`;
+}
+
+// ---------- tarjeta de lanzamiento para estantes (Inicio, Feed -> Estrenos, Perfil) ----------
 export function releaseCard(r, i = 0) {
   const soon = isUpcoming(r);
-  return `<div class="card lit enter ${soon ? 'teaser' : ''}" style="--i:${i}" ${soon ? '' : `role="button" tabindex="0" data-action="play-release" data-id="${esc(r.id)}"`}>
-    <div class="card-art"><div class="art">${r.coverThumb ? `<img src="${esc(r.coverThumb)}" alt="" loading="lazy" decoding="async">` : icon('disc')}</div>
-      ${soon ? `<span class="card-countdown" data-countdown="${r.premiereAt}">${esc(countdown(r.premiereAt))}</span>` : `<span class="card-play">${icon('play')}</span>`}</div>
-    <div class="card-title">${esc(r.title)}</div>
-    <div class="card-sub">${esc(r.primaryArtist)} · ${soon ? `Estreno ${esc(premiereLabel(r.premiereAt))}` : esc(r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Álbum')}</div></div>`;
+  const cover = r.coverUrl || r.coverThumb || '';
+  if (!soon) {
+    return `<div class="card lit enter" style="--i:${i}" role="button" tabindex="0" data-action="play-release" data-id="${esc(r.id)}">
+      <div class="card-art"><div class="art">${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" decoding="async">` : icon('disc')}</div>
+        <span class="card-play">${icon('play')}</span></div>
+      <div class="card-title">${esc(r.title)}</div>
+      <div class="card-sub">${esc(r.primaryArtist)} · ${esc(r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Álbum')}</div></div>`;
+  }
+  const parts = countdownParts(r.premiereAt);
+  const theme = esc(r.premiereTheme || 'obsidian');
+  const accent = esc(r.premiereAccent || '#5ff0ff');
+  const prof = app.posts?.author?.(r.uid) || (r.uid === app.user?.uid ? app.profile : null) || {
+    uid: r.uid,
+    displayName: r.primaryArtist,
+    username: r.username || '',
+    role: 'artist',
+    isOfficialTeam: r.uid === 'zuena-official',
+    isOwnerProfile: r.uid === 'bf3b1550-da87-4443-a8ba-0ae542fed5dd',
+  };
+  const canEdit = Boolean(app.user && (r.uid === app.user.uid || app.auth?.isOwner || app.auth?.isAdmin));
+  const reminded = isPremiereReminded(r.id);
+  const tracksCount = r.tracksCount || r.tracks?.length || 1;
+  const kindLabel = r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Álbum';
+  const note = r.premiereNote || r.postText || '';
+
+  return `<article class="premiere-card lit enter" data-p-theme="${theme}" data-release-id="${esc(r.id)}" style="--i:${Math.min(i, 8)};--p-accent:${accent}">
+    <div class="p-card-backdrop" aria-hidden="true">
+      ${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" decoding="async">` : ''}
+      <span class="p-card-glow"></span>
+    </div>
+    <header class="p-card-top">
+      <span class="p-status-pill"><i class="p-live-dot" aria-hidden="true"></i>Estreno programado</span>
+      <span class="p-quality-pill">${esc(r.audioQuality || '24-BIT LOSSLESS')}</span>
+    </header>
+    <div class="p-card-Stage">
+      <div class="p-card-art">
+        <div class="art">${cover ? `<img src="${esc(cover)}" alt="Portada de ${esc(r.title)}" loading="lazy" decoding="async">` : icon('disc')}</div>
+        <span class="p-card-vinyl" aria-hidden="true"></span>
+      </div>
+      <div class="p-card-info">
+        <button type="button" class="p-artist-chip" data-action="open-artist" data-id="zu:${esc(r.uid)}" aria-label="Ver perfil de ${esc(r.primaryArtist)}">
+          ${avatar(prof, 'xs')}
+          <span class="p-artist-name">${esc(r.primaryArtist)}</span>
+          ${tick(true, 'Artista verificado')}
+          ${roleBadges(prof, { compact: true })}
+        </button>
+        <h3 class="p-card-title">${esc(r.title)}${r.explicit ? ' <span class="badge">E</span>' : ''}</h3>
+        <p class="p-card-meta">${esc(kindLabel)}${r.genre ? ` · ${esc(r.genre)}` : ''} · ${tracksCount} ${tracksCount === 1 ? 'pista' : 'pistas'}</p>
+        ${note ? `<p class="p-card-note">«${esc(note)}»</p>` : ''}
+      </div>
+    </div>
+    <div class="p-card-countdown-box">
+      <div class="p-countdown-head">
+        <span class="p-countdown-label">Cuenta regresiva oficial</span>
+        <time class="p-countdown-date" datetime="${new Date(r.premiereAt).toISOString()}">${esc(premiereLabel(r.premiereAt))}</time>
+      </div>
+      <div class="p-timer" data-countdown-parts="${r.premiereAt}" role="timer" aria-label="Cuenta regresiva del estreno">
+        <div class="pt-seg"><b data-cd="d">${parts.d}</b><small>DÍAS</small></div><span class="pt-sep" aria-hidden="true">:</span>
+        <div class="pt-seg"><b data-cd="h">${parts.h}</b><small>HORAS</small></div><span class="pt-sep" aria-hidden="true">:</span>
+        <div class="pt-seg"><b data-cd="m">${parts.m}</b><small>MIN</small></div><span class="pt-sep" aria-hidden="true">:</span>
+        <div class="pt-seg"><b data-cd="s">${parts.s}</b><small>SEG</small></div>
+      </div>
+    </div>
+    <footer class="p-card-actions">
+      <button type="button" class="btn-glass lit sm p-remind-btn ${reminded ? 'on' : ''}" data-action="premiere-remind" data-id="${esc(r.id)}" aria-pressed="${reminded}">
+        ${icon(reminded ? 'check' : 'bell')}<span>${reminded ? 'Aviso activado' : 'Recordarme estreno'}</span>
+      </button>
+      ${canEdit ? `<button type="button" class="btn-glass lit sm p-customize-btn" data-action="premiere-customize" data-id="${esc(r.id)}" title="Personalizar tarjeta de estreno">${icon('sparkle')}<span>Personalizar tarjeta</span></button>` : `<button type="button" class="btn-glass lit sm" data-action="open-artist" data-id="zu:${esc(r.uid)}">${icon('user')}<span>Ver artista</span></button>`}
+    </footer>
+  </article>`;
+}
+
+function openPremiereCustomizer(releaseId) {
+  const r = app.releases.get(releaseId);
+  if (!r) return;
+  const curTheme = r.premiereTheme || 'obsidian';
+  const curAccent = r.premiereAccent || '#5ff0ff';
+  const curNote = r.premiereNote || r.postText || '';
+  const curQuality = r.audioQuality || '24-BIT · 48 KHZ LOSSLESS';
+  const qualities = ['24-BIT · 96 KHZ MASTER', '24-BIT · 48 KHZ LOSSLESS', '16-BIT · 44.1 KHZ CD LOSSLESS', 'DOLBY ATMOS · ESPACIAL'];
+
+  openModal(`<form class="confirm p-customizer-form" novalidate>
+      <p class="eyebrow">Estudio · Tarjeta inmersiva de estreno</p>
+      <h3>Personalizar «${esc(r.title)}»</h3>
+      <p class="hint">Elegí la atmósfera visual, el color de acento y la nota de autor que verán los oyentes durante la cuenta regresiva.</p>
+      <div class="field">
+        <span>Atmósfera de la tarjeta</span>
+        <div class="p-theme-grid">
+          ${PREMIERE_THEMES.map((t) => `<label class="p-theme-opt ${curTheme === t.id ? 'on' : ''}" style="--opt-accent:${t.accent}">
+            <input type="radio" name="premiereTheme" value="${t.id}" data-accent="${t.accent}" ${curTheme === t.id ? 'checked' : ''} hidden>
+            <i class="p-theme-swatch"></i>
+            <span>${esc(t.label)}</span>
+          </label>`).join('')}
+        </div>
+      </div>
+      <div class="form-grid tight">
+        <label class="field">
+          <span>Color de acento</span>
+          <input class="input" type="color" name="premiereAccent" value="${esc(curAccent)}" style="height:42px;padding:4px 8px">
+        </label>
+        <label class="field">
+          <span>Sello de calidad de audio</span>
+          <select class="select lit" name="audioQuality">
+            ${qualities.map((q) => `<option value="${esc(q)}" ${curQuality === q ? 'selected' : ''}>${esc(q)}</option>`).join('')}
+          </select>
+        </label>
+      </div>
+      <label class="field">
+        <span>Nota del artista en la tarjeta <small class="muted">hasta 160 caracteres</small></span>
+        <textarea class="input" name="premiereNote" rows="2" maxlength="160" placeholder="Contá qué hace especial a este lanzamiento…">${esc(curNote)}</textarea>
+      </label>
+      <div class="confirm-actions">
+        <button type="button" class="btn-glass lit" data-modal="cancel">Cancelar</button>
+        <button class="btn-primary lit" data-press>${icon('check')}Guardar diseño</button>
+      </div>
+    </form>`, {
+    onMount: (box, close) => {
+      const form = box.querySelector('form');
+      form.querySelectorAll('input[name="premiereTheme"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+          form.querySelectorAll('.p-theme-opt').forEach((l) => l.classList.toggle('on', l.contains(radio)));
+          if (radio.dataset.accent) form.premiereAccent.value = radio.dataset.accent;
+        });
+      });
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        r.premiereTheme = form.premiereTheme.value || 'obsidian';
+        r.premiereAccent = form.premiereAccent.value || '#5ff0ff';
+        r.audioQuality = form.audioQuality.value || '24-BIT LOSSLESS';
+        r.premiereNote = form.premiereNote.value.trim().slice(0, 160);
+        await db.put('releases', r);
+        const ownRel = app.artist?.getRelease?.(r.id);
+        if (ownRel) Object.assign(ownRel, r);
+        app.releases.emit();
+        close();
+        app.render();
+        app.toast('Tarjeta de estreno actualizada');
+      });
+    },
+  });
 }
 
 const rerender = () => { if (app.ui.view === 'feed' || app.ui.view === 'post') app.render(); };
@@ -558,6 +751,22 @@ export async function followToggle(uid, name = '') {
 }
 
 registerActions({
+  'premiere-remind': (el, e) => {
+    e?.stopPropagation();
+    const id = el.dataset.id;
+    const on = togglePremiereReminder(id);
+    for (const b of document.querySelectorAll(`[data-action="premiere-remind"][data-id="${CSS.escape(id)}"]`)) {
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+      b.innerHTML = `${icon(on ? 'check' : 'bell')}<span>${on ? 'Aviso activado' : 'Recordarme estreno'}</span>`;
+    }
+    const r = app.releases.get(id);
+    app.toast(on ? `Te vamos a avisar cuando se estrene «${r?.title || 'el lanzamiento'}»` : 'Aviso de estreno desactivado');
+  },
+  'premiere-customize': (el, e) => {
+    e?.stopPropagation();
+    openPremiereCustomizer(el.dataset.id);
+  },
   'play-release': (el) => {
     const r = app.releases.get(el.dataset.id);
     const tracks = (r?.tracks || []).map((rt) => app.library.byId.get(rt.trackId)).filter((t) => app.isAvailable(t));

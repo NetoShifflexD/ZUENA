@@ -167,7 +167,7 @@ export class Library extends EventTarget {
 
   coverUrl(track) {
     if (track?.kind === 'remote') return track.artwork || null;
-    if (!track?.coverBlob) return null;
+    if (!track?.coverBlob) return track?.coverUrl || track?.artwork || null;
     let url = this.covers.get(track.id);
     if (!url) {
       // una dirección por Blob, no por pista: con una por pista el navegador decodificaba y guardaba la misma
