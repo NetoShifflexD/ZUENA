@@ -1,0 +1,72 @@
+/* Detalles compartidos de Punto. Sólo presentación: sin estado, bucles ni filtros nuevos.
+   Prisma Motion aporta tiempos y curvas; las preferencias reducidas siempre prevalecen. */
+html[data-design="point"] :is(.btn-primary,.btn-glass,.btn-google) {
+  border-radius: var(--z-radius-sm);
+  transition: background-color var(--m-dur-fast) var(--m-ease-out),
+    border-color var(--m-dur-fast) var(--m-ease-out),
+    box-shadow var(--m-dur-fast) var(--m-ease-out);
+}
+html[data-design="point"] :is(.panel,.island-panel,.modal,.pm-bubble,.ld-auth-card) {
+  border-color: var(--z-line);
+  box-shadow: inset 0 1px 0 color-mix(in srgb,var(--z-raised) 65%,transparent), var(--z-shadow);
+}
+html[data-design="point"] #view :is(.sec-head h2,.section-title,.ap-sec > h2,.fx-card > h2) {
+  font-family: var(--font-display);
+  font-weight: 450;
+  letter-spacing: -.035em;
+  text-shadow: none;
+}
+html[data-design="point"] #view .section-title::after {
+  background: var(--z-line);
+  height: 1px;
+  border-radius: 0;
+}
+html[data-design="point"] :is(.row,.qitem,.set-cat,.pm-item,.pm-row):focus-within {
+  background-color: var(--glass-hi);
+}
+html[data-design="point"] .search:focus-within {
+  border-color: var(--z-ink);
+  outline: 2px solid color-mix(in srgb,var(--z-ink) 70%,transparent);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+html[data-design="point"] :is(.chip,.seg-btn,.lib-tab,.np-tab,.island-search-filters button) {
+  transition: background-color var(--m-dur-fast) var(--m-ease-out),
+    color var(--m-dur-fast) var(--m-ease-out),
+    border-color var(--m-dur-fast) var(--m-ease-out);
+}
+html[data-design="point"] #view .shelf-nav {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--z-line);
+  color: var(--z-ink);
+  background: var(--z-glass);
+  box-shadow: var(--z-shadow);
+}
+@media(hover:hover) and (pointer:fine) {
+  html[data-design="point"] :is(.btn-glass,.btn-google):not(:disabled):hover {
+    border-color: color-mix(in srgb,var(--z-ink) 28%,var(--z-line));
+    background-image: var(--z-reflection);
+  }
+  html[data-design="point"] #view .card .art img {
+    transition: transform var(--m-dur-base) var(--m-ease-out);
+  }
+  html[data-design="point"] #view .card:hover .art img { transform: scale(1.025); }
+  html[data-design="point"] :is(.row,.qitem,.set-cat,.pm-item,.pm-row):hover {
+    background-color: var(--glass-hi);
+  }
+}
+/* Los mismos estados funcionan sin movimiento y sin depender de un hover táctil. */
+html[data-design="point"] body.no-motion #view .card .art img { transform: none; transition: none; }
+html[data-design="point"] body.no-motion :is(.btn-primary,.btn-glass,.btn-google,.chip,.seg-btn,.lib-tab,.np-tab,.island-search-filters button) { transition: none; }
+@media(prefers-reduced-motion:reduce) {
+  html[data-design="point"] #view .card .art img,
+  html[data-design="point"] #view .card:hover .art img { transform: none; transition: none; }
+  html[data-design="point"] :is(.btn-primary,.btn-glass,.btn-google,.chip,.seg-btn,.lib-tab,.np-tab,.island-search-filters button) { transition: none; }
+}
+@media(forced-colors:active) {
+  html[data-design="point"] :is(.btn-primary,.btn-glass,.btn-google,.chip,.seg-btn,.shelf-nav) { border: 1px solid ButtonText; }
+  html[data-design="point"] .search:focus-within { outline: 2px solid Highlight; }
+}
