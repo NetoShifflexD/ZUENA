@@ -4,7 +4,7 @@ import { APP_VERSION, staleness } from '../version.js';
 import { getLanguage, setLanguage, t, detectLanguage } from '../i18n.js';
 import { EQ_BANDS, EQ_PRESETS } from '../audio/eq.js';
 import { DSP_PRESETS, findMatchingPreset } from '../audio/dsp.js';
-import { icon } from '../ui/icons.js';
+import { icon, logo } from '../ui/icons.js';
 import { esc, fmtTime, fmtHz, fmtRate } from '../ui/format.js';
 import { PRESETS, MODES, modeOf, FONTS, DEFAULT_FONT, loadFont, fontStack } from '../theme/theme.js';
 import { LOOK, ACCENTS, lookValue } from '../ui/appearance.js';
@@ -249,7 +249,7 @@ const SECTIONS = {
     const ambient = app.prefs.ambient !== false;
     return `<div class="ap-preview" aria-hidden="true">
         <div class="ap-pv-bg"><i></i><i></i></div>
-        <div class="ap-pv-island"><span></span><b>ZUENA</b></div>
+        <div class="ap-pv-island"><span>${logo()}</span><b>ZUENA</b></div>
         <div class="ap-pv-card"><span class="ap-pv-art"></span><span class="ap-pv-lines"><b style="font-family:${fontStack(p?.font)}">Así se ve ZUENA</b><i></i><i></i></span><span class="ap-pv-btn">Reproducir</span></div>
         <div class="ap-pv-bar"><span class="ap-pv-art sm"></span><i></i><span class="ap-pv-play"></span></div>
       </div>

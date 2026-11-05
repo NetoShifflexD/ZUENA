@@ -1,7 +1,7 @@
 // Versiones de ZUENA: la app y cada función. Sirve para saber en qué nivel quedó cada parte y priorizar
 // la actualización de las más viejas. Regla: al cambiar una función, subir su versión (mayor = rediseño,
 // menor = mejora, parche = arreglo), poner la fecha de hoy y reflejarlo en Wiki/Registro/Versiones.md.
-export const APP_VERSION = '0.33.1';
+export const APP_VERSION = '0.33.2';
 
 // [id, nombre, versión, última actualización]
 export const FEATURES = [
@@ -36,7 +36,7 @@ export const FEATURES = [
   ['supabase', 'Nube Supabase (cuentas, perfiles, feed, me gusta, seguidos y pistas subidas)', '0.2.0', '2026-11-04'],
   ['payments', 'Servidor de pagos (sin ejecutar)', '0.1.0', '2026-11-01'],
   ['pwa', 'App instalable (shell v4-031 y bypass de caché)', '1.2.0', '2026-11-04'],
-  ['theme', 'Sistema Punto, temas y personalización', '4.3.1', '2026-11-05'],
+  ['theme', 'Sistema Punto, temas y personalización', '4.3.2', '2026-11-05'],
   ['island', 'Isla Punto: búsqueda, contenido y transporte', '4.2.1', '2026-11-05'],
 ];
 
