@@ -281,7 +281,7 @@ function releaseAttach(a) {
     return `<div class="post-attach release-teaser premiere-inline" data-p-theme="${theme}" style="--p-accent:${accent}">
       <div class="pi-top">
         <span class="fx-live soon">Estreno programado</span>
-        <span class="pi-quality">${esc(r.audioQuality || '24-BIT LOSSLESS')}</span>
+        ${app.prefs.advanced && r.audioQuality ? `<span class="pi-quality">Informado por artista · Sin validar: ${esc(r.audioQuality)}</span>` : ''}
       </div>
       <div class="pi-main">
         ${img}
@@ -620,8 +620,8 @@ export function releaseCard(r, i = 0) {
       <span class="p-card-glow"></span>
     </div>
     <header class="p-card-top">
-      <span class="p-status-pill"><span class="p-live-dot" aria-hidden="true"></span>Estreno exclusivo</span>
-      <span class="p-quality-pill">${esc(r.audioQuality || '24-BIT · LOSSLESS')}</span>
+      <span class="p-status-pill"><span class="p-live-dot" aria-hidden="true"></span>Estreno programado</span>
+      ${app.prefs.advanced && r.audioQuality ? `<span class="p-quality-pill">Informado por artista · Sin validar: ${esc(r.audioQuality)}</span>` : ''}
     </header>
     <div class="p-card-Stage">
       <div class="p-card-art">
@@ -667,11 +667,12 @@ function openPremiereCustomizer(releaseId) {
   const curTheme = r.premiereTheme || 'obsidian';
   const curAccent = r.premiereAccent || '#5ff0ff';
   const curNote = r.premiereNote || r.postText || '';
-  const curQuality = r.audioQuality || '24-BIT · 48 KHZ LOSSLESS';
+  const curQuality = r.audioQuality || '';
   const qualities = ['24-BIT · 96 KHZ MASTER', '24-BIT · 48 KHZ LOSSLESS', '16-BIT · 44.1 KHZ CD LOSSLESS', 'DOLBY ATMOS · ESPACIAL'];
+  if (curQuality && !qualities.includes(curQuality)) qualities.unshift(curQuality);
 
   openModal(`<form class="confirm p-customizer-form" novalidate>
-      <p class="eyebrow">Estudio · Tarjeta inmersiva de estreno</p>
+      <p class="eyebrow">Tarjeta de estreno</p>
       <h3>Personalizar «${esc(r.title)}»</h3>
       <p class="hint">Elegí la atmósfera visual, el color de acento y la nota de autor que verán los oyentes durante la cuenta regresiva.</p>
       <div class="field">
@@ -689,12 +690,14 @@ function openPremiereCustomizer(releaseId) {
           <span>Color de acento</span>
           <input class="input" type="color" name="premiereAccent" value="${esc(curAccent)}" style="height:42px;padding:4px 8px">
         </label>
-        <label class="field">
-          <span>Sello de calidad de audio</span>
+        ${app.prefs.advanced ? `<label class="field">
+          <span>Formato de audio · Informado por artista</span>
           <select class="select lit" name="audioQuality">
+            <option value="" ${!curQuality ? 'selected' : ''}>Sin informar</option>
             ${qualities.map((q) => `<option value="${esc(q)}" ${curQuality === q ? 'selected' : ''}>${esc(q)}</option>`).join('')}
           </select>
-        </label>
+          <small class="hint">Sin validar. Esta declaración no certifica el archivo ni la reproducción en ese formato.</small>
+        </label>` : ''}
       </div>
       <label class="field">
         <span>Nota del artista en la tarjeta <small class="muted">hasta 160 caracteres</small></span>
@@ -717,7 +720,8 @@ function openPremiereCustomizer(releaseId) {
         e.preventDefault();
         r.premiereTheme = form.premiereTheme.value || 'obsidian';
         r.premiereAccent = form.premiereAccent.value || '#5ff0ff';
-        r.audioQuality = form.audioQuality.value || '24-BIT LOSSLESS';
+        const qualityField = form.elements.namedItem('audioQuality');
+        if (app.prefs.advanced && qualityField && qualityField.value !== curQuality) r.audioQuality = qualityField.value;
         r.premiereNote = form.premiereNote.value.trim().slice(0, 160);
         await db.put('releases', r);
         const ownRel = app.artist?.getRelease?.(r.id);

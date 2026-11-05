@@ -25,14 +25,14 @@ const discoveryHead = (title, sub, label) => {
     <div class="discovery-head-main">
       <div class="discovery-head-topline">
         <p class="eyebrow"><span class="discovery-point" aria-hidden="true"></span>${label}</p>
-        <span class="dh-telemetry"><i class="dh-pulse" aria-hidden="true"></i>MOTOR 24-BIT LOSSLESS</span>
+        <span class="dh-telemetry"><i class="dh-pulse" aria-hidden="true"></i>Música y comunidad</span>
         ${upcomingCount ? `<button type="button" class="dh-premiere-badge" data-action="discovery-jump" data-section="zu-premieres"><i class="p-live-dot" aria-hidden="true"></i>${upcomingCount} ${upcomingCount === 1 ? 'estreno en cuenta regresiva' : 'estrenos en cuenta regresiva'}</button>` : ''}
       </div>
       <h1 aria-label="${esc(title.replace(/<br\s*\/?>/gi, ' '))}">${title}</h1>
       <p class="discovery-deck">${sub}${displayName ? ` <span class="dh-greeting">· Sesión activa: <b>${esc(displayName)}</b></span>` : ''}</p>
     </div>
     <div class="discovery-head-aside">
-      <div class="dh-quick-pills" role="navigation" aria-label="Accesos rápidos de estudio">
+      <div class="dh-quick-pills" role="navigation" aria-label="Accesos rápidos">
         <button type="button" class="dh-pill dh-pill-zuena lit" data-action="open-artist" data-id="zu:${ZUENA_OFFICIAL_UID}">
           <span class="dh-z-logo" aria-hidden="true">${logo()}</span>
           <span><b>Perfil ZUENA</b><small>Equipo oficial · @zuena</small></span>

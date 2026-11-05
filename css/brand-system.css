@@ -11,6 +11,8 @@ html[data-design="point"] {
   --z-action: #181a1c;
   --z-on-action: #fff;
   --z-accent: var(--accent);
+  --z-info: #236a87; --z-positive: #24734e; --z-caution: #895b19;
+  --z-special: #675397; --z-danger: #b33d55;
   --z-radius: 24px;
   --z-radius-sm: 14px;
   --z-shadow: 0 16px 48px -28px rgb(16 20 24 / .23);
@@ -25,6 +27,8 @@ html[data-design="point"] {
   --r-xl: var(--z-radius); --r-lg: 20px; --r-md: var(--z-radius-sm);
 }
 html[data-design="point"][data-scheme="dark"] {
+  --z-info: #8ecce1; --z-positive: #8dc7a8; --z-caution: #dec08d;
+  --z-special: #b5a6db; --z-danger: #ed9bac;
   --z-paper: #101112; --z-ink: #f1f1ef; --z-muted: #a6a9ad;
   --z-line: rgb(238 241 244 / .14); --z-surface: #191b1d; --z-raised: #222528;
   --z-action: #f2f2ef; --z-on-action: #111315;
@@ -247,9 +251,7 @@ html[data-design="point"] .shelf > * {
   letter-spacing: .01em;
   white-space: nowrap;
   user-select: none;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: background-color .18s ease, border-color .18s ease;
+  transition: background-color var(--m-dur-fast) var(--m-ease-out), border-color var(--m-dur-fast) var(--m-ease-out);
 }
 .z-badges.compact .z-badge, .z-badge.sm {
   padding: 1.5px 7px;
@@ -266,25 +268,25 @@ html[data-design="point"] .shelf > * {
   height: 10px;
 }
 .z-badge-logo {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
   display: inline-grid;
   place-items: center;
-  background: #0284c7;
-  color: #fff;
+  background: transparent;
+  color: var(--logo-fg);
   font-size: 8.5px;
   font-weight: 800;
   line-height: 1;
   flex: none;
 }
-.z-badge-logo svg { width: 100%; height: 100%; }
+.z-badge .z-badge-logo svg, .z-badge.sm .z-badge-logo svg { width: 16px; height: 16px; }
 
 /* Insignia exclusiva: Equipo de Zuena (sutil cyan/sky frosted) */
 .z-badge-team {
-  background: color-mix(in srgb, #0ea5e9 10%, var(--z-raised));
+  background: color-mix(in srgb, var(--z-info) 10%, var(--z-raised));
   color: var(--z-ink);
-  border: 1px solid color-mix(in srgb, #0ea5e9 28%, var(--z-line));
+  border: 1px solid color-mix(in srgb, var(--z-info) 28%, var(--z-line));
 }
 .z-badge-team span:last-child {
   color: var(--z-ink);
@@ -293,39 +295,39 @@ html[data-design="point"] .shelf > * {
 
 /* Insignia: Dueño / Fundador (sutil ámbar/champagne frosted) */
 .z-badge-owner {
-  background: color-mix(in srgb, #f59e0b 10%, var(--z-raised));
+  background: color-mix(in srgb, var(--z-caution) 10%, var(--z-raised));
   color: var(--z-ink);
-  border: 1px solid color-mix(in srgb, #f59e0b 28%, var(--z-line));
+  border: 1px solid color-mix(in srgb, var(--z-caution) 28%, var(--z-line));
 }
-.z-badge-owner svg { color: #d97706; }
+.z-badge-owner svg { color: var(--z-caution); }
 html[data-theme="dark"] .z-badge-owner svg,
-html[data-scheme="dark"] .z-badge-owner svg { color: #fbbf24; }
+html[data-scheme="dark"] .z-badge-owner svg { color: var(--z-caution); }
 
 /* Insignia: Administración (sutil índigo/azul sereno frosted) */
 .z-badge-admin {
-  background: color-mix(in srgb, #6366f1 9%, var(--z-raised));
+  background: color-mix(in srgb, var(--z-special) 9%, var(--z-raised));
   color: var(--z-ink);
-  border: 1px solid color-mix(in srgb, #6366f1 26%, var(--z-line));
+  border: 1px solid color-mix(in srgb, var(--z-special) 26%, var(--z-line));
 }
-.z-badge-admin svg { color: #4f46e5; }
+.z-badge-admin svg { color: var(--z-special); }
 html[data-theme="dark"] .z-badge-admin svg,
-html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
+html[data-scheme="dark"] .z-badge-admin svg { color: var(--z-special); }
 
 .pm-badges { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
 .pm-z-ico {
-  width: 18px; height: 18px; border-radius: 5px; display: inline-grid; place-items: center;
-  background: #0c0e14; color: #fff; padding: 2px; flex: none;
+  width: 24px; height: 24px; display: inline-grid; place-items: center;
+  background: transparent; padding: 0; flex: none;
 }
 .pm-z-ico svg { width: 100%; height: 100%; }
 .ap-badge-pill.is-team {
-  background: linear-gradient(135deg, #0b0f17, #1a2438);
-  color: #e0f2fe;
-  border-color: rgb(95 240 255 / .4);
+  background: color-mix(in srgb,var(--z-info) 8%,var(--z-raised));
+  color: var(--z-ink);
+  border-color: color-mix(in srgb,var(--z-info) 25%,var(--z-line));
 }
 .ap-badge-pill.is-owner, .pv2-role-pill.is-owner {
-  background: linear-gradient(135deg, #241b08, #3b2a0a);
-  color: #fde68a;
-  border-color: rgb(245 184 65 / .45);
+  background: color-mix(in srgb,var(--z-caution) 8%,var(--z-raised));
+  color: var(--z-ink);
+  border-color: color-mix(in srgb,var(--z-caution) 25%,var(--z-line));
 }
 
 /* ==========================================================================
@@ -350,8 +352,8 @@ html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
 }
 
 .premiere-card {
-  --p-accent: #10b981;
-  --p-glow: rgba(16, 185, 129, 0.16);
+  --p-accent: var(--z-positive);
+  --p-glow: color-mix(in srgb,var(--p-accent) 16%,transparent);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -365,25 +367,25 @@ html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
   border: 1px solid var(--z-line);
   box-shadow: var(--z-shadow);
   isolation: isolate;
-  transition: transform .28s cubic-bezier(0.22, 1, 0.36, 1), border-color .25s ease, box-shadow .25s ease;
+  transition: transform var(--m-dur-fast) var(--m-ease-out), border-color var(--m-dur-fast) var(--m-ease-out);
 }
 .premiere-card:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--p-accent) 45%, var(--z-line));
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.14), 0 0 36px -10px var(--p-glow);
 }
-.premiere-card[data-p-theme="obsidian"] { --p-accent: #0284c7; --p-glow: rgba(2, 132, 199, 0.2); }
-.premiere-card[data-p-theme="aurora"]   { --p-accent: #10b981; --p-glow: rgba(16, 185, 129, 0.2); }
-.premiere-card[data-p-theme="gold"]     { --p-accent: #d97706; --p-glow: rgba(217, 119, 6, 0.2); }
-.premiere-card[data-p-theme="crimson"]  { --p-accent: #e11d48; --p-glow: rgba(225, 29, 72, 0.2); }
-.premiere-card[data-p-theme="prism"]    { --p-accent: #7c3aed; --p-glow: rgba(124, 58, 237, 0.2); }
+.premiere-card[data-p-theme="obsidian"] { --p-accent: var(--z-info); --p-glow: color-mix(in srgb,var(--p-accent) 16%,transparent); }
+.premiere-card[data-p-theme="aurora"]   { --p-accent: var(--z-positive); --p-glow: color-mix(in srgb,var(--p-accent) 16%,transparent); }
+.premiere-card[data-p-theme="gold"]     { --p-accent: var(--z-caution); --p-glow: color-mix(in srgb,var(--p-accent) 16%,transparent); }
+.premiere-card[data-p-theme="crimson"]  { --p-accent: var(--z-danger); --p-glow: color-mix(in srgb,var(--p-accent) 16%,transparent); }
+.premiere-card[data-p-theme="prism"]    { --p-accent: var(--z-special); --p-glow: color-mix(in srgb,var(--p-accent) 16%,transparent); }
 
 .p-card-backdrop {
   position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
 }
 .p-card-backdrop img {
   position: absolute; top: -20%; right: -20%; width: 140%; height: 140%; object-fit: cover;
-  filter: blur(60px) saturate(1.5); opacity: .12;
+  filter: none; opacity: .04;
 }
 .p-card-glow {
   position: absolute; inset: 0;
@@ -399,9 +401,10 @@ html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
   color: var(--z-ink); font: 600 11px/1.2 var(--font); letter-spacing: .12em; text-transform: uppercase;
 }
 .p-live-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--z-positive);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, .25);
-  animation: p-live-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  /* El estado se lee en el texto; no necesita un bucle decorativo permanente. */
+  animation: none;
 }
 @keyframes p-live-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -525,9 +528,9 @@ html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
   box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.28);
 }
 .premiere-card .p-remind-btn.on, .premiere-inline .p-remind-btn.on {
-  background: var(--p-accent) !important;
-  color: #ffffff !important;
-  border-color: var(--p-accent) !important;
+  background: var(--z-action) !important;
+  color: var(--z-on-action) !important;
+  border-color: var(--z-action) !important;
 }
 .premiere-card .p-card-actions .btn-glass {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -545,7 +548,7 @@ html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
 
 /* Tarjeta de estreno adjunta dentro de un post del feed */
 .premiere-inline {
-  --p-accent: #10b981;
+  --p-accent: var(--z-positive);
   display: grid !important; gap: 14px !important; padding: 18px !important;
   border-radius: var(--z-radius-sm, 16px) !important;
   background: var(--z-surface) !important;
@@ -585,7 +588,7 @@ html[data-scheme="dark"] .z-badge-admin svg { color: #818cf8; }
   font-weight: 600;
 }
 .p-theme-swatch {
-  width: 14px; height: 14px; border-radius: 50%; background: var(--opt-accent, #5ff0ff); flex: none;
+  width: 14px; height: 14px; border-radius: 50%; background: var(--opt-accent, var(--z-accent)); flex: none;
 }
 
 @media (max-width: 600px) {

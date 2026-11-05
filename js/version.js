@@ -1,21 +1,21 @@
 // Versiones de ZUENA: la app y cada función. Sirve para saber en qué nivel quedó cada parte y priorizar
 // la actualización de las más viejas. Regla: al cambiar una función, subir su versión (mayor = rediseño,
 // menor = mejora, parche = arreglo), poner la fecha de hoy y reflejarlo en Wiki/Registro/Versiones.md.
-export const APP_VERSION = '0.33.0';
+export const APP_VERSION = '0.33.1';
 
 // [id, nombre, versión, última actualización]
 export const FEATURES = [
   ['audio', 'Motor de audio ZUENA Studio (gapless, LUFS, EQ, DSP 6 etapas, espacial, limitador)', '4.0.0', '2026-11-04'],
-  ['admin', 'Dashboard de administración y moderación', '1.0.0', '2026-11-04'],
-  ['artist_dash', 'Dashboard de artistas y estadísticas estilo Spotify', '1.0.0', '2026-11-04'],
+  ['admin', 'Dashboard de administración y moderación', '1.0.1', '2026-11-05'],
+  ['artist_dash', 'Dashboard de artistas y estadísticas estilo Spotify', '1.0.1', '2026-11-05'],
   ['i18n', 'Sistema de traducción y selector ES/EN por país', '1.0.0', '2026-11-04'],
   ['payments', 'Servidor de pagos y retiros Stripe (mínimo 10 EUR)', '1.0.0', '2026-11-04'],
   ['np', 'Reproductor, cápsula rápida y navegación inmersiva', '5.2.0', '2026-11-04'],
   ['viz', 'Espectro "seda"', '2.0.0', '2026-11-01'],
-  ['home', 'Inicio y carrusel de portada', '4.2.0', '2026-11-04'],
+  ['home', 'Inicio y carrusel de portada', '4.2.1', '2026-11-05'],
   ['search', 'Búsqueda unificada de música, perfiles y feed', '1.2.0', '2026-11-04'],
   ['explore', 'Explorar y búsqueda', '3.0.0', '2026-11-04'],
-  ['feed', 'Feed Punto (comunidad, estrenos, conversaciones y nube)', '5.2.0', '2026-11-04'],
+  ['feed', 'Feed Punto (comunidad, estrenos, conversaciones y nube)', '5.2.1', '2026-11-05'],
   ['motion', 'Motor de animaciones Prisma Motion', '0.4.0', '2026-11-04'],
   ['sim', 'Simulador de actividad', '1.1.1', '2026-11-04'],
   ['artistpage', 'Perfil de artista y catálogo Bengolea / Spotify', '4.3.0', '2026-11-04'],
@@ -36,8 +36,8 @@ export const FEATURES = [
   ['supabase', 'Nube Supabase (cuentas, perfiles, feed, me gusta, seguidos y pistas subidas)', '0.2.0', '2026-11-04'],
   ['payments', 'Servidor de pagos (sin ejecutar)', '0.1.0', '2026-11-01'],
   ['pwa', 'App instalable (shell v4-031 y bypass de caché)', '1.2.0', '2026-11-04'],
-  ['theme', 'Sistema Punto, temas y personalización', '4.3.0', '2026-11-04'],
-  ['island', 'Isla Punto: búsqueda, contenido y transporte', '4.2.0', '2026-11-04'],
+  ['theme', 'Sistema Punto, temas y personalización', '4.3.1', '2026-11-05'],
+  ['island', 'Isla Punto: búsqueda, contenido y transporte', '4.2.1', '2026-11-05'],
 ];
 
 // prioridad de actualización: más días sin tocar y versión más baja → primero

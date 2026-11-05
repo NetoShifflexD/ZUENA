@@ -21,7 +21,7 @@ export function heroCarousel(p) {
         <div class="hc-editorial-disc" aria-hidden="true">
           <span class="hc-disc-ring"></span>
           <span class="hc-disc-grooves"></span>
-          <span class="hc-disc-core"><b>ZUENA</b><small>24-BIT · AUDIO</small></span>
+          <span class="hc-disc-core"><b>ZUENA</b><small>MÚSICA</small></span>
         </div>
         <div class="hc-copy">
           <p class="eyebrow">${greeting()}${p?.displayName ? `, ${esc(p.displayName)}` : ''}</p>
@@ -257,7 +257,7 @@ function slidePremiere(r) {
         ${roleBadges(prof, { compact: true })}
       </div>
       <h2>${esc(r.title)}</h2>
-      <p class="hc-by">${esc(r.primaryArtist)} · ${esc(premiereLabel(r.premiereAt))}${r.audioQuality ? ` · ${esc(r.audioQuality)}` : ''}</p>
+      <p class="hc-by">${esc(r.primaryArtist)} · ${esc(premiereLabel(r.premiereAt))}${app.prefs.advanced && r.audioQuality ? ` · Informado por artista · Sin validar: ${esc(r.audioQuality)}` : ''}</p>
       <div class="hero-actions">
         <button class="btn-primary lit" data-action="discovery-jump" data-section="zu-premieres">${icon('clock')}Ver cuenta regresiva</button>
         <button class="btn-glass lit" data-action="open-artist" data-id="zu:${esc(r.uid)}">Perfil de ${esc(r.primaryArtist)}</button>

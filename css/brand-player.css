@@ -19,7 +19,7 @@ html[data-design="point"] .island-nav .island-item { color: var(--z-ink); backgr
 html[data-design="point"] .island-nav .island-item.active { color: var(--z-on-action); background: var(--z-action); border-color: transparent; box-shadow: none; font-weight: 600; }
 html[data-design="point"] .island-panel .search { border-radius: 15px; height: 52px; }
 html[data-design="point"] .island-search-filters { gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--z-line); }
-html[data-design="point"] .island-search-filters button { color: var(--z-ink); background: var(--z-surface); border: 1px solid var(--z-line); border-radius: 999px; min-height: 40px; padding: 0 13px; font-size: 12px; font-weight: 550; }
+html[data-design="point"] .island-search-filters button { color: var(--z-ink); background: var(--z-surface); border: 1px solid var(--z-line); border-radius: 999px; min-height: 44px; padding: 0 13px; font-size: 12px; font-weight: 550; }
 html[data-design="point"] .island-search-filters button[aria-pressed="true"] { color: var(--z-on-action); background: var(--z-action); border-color: var(--z-action); box-shadow: none; }
 html[data-design="point"] .island-content { padding-top: 4px; }
 html[data-design="point"] :is(.ic-tile,.ic-profile,.ic-playlist,.ic-release,.ic-premiere,.ic-post.fx-post,.ic-mosaic) { background: var(--z-surface); border-color: var(--z-line); box-shadow: none; }

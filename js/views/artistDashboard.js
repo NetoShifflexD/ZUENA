@@ -55,7 +55,7 @@ export async function viewArtistDashboard() {
     <div class="artist-dashboard enter" data-reveal="fadeUp">
       <header class="page-head artist-head">
         <div class="artist-head-main">
-          <div class="art md" style="border-radius:18px;overflow:hidden">
+          <div class="art md dashboard-avatar">
             ${app.profile?.avatar ? `<img src="${esc(app.profile.avatar)}" alt="${esc(artistName)}">` : icon('disc')}
           </div>
           <div>
@@ -153,10 +153,10 @@ export async function viewArtistDashboard() {
                   <span class="track-rank">${i + 1}</span>
                   <div class="row-main">
                     <b>${esc(t.title || 'Pista ' + (i + 1))}</b>
-                    <span class="muted small">${esc(t.releaseTitle || artistName)} · 24-BIT LOSSLESS</span>
+                    <span class="muted small">${esc(t.releaseTitle || artistName)}</span>
                   </div>
                   <span class="track-plays"><b>${(totalStreams / (i + 2.4)).toFixed(0).toLocaleString('es-ES')}</b> streams</span>
-                  <button class="btn-icon lit sm" data-action="release-track-play" data-track="${esc(t.trackId || t.id || '')}" title="Escuchar">${icon('play')}</button>
+                  <button class="btn-icon lit" data-action="release-track-play" data-track="${esc(t.trackId || t.id || '')}" title="Escuchar" aria-label="Escuchar">${icon('play')}</button>
                 </div>
               `).join('')}
             </div>

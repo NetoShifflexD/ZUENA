@@ -1,6 +1,6 @@
 // Piezas de markup compartidas entre vistas.
 import { app } from '../app.js';
-import { icon } from '../ui/icons.js';
+import { icon, logo } from '../ui/icons.js';
 import { esc, fmtTime, quality, hueOf } from '../ui/format.js';
 import { EXTERNAL_CATALOG, TEST_CATALOG } from '../config.js';
 import { linkArtistNames } from '../data/testArtists.js';
@@ -45,7 +45,7 @@ export function roleBadges(entity, { compact = false } = {}) {
   const isAdmin = Boolean(entity.isAdminProfile || isOwner || isTeam);
   const pills = [];
   if (isTeam) {
-    pills.push(`<span class="z-badge z-badge-team${compact ? ' sm' : ''}" title="Perfil exclusivo oficial del Equipo de ZUENA"><span class="z-badge-logo" aria-hidden="true">Z</span><span>Equipo de Zuena</span></span>`);
+    pills.push(`<span class="z-badge z-badge-team${compact ? ' sm' : ''}" title="Perfil exclusivo oficial del Equipo de ZUENA"><span class="z-badge-logo" aria-hidden="true">${logo()}</span><span>Equipo de ZUENA</span></span>`);
   }
   if (isOwner) {
     pills.push(`<span class="z-badge z-badge-owner${compact ? ' sm' : ''}" title="Dueño y fundador de ZUENA">${icon('crown', 'z-badge-ico')}<span>Dueño</span></span>`);

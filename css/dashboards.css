@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ZUENA Dashboards: Administración & Artistas (Spotify for Artists style)
+   ZUENA Dashboards: Administración & Artistas (marca ZUENA)
    Diseño de Alta Fidelidad Point & Glass
    ========================================================================== */
 
@@ -12,10 +12,10 @@
   display: flex;
   flex-direction: column;
   gap: 28px;
-  color: var(--z-ink, #0f172a);
+  color: var(--z-ink);
 }
 
-.page-head {
+:is(.admin-dashboard, .artist-dashboard) .page-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -23,25 +23,25 @@
   flex-wrap: wrap;
 }
 
-.page-head h1 {
-  font-family: var(--font-display, 'Inter Tight', sans-serif);
+:is(.admin-dashboard, .artist-dashboard) .page-head h1 {
+  font-family: var(--font-display);
   font-size: clamp(28px, 4vw, 44px);
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: -0.04em;
   line-height: 1.1;
   margin: 4px 0 6px;
 }
 
 /* ---------- Grid de Métricas ---------- */
-.admin-metrics-grid,
-.artist-metrics-grid {
+:is(.admin-dashboard, .artist-dashboard) .admin-metrics-grid,
+:is(.admin-dashboard, .artist-dashboard) .artist-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 16px;
 }
 
-.admin-metrics-grid .stat,
-.artist-metrics-grid .stat {
+:is(.admin-dashboard, .artist-dashboard) .admin-metrics-grid .stat,
+:is(.admin-dashboard, .artist-dashboard) .artist-metrics-grid .stat {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -49,54 +49,50 @@
   gap: 10px;
   padding: 20px;
   border-radius: var(--z-radius, 20px);
-  background: var(--z-surface, rgba(255, 255, 255, 0.6));
-  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.2));
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.08);
-  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), border-color 0.25s ease;
+  background: var(--z-surface);
+  border: 1px solid var(--z-line);
+  box-shadow: var(--z-shadow);
+  transition: border-color var(--m-dur-fast) var(--m-ease-out);
 }
 
-.admin-metrics-grid .stat:hover,
-.artist-metrics-grid .stat:hover {
-  transform: translateY(-2px);
-  border-color: var(--z-accent, #3b82f6);
+:is(.admin-dashboard, .artist-dashboard) .admin-metrics-grid .stat:hover,
+:is(.admin-dashboard, .artist-dashboard) .artist-metrics-grid .stat:hover {
+  border-color: var(--z-accent);
 }
 
-.metric-highlight {
-  border-color: color-mix(in srgb, var(--z-accent, #3b82f6) 40%, var(--z-line, rgba(255, 255, 255, 0.2))) !important;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--z-accent, #3b82f6) 8%, var(--z-surface, #fff)), var(--z-surface, #fff)) !important;
+:is(.admin-dashboard, .artist-dashboard) .metric-highlight {
+  border-color: color-mix(in srgb, var(--z-accent) 40%, var(--z-line)) !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--z-accent) 8%, var(--z-surface)), var(--z-surface)) !important;
 }
 
-.metric-head {
+:is(.admin-dashboard, .artist-dashboard) .metric-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.stat-num,
-.admin-metrics-grid .stat b {
-  font-family: var(--font-display, 'Inter Tight', sans-serif);
+:is(.admin-dashboard, .artist-dashboard) .stat-num,
+:is(.admin-dashboard, .artist-dashboard) .admin-metrics-grid .stat b {
+  font-family: var(--font-display);
   font-size: clamp(28px, 3.2vw, 40px);
-  font-weight: 700;
+  font-weight: 550;
   letter-spacing: -0.04em;
-  color: var(--z-ink, #0f172a);
+  color: var(--z-ink);
 }
 
 /* ---------- Navegación por Pestañas (Admin) ---------- */
-.admin-tabs {
+:is(.admin-dashboard, .artist-dashboard) .admin-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 6px;
   border-radius: var(--z-radius-sm, 14px);
-  background: var(--z-surface, rgba(255, 255, 255, 0.4));
-  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.15));
-  backdrop-filter: blur(16px);
+  background: var(--z-surface);
+  border: 1px solid var(--z-line);
 }
 
-.admin-tabs .seg-btn {
+:is(.admin-dashboard, .artist-dashboard) .admin-tabs .seg-btn {
   flex: 1 1 180px;
   min-height: 44px;
   display: flex;
@@ -106,140 +102,139 @@
   border-radius: 10px;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--z-muted, #64748b);
-  transition: all 0.2s ease;
+  color: var(--z-muted);
+  transition: color var(--m-dur-fast) var(--m-ease-out), background-color var(--m-dur-fast) var(--m-ease-out);
 }
 
-.admin-tabs .seg-btn.on {
-  background: var(--z-action, #0f172a);
-  color: var(--z-on-action, #ffffff);
-  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+:is(.admin-dashboard, .artist-dashboard) .admin-tabs .seg-btn.on {
+  background: var(--z-action);
+  color: var(--z-on-action);
+  box-shadow: var(--z-shadow);
 }
 
 /* ---------- Tarjetas de Gestión de Administración ---------- */
-.admin-tab-body {
+:is(.admin-dashboard, .artist-dashboard) .admin-tab-body {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.admin-claim-card,
-.admin-release-card,
-.admin-post-card,
-.admin-user-card {
+:is(.admin-dashboard, .artist-dashboard) .admin-claim-card,
+:is(.admin-dashboard, .artist-dashboard) .admin-release-card,
+:is(.admin-dashboard, .artist-dashboard) .admin-post-card,
+:is(.admin-dashboard, .artist-dashboard) .admin-user-card,
+:is(.admin-dashboard, .artist-dashboard) .admin-user-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 18px;
   padding: 18px 22px;
   border-radius: var(--z-radius-sm, 16px);
-  background: var(--z-surface, rgba(255, 255, 255, 0.65));
-  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.2));
-  backdrop-filter: blur(20px);
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  background: var(--z-surface);
+  border: 1px solid var(--z-line);
+  transition: border-color var(--m-dur-fast) var(--m-ease-out);
 }
 
-.admin-claim-card:hover,
-.admin-release-card:hover,
-.admin-post-card:hover,
-.admin-user-card:hover {
-  border-color: var(--z-line-hover, rgba(59, 130, 246, 0.4));
+:is(.admin-dashboard, .artist-dashboard) .admin-claim-card:hover,
+:is(.admin-dashboard, .artist-dashboard) .admin-release-card:hover,
+:is(.admin-dashboard, .artist-dashboard) .admin-post-card:hover,
+:is(.admin-dashboard, .artist-dashboard) .admin-user-card:hover {
+  border-color: color-mix(in srgb, var(--z-ink) 25%, var(--z-line));
 }
 
-.admin-card-info h3 {
+:is(.admin-dashboard, .artist-dashboard) .admin-card-info h3 {
   font-size: 16.5px;
   font-weight: 600;
   margin: 0 0 4px;
 }
 
-.admin-actions-row {
+:is(.admin-dashboard, .artist-dashboard) .admin-actions-row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-/* ---------- Dashboard de Artistas (Spotify style) ---------- */
-.artist-head-main {
+/* ---------- Dashboard de Artistas ---------- */
+:is(.admin-dashboard, .artist-dashboard) .artist-head-main {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-.artist-dashboard-grid {
+:is(.admin-dashboard, .artist-dashboard) .artist-dashboard-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
   gap: 24px;
   align-items: start;
 }
 
-.artist-tracks-card,
-.geo-breakdown,
-.payout-dashboard-card {
+:is(.admin-dashboard, .artist-dashboard) .artist-tracks-card,
+:is(.admin-dashboard, .artist-dashboard) .geo-breakdown,
+:is(.admin-dashboard, .artist-dashboard) .payout-dashboard-card {
   padding: 24px;
   border-radius: var(--z-radius, 22px);
-  background: var(--z-surface, rgba(255, 255, 255, 0.65));
-  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.2));
-  backdrop-filter: blur(24px) saturate(180%);
-  box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.08);
+  background: var(--z-surface);
+  border: 1px solid var(--z-line);
+  box-shadow: var(--z-shadow);
 }
 
-.artist-card-head {
+:is(.admin-dashboard, .artist-dashboard) .artist-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.artist-card-head h2 {
+:is(.admin-dashboard, .artist-dashboard) .artist-card-head h2 {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 550;
   letter-spacing: -0.03em;
   margin: 0;
 }
 
 /* Tabla de temas del Artista */
-.artist-track-table {
+:is(.admin-dashboard, .artist-dashboard) .artist-track-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.artist-track-table th {
+:is(.admin-dashboard, .artist-dashboard) .artist-track-table th {
   text-align: left;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--z-muted, #64748b);
+  color: var(--z-muted);
   padding: 8px 12px;
-  border-bottom: 1px solid var(--z-line, rgba(255, 255, 255, 0.15));
+  border-bottom: 1px solid var(--z-line);
 }
 
-.artist-track-table td {
+:is(.admin-dashboard, .artist-dashboard) .artist-track-table td {
   padding: 12px;
   font-size: 14px;
-  border-bottom: 1px solid var(--z-line, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid var(--z-line);
 }
 
-.artist-track-table tr:hover td {
-  background: color-mix(in srgb, var(--z-accent, #3b82f6) 6%, transparent);
+:is(.admin-dashboard, .artist-dashboard) .artist-track-table tr:hover td {
+  background: color-mix(in srgb, var(--z-accent) 6%, transparent);
 }
 
 /* Barras Geográficas */
-.geo-bars {
+:is(.admin-dashboard, .artist-dashboard) .geo-bars {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.geo-bar-row {
+:is(.admin-dashboard, .artist-dashboard) .geo-bar-row {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr) 50px;
   align-items: center;
   gap: 14px;
 }
 
-.geo-country {
+:is(.admin-dashboard, .artist-dashboard) .geo-country {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -248,7 +243,7 @@
   color: var(--z-ink);
 }
 
-.geo-tag {
+:is(.admin-dashboard, .artist-dashboard) .geo-tag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -257,28 +252,28 @@
   background: var(--z-raised);
   border: 1px solid var(--z-line);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 550;
   letter-spacing: .06em;
   color: var(--z-ink);
 }
 
-.geo-track {
+:is(.admin-dashboard, .artist-dashboard) .geo-track {
   width: 100%;
   height: 8px;
   border-radius: 99px;
-  background: var(--z-line, rgba(0, 0, 0, 0.08));
+  background: var(--z-line);
   overflow: hidden;
 }
 
-.geo-track i {
+:is(.admin-dashboard, .artist-dashboard) .geo-track i {
   display: block;
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--z-accent, #3b82f6), #06b6d4);
-  transition: width 0.6s cubic-bezier(0.2, 0.9, 0.3, 1);
+  background: var(--z-accent);
+  transition: width var(--m-spring-smooth-dur) var(--m-spring-smooth);
 }
 
-.geo-pct {
+:is(.admin-dashboard, .artist-dashboard) .geo-pct {
   font-size: 13px;
   font-weight: 600;
   color: var(--z-muted);
@@ -287,24 +282,24 @@
 }
 
 /* ---------- Módulo de Retiros y Stripe ---------- */
-.payout-balance-box {
+:is(.admin-dashboard, .artist-dashboard) .payout-balance-box {
   padding: 22px;
   border-radius: var(--z-radius-sm, 16px);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--z-accent, #3b82f6) 12%, var(--z-surface, #fff)), var(--z-surface, #fff));
-  border: 1px solid color-mix(in srgb, var(--z-accent, #3b82f6) 30%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--z-accent) 12%, var(--z-surface)), var(--z-surface));
+  border: 1px solid color-mix(in srgb, var(--z-accent) 30%, transparent);
   margin-bottom: 20px;
 }
 
-.payout-balance-num {
-  font-family: var(--font-display, 'Inter Tight', sans-serif);
+:is(.admin-dashboard, .artist-dashboard) .payout-balance-num {
+  font-family: var(--font-display);
   font-size: 38px;
-  font-weight: 800;
+  font-weight: 550;
   letter-spacing: -0.04em;
-  color: var(--z-accent, #3b82f6);
+  color: var(--z-accent);
   margin: 6px 0 12px;
 }
 
-.payout-rule-badge {
+:is(.admin-dashboard, .artist-dashboard) .payout-rule-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -312,51 +307,216 @@
   border-radius: 999px;
   font-size: 11.5px;
   font-weight: 600;
-  background: color-mix(in srgb, var(--z-accent, #3b82f6) 14%, transparent);
-  color: var(--z-accent, #3b82f6);
+  background: color-mix(in srgb, var(--z-accent) 14%, transparent);
+  color: var(--z-accent);
 }
 
-.payout-form {
+:is(.admin-dashboard, .artist-dashboard) .payout-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.payout-history-list {
+:is(.admin-dashboard, .artist-dashboard) .payout-history-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 18px;
 }
 
-.payout-history-item {
+:is(.admin-dashboard, .artist-dashboard) .payout-history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
   border-radius: 12px;
-  background: var(--z-surface, rgba(255, 255, 255, 0.4));
-  border: 1px solid var(--z-line, rgba(255, 255, 255, 0.15));
+  background: var(--z-surface);
+  border: 1px solid var(--z-line);
   font-size: 13.5px;
 }
 
 /* ---------- Responsive para Móviles ---------- */
 @media (max-width: 860px) {
-  .artist-dashboard-grid {
+  :is(.admin-dashboard, .artist-dashboard) .artist-dashboard-grid {
     grid-template-columns: 1fr;
   }
-  .admin-claim-card,
-  .admin-release-card,
-  .admin-post-card,
-  .admin-user-card {
+  :is(.admin-dashboard, .artist-dashboard) .admin-claim-card,
+  :is(.admin-dashboard, .artist-dashboard) .admin-release-card,
+  :is(.admin-dashboard, .artist-dashboard) .admin-post-card,
+  :is(.admin-dashboard, .artist-dashboard) .admin-user-card {
     grid-template-columns: 1fr;
     gap: 14px;
   }
-  .admin-actions-row {
+  :is(.admin-dashboard, .artist-dashboard) .admin-actions-row {
     width: 100%;
     justify-content: stretch;
   }
-  .admin-actions-row button {
+  :is(.admin-dashboard, .artist-dashboard) .admin-actions-row button {
     flex: 1 1 auto;
   }
+}
+/* ---------- Elementos presentes en las vistas actuales ---------- */
+:is(.admin-dashboard, .artist-dashboard),
+:is(.admin-dashboard, .artist-dashboard) * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* El vidrio se compone sobre el contenedor principal, sin blur por tarjeta.
+   --z-glass sigue Apariencia; sólido y transparencia reducida quedan opacos. */
+:is(.admin-dashboard, .artist-dashboard) :is(.glass-soft.stat, .glass-soft.form-card, .glass-soft.notice) {
+  background: var(--z-glass);
+  border-color: var(--z-line);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(.section-title, .balance-amount, .payout-hist-title) {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -.025em;
+  color: var(--z-ink);
+  overflow-wrap: anywhere;
+}
+
+:is(.admin-dashboard, .artist-dashboard) .balance-amount {
+  margin: 6px 0 12px;
+  font-size: clamp(28px, 4vw, 38px);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(button, input, select, textarea, .link-chip) {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(button, .link-chip) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(input, select, textarea) {
+  width: 100%;
+  max-width: 100%;
+  font-size: 16px;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(.row-btns, .hero-actions, .link-list, .admin-user-toolbar, .user-filter-seg) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(.admin-tabs, .user-filter-seg) .seg-btn {
+  flex: 1 1 160px;
+  flex-direction: row;
+}
+
+:is(.admin-dashboard, .artist-dashboard) .admin-user-search {
+  flex: 1 1 240px;
+}
+
+:is(.admin-dashboard, .artist-dashboard) .admin-card-list {
+  display: grid;
+  gap: 16px;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(.admin-card-head, .admin-release-head, .balance-summary-row, .payout-row) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(.admin-card-head, .admin-claim-details, .admin-post-meta, .admin-post-text, .admin-user-info, .page-head) {
+  overflow-wrap: anywhere;
+}
+
+:is(.admin-dashboard, .artist-dashboard) :is(.admin-release-head .row-main, .artist-head-main > :last-child) {
+  flex: 1;
+}
+
+:is(.admin-dashboard, .artist-dashboard) .dashboard-avatar {
+  border-radius: var(--z-radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+:is(.admin-dashboard, .artist-dashboard) .form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+}
+
+/* La vista usa filas div, no las celdas th/td de la tabla histórica. */
+:is(.admin-dashboard, .artist-dashboard) .artist-track-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto 44px;
+  align-items: center;
+  gap: 12px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--z-line);
+}
+
+:is(.admin-dashboard, .artist-dashboard) .artist-track-row .row-main {
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+}
+
+:is(.admin-dashboard, .artist-dashboard) .track-plays {
+  color: var(--z-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.admin-dashboard, .artist-dashboard) .geo-bar-row {
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr) 50px;
+}
+
+@media (max-width: 600px) {
+  :is(.admin-dashboard, .artist-dashboard) .artist-head-main {
+    flex-wrap: wrap;
+  }
+  :is(.admin-dashboard, .artist-dashboard) :is(.row-btns, .hero-actions) {
+    width: 100%;
+  }
+  :is(.admin-dashboard, .artist-dashboard) :is(.row-btns, .hero-actions) button {
+    flex: 1 1 160px;
+  }
+  :is(.admin-dashboard, .artist-dashboard) .geo-bar-row {
+    grid-template-columns: minmax(0, 1fr) 50px;
+    gap: 8px;
+  }
+  :is(.admin-dashboard, .artist-dashboard) .geo-country {
+    grid-column: 1 / -1;
+  }
+  :is(.admin-dashboard, .artist-dashboard) .artist-track-row {
+    grid-template-columns: 20px minmax(0, 1fr) 44px;
+  }
+  :is(.admin-dashboard, .artist-dashboard) .track-plays {
+    grid-column: 2;
+    grid-row: 2;
+    overflow-wrap: anywhere;
+  }
+  :is(.admin-dashboard, .artist-dashboard) .artist-track-row .btn-icon {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :is(.admin-dashboard, .artist-dashboard) {
+    --z-glass: var(--z-surface);
+  }
+}
+
+/* Prisma Motion gobierna las entradas data-reveal y los tokens --m-*.
+   Desactivar movimiento cubre también las transiciones locales. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.admin-dashboard, .artist-dashboard) * {
+    transition: none !important;
+  }
+}
+body.no-motion :is(.admin-dashboard, .artist-dashboard) * {
+  transition: none !important;
 }
