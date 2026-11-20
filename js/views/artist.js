@@ -319,29 +319,33 @@ export function viewRelease() {
   const e = releaseErrors;
   const locked = LOCKED.has(r.status);
   const st = RELEASE_STATUS[r.status];
-  return `${backBtn()}
+  return `<div class="studio-editor">${backBtn()}
+    <header class="studio-editor-intro"><div><p class="eyebrow">ZUENA / Estudio</p><h1>Prepará tu lanzamiento.</h1><p class="muted">Audio, presentación y fecha. Tu música, paso a paso.</p></div><span class="studio-save-note">${locked ? 'El contenido no se puede editar en este estado' : 'Guardá el borrador para continuar después'}</span></header>
+    <nav class="studio-outline" aria-label="Secciones del lanzamiento">${[['information', 'Detalles'], ['audio', 'Audio'], ['release', 'Salida y feed'], ['rights', 'Derechos']].map(([id, label], i) => `<button type="button" data-action="release-section" data-section="${id}"><span aria-hidden="true">0${i + 1}</span>${label}${icon('chevronRight')}</button>`).join('')}</nav>
     <section class="release-head enter">
-      <label class="release-cover lit ${locked ? 'locked' : ''}">
+      <label class="release-cover lit ${locked ? 'locked' : ''}" ${locked ? '' : 'aria-label="Elegir portada del lanzamiento"'}>
         ${r.coverThumb ? `<img src="${esc(r.coverThumb)}" alt="">` : `<span>${icon('image')}Portada<br><small>JPG/PNG cuadrada · mín. 1400 px</small></span>`}
-        ${locked ? '' : '<input type="file" accept="image/jpeg,image/png" hidden data-release-cover>'}
+        ${locked ? '' : '<input type="file" accept="image/jpeg,image/png" class="sr-only" aria-label="Elegir portada del lanzamiento" data-release-cover>'}
       </label>
       <div class="detail-meta">
         <p class="eyebrow">${esc(typeLabel(r.type))} ${statusPill(st)}</p>
-        <h1>${esc(r.title || 'Nuevo lanzamiento')}</h1>
+        <h2>${esc(r.title || 'Nuevo lanzamiento')}</h2>
         <p class="muted">${esc(r.primaryArtist)}${r.featuring ? ` feat. ${esc(r.featuring)}` : ''} · ${tracks.length} ${tracks.length === 1 ? 'canción' : 'canciones'} · ${esc(releaseWhen(r))}</p>
         ${r.status === 'scheduled' ? `<p class="premiere-line">${icon('clock')}<span data-countdown="${r.premiereAt}"></span></p>` : ''}
         ${r.status === 'published' ? `<p class="hint">Publicado${localNote()}: todos pueden escucharlo.</p>` : ''}
         ${r.status === 'hidden' ? '<p class="hint">Oculto: nadie más lo ve. Podés volver a publicarlo cuando quieras.</p>' : ''}
         ${r.status === 'withdrawn' ? `<p class="field-error">Retirado${r.reviewNote ? `: ${esc(r.reviewNote)}` : ''}. El audio se borró.</p>` : ''}
         ${r.coverSize ? `<p class="hint">Portada ${r.coverSize.width} × ${r.coverSize.height} px ${r.coverSize.width >= 3000 ? '✓' : '· recomendado 3000 px'}</p>` : ''}
+        ${!r.coverThumb ? '<p class="hint">Portada cuadrada JPG o PNG, de al menos 1400 × 1400 px.</p>' : ''}
         ${fieldError(e, 'cover')}
         ${r.status === 'rejected' && r.reviewNote ? `<p class="field-error">Revisión: ${esc(r.reviewNote)}</p>` : ''}
       </div>
     </section>
 
     <form class="release-form" data-form="release" data-id="${r.id}" novalidate>
-      <fieldset class="glass-soft form-card enter" style="--i:1" ${locked ? 'disabled' : ''}>
-        <legend>Información</legend>
+      <fieldset id="release-information" class="glass-soft form-card enter" style="--i:1" ${locked ? 'disabled' : ''}>
+        <legend tabindex="-1">01 · Detalles del lanzamiento</legend>
+        <p class="hint">Así se verá en tu perfil y en la biblioteca de quienes te escuchan.</p>
         <div class="seg three type-seg">${['single', 'ep', 'album'].map((t) => `<button type="button" class="seg-btn lit ${r.type === t ? 'on' : ''}" data-rtype="${t}">${typeLabel(t)[0].toUpperCase() + typeLabel(t).slice(1)}</button>`).join('')}</div>
         <div class="form-grid">
           <label class="field"><span>Título *</span><input class="input" name="title" maxlength="100" value="${esc(r.title)}">${fieldError(e, 'title')}</label>
@@ -355,18 +359,20 @@ export function viewRelease() {
         <label class="check"><input type="checkbox" name="explicit" ${r.explicit ? 'checked' : ''}><span>Contenido explícito</span></label>
       </fieldset>
 
-      <fieldset class="glass-soft form-card enter" style="--i:2" ${locked ? 'disabled' : ''}>
-        <legend>Canciones</legend>
-        <p class="hint">Audio sin pérdida (WAV, FLAC, ALAC o AIFF), 44.1 kHz o más, 16 o 24 bits. ZUENA analiza la sonoridad y los picos de cada archivo.</p>
+      <fieldset id="release-audio" class="glass-soft form-card enter" style="--i:2" ${locked ? 'disabled' : ''}>
+        <legend tabindex="-1">02 · Audio y créditos</legend>
+        <p class="hint">Subí el archivo original sin pérdida. Revisá el título y los créditos de cada canción antes de enviarla.</p>
+        ${app.prefs.advanced ? '<p class="hint">WAV, FLAC, ALAC o AIFF · 44,1 kHz o más · 16 o 24 bits. Se analiza la sonoridad y los picos.</p>' : ''}
         ${tracks.length ? `<div class="rtracks">${r.tracks.map((rt, i) => releaseTrack(rt, app.library.byId.get(rt.trackId), i, e)).join('')}</div>` : ''}
         ${fieldError(e, 'tracks')}
-        ${locked ? '' : `<label class="dropzone lit">${icon('upload')}<span><b>Agregar audio</b> o arrastrá archivos acá</span><input type="file" accept=".wav,.flac,.m4a,.aif,.aiff,audio/*" multiple hidden data-release-audio></label>`}
+        ${locked ? '' : `<label class="dropzone lit">${icon('upload')}<span><b>Agregar audio</b> o arrastrá archivos acá</span><input type="file" accept=".wav,.flac,.m4a,.aif,.aiff,audio/*" multiple class="sr-only" aria-label="Agregar archivos de audio" data-release-audio></label>`}
       </fieldset>
 
       ${salidaFieldset(r, e)}
 
-      <fieldset class="glass-soft form-card enter" style="--i:4" ${locked ? 'disabled' : ''}>
-        <legend>Derechos</legend>
+      <fieldset id="release-rights" class="glass-soft form-card enter" style="--i:4" ${locked ? 'disabled' : ''}>
+        <legend tabindex="-1">04 · Derechos y revisión</legend>
+        <p class="hint">La declaración no reemplaza las licencias ni la autorización de tus colaboradores. Conservá los permisos correspondientes.</p>
         <label class="check"><input type="checkbox" name="rights" ${r.rights ? 'checked' : ''}><span>Tengo los derechos de todo el material (grabación, composición, portada y samples) o las licencias necesarias para distribuirlo.</span></label>${fieldError(e, 'rights')}
       </fieldset>
 
@@ -385,7 +391,7 @@ export function viewRelease() {
         ${r.status === 'hidden' ? `<button type="button" class="btn-glass danger lit" data-action="release-retire">Retirar</button>
           <button type="button" class="btn-primary lit" data-action="release-republish">Volver a publicar</button>` : ''}
       </div>
-    </form>`;
+    </form></div>`;
 }
 
 const postOf = (r) => app.posts.list.find((p) => p.id === `rel-${r.id}`) || null;
@@ -397,8 +403,8 @@ function salidaFieldset(r, e) {
   const sched = r.releaseMode === 'scheduled';
   const tz = (r.premiereTz || Intl.DateTimeFormat().resolvedOptions().timeZone).replace(/_/g, ' ');
   const min = toLocalInput(Date.now() + 16 * 60e3);
-  return `<fieldset class="glass-soft form-card enter" style="--i:3" ${draft || canMove ? '' : 'disabled'}>
-    <legend>Salida y feed</legend>
+  return `<fieldset id="release-release" class="glass-soft form-card enter" style="--i:3" ${draft || canMove ? '' : 'disabled'}>
+    <legend tabindex="-1">03 · Salida y feed</legend>
     ${draft ? `<div class="seg two" role="radiogroup" aria-label="Cuándo sale">
       <button type="button" class="seg-btn lit ${sched ? '' : 'on'}" data-rmode="onApprove" aria-pressed="${!sched}">Apenas se apruebe</button>
       <button type="button" class="seg-btn lit ${sched ? 'on' : ''}" data-rmode="scheduled" aria-pressed="${sched}">Programar estreno</button></div>` : ''}
@@ -445,9 +451,9 @@ function releaseTrack(rt, t, i, e) {
       </div>
       <div class="qc">
         <span class="badge ${t.lossless ? (q.hi ? 'hi' : '') : 'bad'}">${esc(q.label)}</span>
-        <span>${esc([t.codec, t.bitDepth ? `${t.bitDepth}-bit` : '', fmtRate(t.sampleRate)].filter(Boolean).join(' · '))}</span>
+        ${app.prefs.advanced ? `<span>${esc([t.codec, t.bitDepth ? `${t.bitDepth}-bit` : '', fmtRate(t.sampleRate)].filter(Boolean).join(' · '))}</span>` : ''}
         <span>${t.duration ? fmtTime(t.duration) : ''}</span>
-        ${a ? `<span>${a.lufs.toFixed(1)} LUFS · ${a.truePeakDb.toFixed(1)} dBTP</span>` : t.analysisFailed ? '' : '<span class="analyzing"><span class="pulse"></span>Analizando…</span>'}
+        ${a ? (app.prefs.advanced ? `<span>${a.lufs.toFixed(1)} LUFS · ${a.truePeakDb.toFixed(1)} dBTP</span>` : '<span>Audio analizado</span>') : t.analysisFailed ? '' : '<span class="analyzing"><span class="pulse"></span>Analizando…</span>'}
       </div>
       ${errs.map((x) => `<p class="field-error">${esc(x)}</p>`).join('')}
       ${warns.map((x) => `<p class="qc-warn">⚠ ${esc(x)}</p>`).join('')}
@@ -680,6 +686,12 @@ function reviewNoteModal({ title, ok, confirmName = '' }) {
 // ---------- acciones ----------
 
 registerActions({
+  'release-section': (el) => {
+    const section = document.getElementById(`release-${el.dataset.section}`);
+    if (!section?.closest('.studio-editor')) return;
+    section.scrollIntoView({ behavior: app.prefs.motion === false || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+    section.querySelector('legend')?.focus({ preventScroll: true });
+  },
   'claim-save': async () => {
     const form = document.querySelector('[data-form=claim]');
     const c = readClaim(form);

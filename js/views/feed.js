@@ -614,19 +614,18 @@ export function releaseCard(r, i = 0) {
   const kindLabel = r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Álbum';
   const note = r.premiereNote || r.postText || '';
 
-  return `<article class="premiere-card lit enter" data-p-theme="${theme}" data-release-id="${esc(r.id)}" style="--i:${Math.min(i, 8)};--p-accent:${accent}">
+  return `<article class="premiere-card premiere-editorial lit enter ${i === 0 ? 'premiere-featured' : ''}" data-p-theme="${theme}" data-release-id="${esc(r.id)}" style="--i:${Math.min(i, 8)};--p-accent:${accent}">
     <div class="p-card-backdrop" aria-hidden="true">
       ${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" decoding="async">` : ''}
       <span class="p-card-glow"></span>
     </div>
     <header class="p-card-top">
-      <span class="p-status-pill"><span class="p-live-dot" aria-hidden="true"></span>Estreno programado</span>
+      <span class="p-status-pill"><span class="p-live-dot" aria-hidden="true"></span>${i === 0 ? 'Próximo en ZUENA' : 'Estreno programado'}</span>
       ${app.prefs.advanced && r.audioQuality ? `<span class="p-quality-pill">Informado por artista · Sin validar: ${esc(r.audioQuality)}</span>` : ''}
     </header>
     <div class="p-card-Stage">
       <div class="p-card-art">
         <div class="art">${cover ? `<img src="${esc(cover)}" alt="Portada de ${esc(r.title)}" loading="lazy" decoding="async">` : icon('disc')}</div>
-        <span class="p-card-vinyl" aria-hidden="true"></span>
       </div>
       <div class="p-card-info">
         <button type="button" class="p-artist-chip" data-action="open-artist" data-id="zu:${esc(r.uid)}" aria-label="Ver perfil de ${esc(artistName)}">
@@ -642,7 +641,7 @@ export function releaseCard(r, i = 0) {
     </div>
     <div class="p-card-countdown-box">
       <div class="p-countdown-head">
-        <span class="p-countdown-label">Cuenta regresiva oficial</span>
+        <span class="p-countdown-label">Disponible en</span>
         <time class="p-countdown-date" datetime="${new Date(r.premiereAt).toISOString()}">${esc(premiereLabel(r.premiereAt))}</time>
       </div>
       <div class="p-timer" data-countdown-parts="${r.premiereAt}" role="timer" aria-label="Cuenta regresiva del estreno">

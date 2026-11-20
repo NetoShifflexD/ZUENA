@@ -1,0 +1,152 @@
+/* Estrenos, estudio y comunidad: una misma edición visual Sistema Punto.
+   Sin bucles nuevos ni filtros sobre las listas que se desplazan. */
+html[data-design="point"] .premiere-editorial {
+  display: grid; grid-template-rows: auto 1fr auto auto;
+  padding: 24px; gap: 22px; box-shadow: none;
+  background: var(--z-surface); border-color: var(--z-line);
+  container-type: inline-size;
+}
+html[data-design="point"] .premiere-editorial:hover {
+  transform: none; box-shadow: none;
+  border-color: color-mix(in srgb, var(--z-ink) 28%, var(--z-line));
+}
+html[data-design="point"] .premiere-editorial .p-card-backdrop img { display: none; }
+html[data-design="point"] .premiere-editorial .p-card-glow {
+  background: radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--p-accent) 7%, transparent), transparent 65%);
+}
+html[data-design="point"] .premiere-editorial .p-status-pill {
+  padding: 0; border: 0; background: none;
+  font-weight: 500; letter-spacing: .08em; font-size: 10px;
+}
+html[data-design="point"] .premiere-editorial .p-live-dot { width: 5px; height: 5px; box-shadow: none; }
+html[data-design="point"] .premiere-editorial .p-card-Stage {
+  grid-template-columns: minmax(72px, 30%) minmax(0, 1fr);
+  align-items: start; gap: 20px;
+}
+html[data-design="point"] .premiere-editorial .p-card-art { width: 100%; height: auto; aspect-ratio: 1; }
+html[data-design="point"] .premiere-editorial .p-card-art .art { display: grid; place-items: center; border-radius: 12px; box-shadow: none; }
+html[data-design="point"] .premiere-editorial .p-card-info { gap: 10px; }
+html[data-design="point"] .premiere-editorial .p-artist-chip { min-height: 44px; max-width: 100%; gap: 6px; }
+html[data-design="point"] .premiere-editorial .p-artist-name { font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
+html[data-design="point"] .premiere-editorial .p-card-title {
+  font-size: clamp(24px, 5cqi, 36px) !important;
+  font-weight: 400 !important; line-height: 1.1; overflow-wrap: anywhere;
+}
+html[data-design="point"] .premiere-editorial .p-card-meta { font-weight: 400; line-height: 1.6; }
+html[data-design="point"] .premiere-editorial .p-card-quote {
+  padding: 0; margin: 4px 0 0; border: 0; border-radius: 0;
+  background: none; font-style: normal; color: var(--z-muted);
+}
+html[data-design="point"] .premiere-editorial .p-card-countdown-box {
+  padding: 18px 0 0; border: 0; border-top: 1px solid var(--z-line);
+  border-radius: 0; background: none; box-shadow: none; gap: 16px;
+}
+html[data-design="point"] .premiere-editorial .p-countdown-head { flex-wrap: wrap; line-height: 1.5; }
+html[data-design="point"] .premiere-editorial .p-countdown-date { font-weight: 400; }
+html[data-design="point"] .premiere-editorial .p-timer { gap: 0; }
+html[data-design="point"] .premiere-editorial .pt-seg {
+  align-items: flex-start; padding: 0 12px; border: 0; border-left: 1px solid var(--z-line);
+  border-radius: 0; background: none;
+}
+html[data-design="point"] .premiere-editorial .pt-seg:first-child { padding-left: 0; border-left: 0; }
+html[data-design="point"] .premiere-editorial .pt-seg b {
+  font-family: var(--font-display); font-size: clamp(24px, 7cqi, 40px); font-weight: 400; letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+html[data-design="point"] .premiere-editorial .pt-seg small { margin-top: 7px; font-weight: 500; font-size: 9px; }
+html[data-design="point"] .premiere-editorial .p-card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+html[data-design="point"] .premiere-editorial .p-card-actions button {
+  min-height: 44px; flex: 1 1 130px; padding: 10px 12px; font-size: 13px;
+  border-radius: 12px; box-shadow: none; font-weight: 500;
+}
+html[data-design="point"] .premiere-editorial .p-card-actions .btn-primary {
+  background: var(--z-action); color: var(--z-on-action); border: 1px solid var(--z-action);
+}
+html[data-design="point"] .premiere-editorial .p-card-actions .btn-glass {
+  background: transparent; color: var(--z-ink); border: 1px solid var(--z-line);
+}
+
+/* El contenido del estudio permanece en un único formulario: navegar no descarta campos. */
+html[data-design="point"] .studio-editor {
+  --text: var(--z-ink); --muted: var(--z-muted); --faint: var(--z-muted);
+  width: min(100%, 1080px); margin-inline: auto; color: var(--z-ink); padding-bottom: 36px;
+}
+html[data-design="point"] .studio-editor :is(.muted, .hint, .qc) { color: var(--z-muted); }
+html[data-design="point"] .studio-editor .field > span { color: var(--z-ink); }
+html[data-design="point"] .studio-editor .pill { color: var(--z-ink); background: var(--z-raised); border: 1px solid var(--z-line); }
+html[data-design="point"] .studio-editor input.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+html[data-design="point"] .studio-editor-intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin: 26px 0; }
+html[data-design="point"] .studio-editor-intro h1 { margin: 10px 0; font: 400 clamp(30px, 4vw, 48px)/1.08 var(--font-display); letter-spacing: -.045em; }
+html[data-design="point"] .studio-editor-intro p { margin-bottom: 0; }
+html[data-design="point"] .studio-save-note { max-width: 200px; color: var(--z-muted); font-size: 12px; line-height: 1.6; }
+html[data-design="point"] .studio-outline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--z-line); border-radius: 16px; overflow: hidden; margin-bottom: 28px; background: var(--z-surface); }
+html[data-design="point"] .studio-outline button { display: flex; align-items: center; gap: 12px; text-align: left; min-height: 64px; padding: 12px 18px; border: 0; border-right: 1px solid var(--z-line); background: none; color: var(--z-ink); font: 500 13px/1.4 var(--font); cursor: pointer; }
+html[data-design="point"] .studio-outline button:last-child { border-right: 0; }
+html[data-design="point"] .studio-outline button span { color: var(--z-muted); font-variant-numeric: tabular-nums; }
+html[data-design="point"] .studio-outline button .ico { width: 14px; margin-left: auto; }
+html[data-design="point"] .studio-outline button:hover { background: var(--z-raised); }
+html[data-design="point"] .studio-editor :focus-visible { outline: 2px solid var(--z-ink); outline-offset: 3px; }
+html[data-design="point"] .studio-editor .release-head { display: flex; align-items: center; gap: 24px; padding: 24px; border: 1px solid var(--z-line); border-radius: 20px; background: var(--z-surface); }
+html[data-design="point"] .studio-editor .release-cover { width: 144px; height: 144px; flex: 0 0 144px; border-radius: 14px; box-shadow: none; }
+html[data-design="point"] .studio-editor .detail-meta { min-width: 0; }
+html[data-design="point"] .studio-editor .detail-meta h2 { font: 400 clamp(24px, 3vw, 36px)/1.15 var(--font-display); overflow-wrap: anywhere; margin: 8px 0; }
+html[data-design="point"] .studio-editor :is(.release-cover, .dropzone):focus-within { outline: 2px solid var(--z-ink); outline-offset: 4px; }
+html[data-design="point"] .studio-editor .release-form { display: grid; gap: 28px; margin-top: 32px; }
+html[data-design="point"] .studio-editor .form-card { min-width: 0; margin: 0; padding: 24px; border: 1px solid var(--z-line); background: var(--z-surface); border-radius: 16px; box-shadow: none; scroll-margin-top: 24px; }
+html[data-design="point"] .studio-editor legend { padding-inline: 8px; font: 500 17px/1.4 var(--font); }
+html[data-design="point"] .studio-editor .form-grid { gap: 20px; }
+html[data-design="point"] .studio-editor .form-card > .hint { margin: 0 0 22px; line-height: 1.6; }
+html[data-design="point"] .studio-editor :is(.input, .select) { min-height: 44px; font-size: 16px; background: var(--z-raised); color: var(--z-ink); border: 1px solid var(--z-line); border-radius: 10px; }
+html[data-design="point"] .studio-editor .dropzone { min-height: 150px; padding: 24px; border: 1px dashed var(--z-line); border-radius: 14px; background: var(--z-raised); color: var(--z-ink); box-shadow: none; }
+html[data-design="point"] .studio-editor .rtrack { padding: 20px 0; border: 0; border-top: 1px solid var(--z-line); border-radius: 0; background: none; }
+html[data-design="point"] .studio-editor .form-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--z-line); }
+html[data-design="point"] .studio-editor :is(.form-actions button, .rtrack-actions button) { min-height: 44px; min-width: 44px; }
+
+/* En comunidad el contenido tiene aire y los controles ocupan una fila estable. */
+html[data-design="point"] .community-feed .fx-list { gap: 14px; }
+html[data-design="point"] .community-feed .community-post {
+  padding: 24px; border: 1px solid var(--z-line); border-radius: 20px;
+  background: var(--z-surface); box-shadow: none;
+}
+html[data-design="point"] .community-feed .community-post .post-text { margin-block: 12px 18px; }
+html[data-design="point"] .community-feed .community-post .post-actions { max-width: none; padding-top: 10px; border-top: 1px solid var(--z-line); }
+html[data-design="point"] .community-post .post-head { position: relative; flex-wrap: wrap; gap: 4px 8px; padding-right: 52px; overflow: visible; }
+html[data-design="point"] .community-post .post-who { flex: 1 1 100%; min-width: 0; max-width: 100%; }
+html[data-design="point"] .community-post .post-name { white-space: normal; overflow-wrap: anywhere; }
+html[data-design="point"] .community-post .post-handle { flex: 0 1 auto; max-width: 100%; }
+html[data-design="point"] .community-post .post-dot { display: none; }
+html[data-design="point"] .community-post .post-more { position: absolute; right: 0; top: 0; }
+html[data-design="point"] .community-artist .ap-hero { border: 0; border-radius: 0; background: none; overflow: clip; }
+html[data-design="point"] .community-artist { --text: var(--z-ink); --muted: var(--z-muted); --faint: var(--z-muted); }
+html[data-design="point"] .community-artist .ap-cover img { filter: none; }
+html[data-design="point"] .community-artist .ap-cover { opacity: .8; }
+html[data-design="point"] .community-artist .ap-head { padding-inline: 0; }
+html[data-design="point"] .community-artist .ap-sub { text-transform: none; letter-spacing: 0; font-weight: 400; }
+html[data-design="point"] .community-artist .ap-head > .btn-back {
+  min-height: 44px; width: fit-content; padding: 8px 12px; color: var(--z-ink);
+  background: var(--z-raised); border: 1px solid var(--z-line); border-radius: 12px;
+}
+
+@media (max-width: 700px) {
+  html[data-design="point"] .studio-editor-intro { align-items: start; flex-direction: column; gap: 12px; }
+  html[data-design="point"] .studio-save-note { max-width: none; }
+  html[data-design="point"] .studio-outline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-design="point"] .studio-outline button { padding: 12px; }
+  html[data-design="point"] .studio-outline button:nth-child(2) { border-right: 0; }
+  html[data-design="point"] .studio-outline button:nth-child(-n+2) { border-bottom: 1px solid var(--z-line); }
+  html[data-design="point"] .studio-editor .release-head { align-items: start; padding: 18px; gap: 16px; }
+  html[data-design="point"] .studio-editor .release-cover { width: 88px; height: 88px; flex-basis: 88px; }
+  html[data-design="point"] .studio-editor .release-cover > span { font-size: 12px; line-height: 1.3; padding: 6px; }
+  html[data-design="point"] .studio-editor .release-cover > span small { display: none; }
+  html[data-design="point"] .studio-editor .form-card { padding: 18px 14px; }
+  html[data-design="point"] .studio-editor .form-actions button { flex: 1 1 140px; }
+  html[data-design="point"] .community-feed .community-post { padding: 18px 14px; border-radius: 16px; }
+  html[data-design="point"] .premiere-editorial { padding: 20px; }
+}
+@container (max-width: 340px) {
+  html[data-design="point"] .premiere-editorial .p-card-Stage { grid-template-columns: 80px minmax(0, 1fr); gap: 14px; }
+  html[data-design="point"] .premiere-editorial .p-artist-chip .avatar { display: none; }
+}
