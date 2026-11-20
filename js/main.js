@@ -70,6 +70,7 @@ const releases = new Releases();
 const taste = new Taste();
 const catalog = new Catalog();
 Object.assign(app, { engine, library, player, auth, playlists, stats, artist, posts, releases, taste, catalog, seen: new Map() });
+if (typeof window !== 'undefined') window.app = app;
 // charts de oyentes/suscriptores y suscripciones simuladas (Requisitos/Feed de artistas, suscripciones y charts)
 app.subs = new SimSubs();
 posts.subscriptionTier = (listener, artistUid) => app.subs.tier(listener, artistUid);

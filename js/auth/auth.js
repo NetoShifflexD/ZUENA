@@ -41,39 +41,26 @@ const enc = new TextEncoder();
 const toB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
-// Credenciales PBKDF2-SHA256 (210k iteraciones) precalculadas para la cuenta Propietario/Owner
-// sincronizada con Supabase Auth (id: bf3b1550-da87-4443-a8ba-0ae542fed5dd).
+// Perfiles oficiales (Propietario y Equipo de ZUENA): se siembran como perfiles públicos, nunca como cuentas
+// locales con contraseña. Antes había un hash de contraseña en este archivo público y la app entraba sola a la
+// cuenta del equipo (2026-11-20: retirado). El propietario y el equipo se reconocen sólo con identidad verificada
+// en la nube (Supabase con correo confirmado), ver `isOwner` e `isOfficialTeam`.
 const OWNER_UID = 'bf3b1550-da87-4443-a8ba-0ae542fed5dd';
-const OWNER_SALT = 'enVlbmEtb3duZXItMjAyNg==';
-const OWNER_HASH = '3ufigGc4AIdoCcXsnSHONlh9EbMgGFhCq9aTRz9jDnc=';
 
-async function putAccountSafely(acc) {
-  const email = String(acc.email || '').trim().toLowerCase();
-  if (email) {
-    const existing = await db.byIndex('accounts', 'email', email).catch(() => []);
-    for (const old of existing) {
-      if (old.uid !== acc.uid) await db.del('accounts', old.uid).catch(() => {});
-    }
+// borra del equipo las cuentas sembradas por versiones anteriores (se podía entrar con ellas sin verificar nada)
+async function dropSeededAccounts() {
+  for (const uid of [OWNER_UID, ZUENA_OFFICIAL_UID]) {
+    const acc = await db.get('accounts', uid).catch(() => null);
+    if (acc && !isGuest(acc) && acc.provider === 'password') await db.del('accounts', uid).catch(() => {});
   }
-  await db.put('accounts', { ...acc, email });
+  const session = await db.kvGet('session').catch(() => null);
+  if (session === OWNER_UID || session === ZUENA_OFFICIAL_UID) await db.kvSet('session', null).catch(() => {});
 }
 
 export async function ensureZuenaAccount() {
   const zuUid = ZUENA_OFFICIAL_UID;
   const zuEmail = ZUENA_OFFICIAL_EMAIL.trim().toLowerCase();
   const now = Date.now();
-  await putAccountSafely({
-    uid: zuUid,
-    email: zuEmail,
-    hash: OWNER_HASH,
-    salt: OWNER_SALT,
-    provider: 'password',
-    role: 'admin',
-    isAdmin: true,
-    isOfficialTeam: true,
-    emailVerified: true,
-    created: now - 86400e3 * 21,
-  });
   const curZuProf = await db.get('profiles', zuUid).catch(() => null);
   if (!curZuProf || !curZuProf.isOfficialTeam || !curZuProf.avatar) {
     await db.put('profiles', {
@@ -123,22 +110,8 @@ export async function ensureOwnerAndInitialUsers() {
   if (!OWNER_EMAIL) return;
   try {
     const email = OWNER_EMAIL.trim().toLowerCase();
-    const existing = await db.byIndex('accounts', 'email', email).catch(() => []);
-    const ownerAcc = existing.find((a) => !isGuest(a));
-    const uid = ownerAcc?.uid || OWNER_UID;
+    const uid = OWNER_UID;
     const now = Date.now();
-    await putAccountSafely({
-      uid,
-      email,
-      hash: OWNER_HASH,
-      salt: OWNER_SALT,
-      provider: 'password',
-      role: 'owner',
-      isOwner: true,
-      isAdmin: true,
-      emailVerified: true,
-      created: ownerAcc?.created || now - 86400e3 * 14,
-    });
     const curProf = await db.get('profiles', uid);
     if (!curProf || !curProf.onboarded || !curProf.isOwnerProfile || !curProf.isAdminProfile || curProf.displayName !== 'Bengolea') {
       await db.put('profiles', {
@@ -201,18 +174,6 @@ export async function ensureOwnerAndInitialUsers() {
     // Perfil oficial y exclusivo de ZUENA (@zuena · Equipo de Zuena · Administración)
     const zuUid = ZUENA_OFFICIAL_UID;
     const zuEmail = ZUENA_OFFICIAL_EMAIL.trim().toLowerCase();
-    await putAccountSafely({
-      uid: zuUid,
-      email: zuEmail,
-      hash: OWNER_HASH,
-      salt: OWNER_SALT,
-      provider: 'password',
-      role: 'admin',
-      isAdmin: true,
-      isOfficialTeam: true,
-      emailVerified: true,
-      created: now - 86400e3 * 21,
-    });
     const curZuProf = await db.get('profiles', zuUid);
     if (!curZuProf || !curZuProf.isOfficialTeam || !curZuProf.avatar) {
       await db.put('profiles', {
@@ -713,7 +674,8 @@ export class Auth extends EventTarget {
   get isOfficialTeam() {
     const u = this.user;
     if (!u || isGuest(u)) return false;
-    return u.uid === ZUENA_OFFICIAL_UID || u.isOfficialTeam === true || String(u.email || '').trim().toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase();
+    const verified = u.mode === 'supabase' || u.mode === 'cloud' || this.mode === 'firebase';
+    return verified && u.emailVerified !== false && String(u.email || '').trim().toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase();
   }
   get role() { return isGuest(this.user) ? 'guest' : this.isOwner ? 'owner' : this.isAdmin ? 'admin' : this.user ? 'user' : 'guest'; }
   // Sólo las cuentas del Propietario, del Equipo de ZUENA o de ADMIN_EMAILS verificados tienen permisos de administración
@@ -819,6 +781,7 @@ export class Auth extends EventTarget {
   }
 
   async init() {
+    await dropSeededAccounts().catch(() => {});
     await ensureZuenaAccount().catch(() => {});
     await ensureOwnerAndInitialUsers().catch(() => {});
     const session = await db.kvGet('session');
@@ -833,21 +796,9 @@ export class Auth extends EventTarget {
       }
       return;
     }
-    if (saved && saved.uid === ZUENA_OFFICIAL_UID) {
-      this.user = this.localUser(saved);
-      return;
-    }
     if (saved && !isGuest(saved)) {
       this.user = this.localUser(saved);
       return;
-    }
-    if (!saved) {
-      const zuAcc = await db.get('accounts', ZUENA_OFFICIAL_UID);
-      if (zuAcc) {
-        await db.kvSet('session', zuAcc.uid);
-        this.user = this.localUser(zuAcc);
-        return;
-      }
     }
     if (this.mode === 'firebase') {
       try {
@@ -932,6 +883,12 @@ export class Auth extends EventTarget {
       }
       throw supaError(error);
     }
+    // correo ya registrado: con la confirmación por correo activa, Supabase no da error sino un usuario
+    // sin identidades (protección contra enumeración). Se intenta entrar; nunca se crea una cuenta con ese id.
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      try { return await this.signIn(email, password); }
+      catch { throw new AuthError('email', 'Ya existe una cuenta con ese correo. Iniciá sesión o recuperá tu contraseña'); }
+    }
     legal.clearPendingConsent();
     const uid = data.user?.id || crypto.randomUUID();
     if (uid) legal.saveConsent(uid, rec);
@@ -951,7 +908,6 @@ export class Auth extends EventTarget {
 
   // devuelve null si el correo no está en la nube o aún no confirmó enlace pero existe cuenta local verificable
   async signInCloud(email, password) {
-    if (email === ZUENA_OFFICIAL_EMAIL.toLowerCase() || (OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase())) return null;
     let c;
     try { c = await this.supaClient(); } catch {
       if ((await db.byIndex('accounts', 'email', email)).some((a) => !isGuest(a))) return null;
@@ -1057,8 +1013,9 @@ export class Auth extends EventTarget {
       return { uid: acc.uid, displayName: acc.displayName, provider: 'guest', mode: 'guest', isGuest: true,
         emailVerified: false, created: acc.created, expiresAt: acc.expiresAt };
     }
-    const isVerifiedOwner = Boolean(OWNER_EMAIL && String(acc.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase() && acc.hash === OWNER_HASH && acc.salt === OWNER_SALT);
-    const isOfficialTeam = Boolean((acc.uid === ZUENA_OFFICIAL_UID || acc.isOfficialTeam || String(acc.email || '').toLowerCase() === ZUENA_OFFICIAL_EMAIL.toLowerCase()) && acc.hash === OWNER_HASH && acc.salt === OWNER_SALT);
+    // una cuenta local se crea en el navegador sin verificar nada: nunca es propietario ni equipo
+    const isVerifiedOwner = false;
+    const isOfficialTeam = false;
     return {
       uid: acc.uid,
       email: acc.email,
@@ -1132,15 +1089,6 @@ export class Auth extends EventTarget {
 
   async signIn(email, password) {
     email = String(email || '').trim().toLowerCase();
-    const isZuenaAlias = ['zuena', '@zuena', 'equipo@zuena.app', 'zuena@zuena.app', 'zuena@zuena.com', 'zuena@gmail.com', 'zuena.app', 'equipo'].includes(email) || email.startsWith('zuena') || email.startsWith('@zuena');
-    const isOwnerAlias = ['netostars', '@netostars', 'bengolea', '@bengolea', 'luciano', 'luciano bengolea', 'lucianoagustinbengolea@gmail.com'].includes(email);
-    if (isZuenaAlias) {
-      email = ZUENA_OFFICIAL_EMAIL.toLowerCase();
-      await ensureZuenaAccount();
-    } else if (isOwnerAlias || (OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase())) {
-      email = (OWNER_EMAIL || 'lucianoagustinbengolea@gmail.com').toLowerCase();
-      await ensureOwnerAndInitialUsers();
-    }
     if (!EMAIL_RE.test(email)) throw new AuthError('email', 'Ingresá un correo válido');
     if (!password) throw new AuthError('password', 'Ingresá tu contraseña');
     if (this.mode === 'firebase') {
@@ -1148,19 +1096,11 @@ export class Auth extends EventTarget {
       try { await this.fb.A.signInWithEmailAndPassword(this.fb.auth, email, password); } catch (err) { throw fbError(err); }
       return this.user;
     }
-    if (this.cloudAccounts && !isZuenaAlias && !isOwnerAlias) {
+    if (this.cloudAccounts) {
       const user = await this.signInCloud(email, password);
       if (user) return user;
     }
     let [acc] = await db.byIndex('accounts', 'email', email);
-    if (!acc && isZuenaAlias) {
-      await ensureZuenaAccount();
-      acc = await db.get('accounts', ZUENA_OFFICIAL_UID);
-    }
-    if (!acc && isOwnerAlias) {
-      await ensureOwnerAndInitialUsers();
-      acc = await db.get('accounts', OWNER_UID);
-    }
     if (!acc || isGuest(acc)) throw new AuthError('email', 'No hay ninguna cuenta con ese correo en este equipo');
     const { hash } = await hashPassword(password, acc.salt);
     if (!safeEqual(hash, acc.hash)) throw new AuthError('password', 'Contraseña incorrecta');

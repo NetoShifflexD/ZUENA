@@ -11,6 +11,10 @@ export const AUDIO_MAX = 50 * 1024 * 1024;
 export const COVER_MAX = 5 * 1024 * 1024;
 export const CLOUD_POST_MAX = 500; // límite de la tabla (la interfaz usa POST_MAX = 280)
 const AUDIO_EXT = { 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/aac': 'aac', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/wave': 'wav', 'audio/flac': 'flac', 'audio/x-flac': 'flac', 'audio/ogg': 'ogg', 'audio/webm': 'webm' };
+// tipo que acepta el bucket `audio` (allowed_mime_types): Windows y Safari informan m4a como audio/x-m4a,
+// algunos navegadores mandan el archivo sin tipo; se sube siempre con el tipo canónico de su extensión.
+const AUDIO_MIME = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', wav: 'audio/wav', flac: 'audio/flac', ogg: 'audio/ogg', webm: 'audio/webm' };
+export const audioMime = (file) => AUDIO_MIME[extOf(file)] || 'audio/mpeg';
 const COVER_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 
 let clientP = null;
@@ -55,7 +59,7 @@ export function toProfileRow(p) {
     username: String(p.username || '').toLowerCase(),
     display_name: String(p.displayName || p.username || '').trim().slice(0, 60),
     account_type: p.accountType === 'artist' ? 'artist' : 'listener',
-    bio: String(p.bio || '').slice(0, 300),
+    bio: String(p.bio || '').slice(0, 280), // límite de la tabla (profiles_bio_check)
     avatar_url: /^https:\/\//.test(p.avatar || '') ? p.avatar : null,
   };
 }
@@ -273,7 +277,7 @@ export async function uploadTrack(uid, { file, cover = null, title, artistName, 
   const audioPath = `${uid}/${id}.${extOf(file) || 'audio'}`;
   const coverPath = cover ? `${uid}/${id}.${extOf(cover, COVER_EXT)}` : null;
   onStep('audio');
-  const up = await c.storage.from('audio').upload(audioPath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+  const up = await c.storage.from('audio').upload(audioPath, file, { contentType: audioMime(file), upsert: false });
   if (up.error) fail(up.error);
   try {
     if (cover) {

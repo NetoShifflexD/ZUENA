@@ -78,7 +78,8 @@ function refresh() {
   if (badgesEl) badgesEl.innerHTML = roleBadges(app.profile || app.user, { compact: true });
   const swBtn = root.querySelector('[data-pm-account="identity-switch"]');
   if (swBtn) {
-    const canSwitch = Boolean(app.auth?.isOwner || app.auth?.isOfficialTeam || app.auth?.isAdmin);
+    // el cambio de identidad usaba cuentas locales sembradas con contraseña (retiradas 2026-11-20)
+    const canSwitch = false;
     swBtn.hidden = !canSwitch;
     if (canSwitch) {
       const isZuena = app.user?.uid === ZUENA_OFFICIAL_UID || app.profile?.username === 'zuena';
