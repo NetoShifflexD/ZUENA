@@ -40,6 +40,8 @@ export function openModal(html, { cls = '', dismissable = true, onMount, onClose
   stack.push(entry);
 
   if (dismissable) root.querySelector('.modal-scrim').addEventListener('click', close);
+  // todo botón «Cancelar» (data-modal="cancel") cierra: varios diálogos lo dibujaban sin conectarlo (2026-11-20)
+  modal.addEventListener('click', (e) => { if (e.target.closest('[data-modal=cancel]')) close(); });
   requestAnimationFrame(() => requestAnimationFrame(() => root.classList.add('open')));
   onMount?.(modal, close);
   setTimeout(() => modal.querySelector('[autofocus], input:not([type=hidden]):not([type=file]), button')?.focus({ preventScroll: true }), 60);

@@ -45,13 +45,54 @@ export function countdownParts(at, now = Date.now()) {
   return { d: pad(d), h: pad(h), m: pad(m), s: pad(s), live: ms <= 0 };
 }
 
+// Personalización de la tarjeta de estreno v2 (2026-11-20). Cada atmósfera redefine dentro de la tarjeta los
+// tokens de fondo, texto, línea y acción (css/brand-releases.css): antes sólo cambiaba un acento que el color
+// guardado pisaba, y las cinco se veían iguales. `dark` indica fondo oscuro (texto claro).
 export const PREMIERE_THEMES = [
-  { id: 'obsidian', label: 'Obsidiana Studio', accent: '#5ff0ff' },
-  { id: 'aurora', label: 'Aurora Violeta', accent: '#a855f7' },
-  { id: 'gold', label: 'Cuarzo Dorado', accent: '#f5b841' },
-  { id: 'crimson', label: 'Pulso Carmesí', accent: '#f43f5e' },
-  { id: 'prism', label: 'Prisma Esmeralda', accent: '#34d399' },
+  { id: 'paper', label: 'Papel ZUENA', accent: '#111111', dark: false },
+  { id: 'obsidian', label: 'Obsidiana', accent: '#5ff0ff', dark: true },
+  { id: 'aurora', label: 'Aurora violeta', accent: '#c084fc', dark: true },
+  { id: 'gold', label: 'Cuarzo dorado', accent: '#b7791f', dark: false },
+  { id: 'crimson', label: 'Pulso carmesí', accent: '#fb7185', dark: true },
+  { id: 'prism', label: 'Esmeralda', accent: '#34d399', dark: true },
+  { id: 'cover', label: 'Portada', accent: '#ffffff', dark: true },
 ];
+export const PREMIERE_LAYOUTS = [
+  { id: 'editorial', label: 'Editorial', hint: 'Portada al costado del título' },
+  { id: 'poster', label: 'Póster', hint: 'Portada grande arriba' },
+];
+// acentos sugeridos (además del color libre)
+export const PREMIERE_ACCENTS = ['#111111', '#5ff0ff', '#c084fc', '#fb7185', '#f5b841', '#34d399', '#60a5fa', '#ffffff'];
+export const PREMIERE_NOTE_MAX = 160;
+export const PREMIERE_DEFAULTS = { premiereTheme: 'paper', premiereLayout: 'editorial', premiereAccent: '#111111' };
+
+const HEX = /^#[0-9a-f]{6}$/i;
+// luminancia relativa WCAG de un color #rrggbb
+export function luminance(hex) {
+  if (!HEX.test(hex || '')) return 0;
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+export const contrast = (a, b) => { const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+// texto que se lee sobre un botón del color de acento
+export const onAccent = (hex) => (contrast(hex, '#000000') >= contrast(hex, '#ffffff') ? '#000000' : '#ffffff');
+
+// valores guardados → valores válidos (datos viejos, campos vacíos o inventados)
+export function premiereStyle(r = {}) {
+  const theme = PREMIERE_THEMES.find((t) => t.id === r.premiereTheme) || PREMIERE_THEMES[0];
+  const layout = PREMIERE_LAYOUTS.some((l) => l.id === r.premiereLayout) ? r.premiereLayout : 'editorial';
+  const accent = HEX.test(r.premiereAccent || '') ? r.premiereAccent.toLowerCase() : theme.accent;
+  const note = String(r.premiereNote || '').trim().slice(0, PREMIERE_NOTE_MAX);
+  return { theme: theme.id, dark: theme.dark, layout, accent, onAccent: onAccent(accent), note };
+}
+
+// aviso cuando el acento casi no se distingue del fondo de la atmósfera (no bloquea: el botón ya ajusta su texto)
+export function accentWarning(themeId, accent) {
+  const t = PREMIERE_THEMES.find((x) => x.id === themeId);
+  if (!t || !HEX.test(accent || '')) return '';
+  const bg = t.dark ? '#111111' : '#fafafa';
+  return contrast(accent, bg) < 1.6 ? 'Este color casi no se distingue del fondo. Probá uno más claro o más oscuro.' : '';
+}
 
 export const premiereLabel = (at) => new Date(at).toLocaleString('es', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 

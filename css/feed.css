@@ -78,3 +78,6 @@
   .fx4 .fx-post { border-radius: 20px; padding-inline: 14px; }
   .fx4 .fx-composer { padding-inline: 14px; }
 }
+
+/* columna lateral apilada: invisible mientras llegan las publicaciones de abajo (evita el salto de diseño) */
+@media (max-width: 900px) { .fx-side.fx-side-wait { visibility: hidden; } }

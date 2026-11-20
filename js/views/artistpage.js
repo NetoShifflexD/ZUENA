@@ -294,7 +294,7 @@ function postsPanel(m, source, id) {
       ? `<div class="glass-soft notice">${icon('edit')}<p>Todavía no publicaste nada. <button class="link small" data-action="nav" data-view="feed">Ir al feed</button></p></div>`
       : `<div class="glass-soft notice">${icon('edit')}<p>Todavía no hay publicaciones.</p></div>`;
   }
-  return `<div class="feed">${posts.slice(0, limit).map((p, i) => postCard(p, i)).join('')}</div>
+  return `<div class="feed">${posts.slice(0, limit).map((p, i) => postCard(p, i, { pinLabel: true })).join('')}</div>
     ${posts.length > limit ? '<button class="btn-glass lit fx-more" data-action="ap-posts-more">Mostrar más</button>' : ''}`;
 }
 

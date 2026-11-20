@@ -114,7 +114,7 @@ html[data-design="point"] .community-feed .community-post {
 html[data-design="point"] .community-feed .community-post .post-text { margin-block: 12px 18px; }
 html[data-design="point"] .community-feed .community-post .post-actions { max-width: none; padding-top: 10px; border-top: 1px solid var(--z-line); }
 html[data-design="point"] .community-post .post-head { position: relative; flex-wrap: wrap; gap: 4px 8px; padding-right: 52px; overflow: visible; }
-html[data-design="point"] .community-post .post-who { flex: 1 1 100%; min-width: 0; max-width: 100%; }
+html[data-design="point"] .community-post .post-who { flex: 1 1 100%; min-width: 0; max-width: 100%; justify-content: flex-start; text-align: start; }
 html[data-design="point"] .community-post .post-name { white-space: normal; overflow-wrap: anywhere; }
 html[data-design="point"] .community-post .post-handle { flex: 0 1 auto; max-width: 100%; }
 html[data-design="point"] .community-post .post-dot { display: none; }
@@ -149,4 +149,105 @@ html[data-design="point"] .community-artist .ap-head > .btn-back {
 @container (max-width: 340px) {
   html[data-design="point"] .premiere-editorial .p-card-Stage { grid-template-columns: 80px minmax(0, 1fr); gap: 14px; }
   html[data-design="point"] .premiere-editorial .p-artist-chip .avatar { display: none; }
+}
+
+/* ==========================================================================
+   Personalización de estrenos v2 (2026-11-20) · js/data/releases.js (PREMIERE_THEMES/LAYOUTS)
+   Cada atmósfera redefine los tokens dentro de la tarjeta: fondo, texto, línea y acción.
+   El acento llega en línea (--p-accent) y el texto del botón (--p-on-accent) se calcula para contrastar.
+   Sin filtros ni animaciones nuevas: las tarjetas viven en listas que se desplazan.
+   ========================================================================== */
+:is(.premiere-card, .premiere-inline)[data-p-theme] {
+  --z-action: var(--p-accent); --z-on-action: var(--p-on-accent, #fff);
+  --p-glow: color-mix(in srgb, var(--p-accent) 16%, transparent);
+}
+:is(.premiere-card, .premiere-inline)[data-p-theme="obsidian"] {
+  --z-surface: #0f1013; --z-raised: #181a1f; --z-ink: #f4f4f5; --z-muted: #a1a1aa; --z-line: rgb(255 255 255 / .12);
+}
+:is(.premiere-card, .premiere-inline)[data-p-theme="aurora"] {
+  --z-surface: #1a1030; --z-raised: #24173f; --z-ink: #f5f3ff; --z-muted: #c4b5fd; --z-line: rgb(196 181 253 / .2);
+}
+:is(.premiere-card, .premiere-inline)[data-p-theme="gold"] {
+  --z-surface: #fbf6ea; --z-raised: #f4ead3; --z-ink: #2a2112; --z-muted: #6b5a3a; --z-line: #e6d6b4;
+}
+:is(.premiere-card, .premiere-inline)[data-p-theme="crimson"] {
+  --z-surface: #1c0a10; --z-raised: #2a1018; --z-ink: #fff1f2; --z-muted: #fda4af; --z-line: rgb(253 164 175 / .2);
+}
+:is(.premiere-card, .premiere-inline)[data-p-theme="prism"] {
+  --z-surface: #061f19; --z-raised: #0b2c24; --z-ink: #ecfdf5; --z-muted: #86efac; --z-line: rgb(134 239 172 / .18);
+}
+:is(.premiere-card, .premiere-inline)[data-p-theme="cover"] {
+  --z-surface: #101010; --z-raised: rgb(255 255 255 / .08); --z-ink: #ffffff; --z-muted: rgb(255 255 255 / .72); --z-line: rgb(255 255 255 / .16);
+}
+/* degradados de fondo (mayor especificidad que el Sistema Punto, que pinta var(--z-surface)) */
+html[data-design] .premiere-card[data-p-theme="aurora"] { background: linear-gradient(150deg, #2a1550 0%, #1a1030 55%, #120b22 100%); }
+html[data-design] .premiere-card[data-p-theme="crimson"] { background: linear-gradient(150deg, #3a0f1c 0%, #1c0a10 60%); }
+html[data-design] .premiere-card[data-p-theme="prism"] { background: linear-gradient(150deg, #0d3b2f 0%, #061f19 60%); }
+html[data-design] .premiere-card[data-p-theme="gold"] { background: linear-gradient(150deg, #fdf8ec 0%, #f3e6c6 100%); }
+html[data-design] :is(.premiere-card, .premiere-inline)[data-p-theme]:not([data-p-theme="paper"]) { border-color: var(--z-line); }
+/* Portada: la carátula de fondo, oscurecida para que el texto se lea (sin blur) */
+html[data-design] .premiere-card[data-p-theme="cover"] .p-card-backdrop img {
+  display: block; inset: 0; top: 0; right: 0; width: 100%; height: 100%; opacity: .55; transform: scale(1.35);
+}
+html[data-design] .premiere-card[data-p-theme="cover"] .p-card-glow {
+  background: linear-gradient(180deg, rgb(0 0 0 / .45) 0%, rgb(0 0 0 / .78) 70%, rgb(0 0 0 / .88) 100%);
+}
+/* el título, que el Sistema Punto fija con !important al color de tinta, sigue el token de la tarjeta */
+html[data-design] .premiere-card[data-p-theme] .p-card-title { color: var(--z-ink) !important; }
+html[data-design] .premiere-card[data-p-theme] .p-card-quote { color: var(--z-muted); border-left: 2px solid var(--p-accent); padding-left: 10px; }
+html[data-design] .premiere-card[data-p-theme] .p-card-actions .btn-primary { background: var(--z-action); color: var(--z-on-action); border-color: var(--z-action); }
+html[data-design] .premiere-card[data-p-theme] .p-card-actions .btn-glass { background: transparent !important; color: var(--z-ink) !important; border-color: var(--z-line) !important; }
+html[data-design] .premiere-card[data-p-theme] .p-live-dot { background: var(--p-accent); }
+
+/* Formato póster: portada grande arriba */
+html[data-design] .premiere-editorial[data-p-layout="poster"] .p-card-Stage { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+html[data-design] .premiere-editorial[data-p-layout="poster"] .p-card-art { width: min(100%, 340px); height: auto; aspect-ratio: 1; }
+html[data-design] .premiere-editorial[data-p-layout="poster"] .p-card-art .art { border-radius: 16px; }
+
+/* vista previa dentro del personalizador */
+.premiere-card.is-preview { pointer-events: none; transform: none !important; margin: 0; }
+
+/* ---------- personalizador ---------- */
+.modal:has(.p-customizer-form) { width: min(980px, 100%); }
+.p-customizer-form { width: 100%; }
+.p-customizer { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 12px; }
+.p-customizer-preview { position: sticky; top: 0; container-type: inline-size; }
+.p-customizer-controls { display: grid; gap: 16px; min-width: 0; }
+.p-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.p-fieldset legend { padding: 0; margin-bottom: 8px; font: 500 13px/1.3 var(--font); color: var(--z-ink); }
+.p-theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.p-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.p-opt {
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px;
+  border: 1px solid var(--z-line); border-radius: 12px; background: var(--z-surface); color: var(--z-ink);
+  font: 500 13px/1.25 var(--font); cursor: pointer;
+}
+.p-opt small { display: block; color: var(--z-muted); font-size: 11.5px; font-weight: 400; }
+.p-opt.on { border-color: var(--z-ink); box-shadow: inset 0 0 0 1px var(--z-ink); }
+.p-opt-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.p-opt:has(.p-opt-input:focus-visible) { outline: 2px solid var(--z-ink); outline-offset: 2px; }
+.p-theme-swatch { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 1px solid var(--z-line); background: var(--z-surface); }
+.p-theme-swatch[data-p-theme="paper"] { background: #f7f7f5; }
+.p-theme-swatch[data-p-theme="obsidian"] { background: #0f1013; }
+.p-theme-swatch[data-p-theme="aurora"] { background: linear-gradient(150deg, #2a1550, #120b22); }
+.p-theme-swatch[data-p-theme="gold"] { background: linear-gradient(150deg, #fdf8ec, #e9d3a0); }
+.p-theme-swatch[data-p-theme="crimson"] { background: linear-gradient(150deg, #3a0f1c, #1c0a10); }
+.p-theme-swatch[data-p-theme="prism"] { background: linear-gradient(150deg, #0d3b2f, #061f19); }
+.p-theme-swatch[data-p-theme="cover"] { background: conic-gradient(from 210deg, #222, #666, #222); }
+.p-accent-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.p-accent-chip {
+  width: 36px; height: 36px; min-width: 36px; border-radius: 50%; padding: 0; cursor: pointer;
+  background: var(--c); border: 1px solid var(--z-line); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08);
+}
+.p-accent-chip.on { box-shadow: 0 0 0 2px var(--z-surface), 0 0 0 4px var(--z-ink); }
+.p-accent-chip:focus-visible { outline: 2px solid var(--z-ink); outline-offset: 3px; }
+.p-accent-custom { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
+  border: 1px dashed var(--z-muted); cursor: pointer; }
+.p-accent-custom input { width: 52px; height: 52px; padding: 0; border: 0; cursor: pointer; background: none; }
+.p-customizer-form [data-p-warn]:empty { display: none; }
+.p-customizer-form .confirm-actions { flex-wrap: wrap; }
+.p-customizer-form [data-p-reset] { margin-inline-end: auto; }
+@media (max-width: 760px) {
+  .p-customizer { grid-template-columns: minmax(0, 1fr); }
+  .p-customizer-preview { position: static; }
 }

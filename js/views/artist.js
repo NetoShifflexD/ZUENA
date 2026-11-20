@@ -14,7 +14,7 @@ import { TIER_BENEFITS, REF_CENTS, TIER_NAME_MAX, priceRule, referencePrice, can
 import { parseAmount, formatEUR } from '../data/payments.js';
 import { TEST_CATALOG } from '../config.js';
 import { TEST_ARTISTS, testArtistById } from '../data/testArtists.js';
-import { statusOnApprove, premiereLabel, premiereError, isUpcoming, RESCHEDULE_LOCK_MS, PREMIERE_THEMES } from '../data/releases.js';
+import { statusOnApprove, premiereLabel, premiereError, isUpcoming, RESCHEDULE_LOCK_MS, PREMIERE_THEMES, premiereStyle } from '../data/releases.js';
 import { payments } from '../data/payments.js';
 import { backBtn, statusPill, fieldError } from './common.js';
 
@@ -415,11 +415,11 @@ function salidaFieldset(r, e) {
       <div class="form-grid tight">
         <label class="field"><span>Atmósfera de tarjeta de estreno</span>
           <select class="select lit" name="premiereTheme">
-            ${PREMIERE_THEMES.map((t) => `<option value="${t.id}" ${(r.premiereTheme || 'obsidian') === t.id ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}
+            ${PREMIERE_THEMES.map((t) => `<option value="${t.id}" ${premiereStyle(r).theme === t.id ? 'selected' : ''}>${esc(t.label)}</option>`).join('')}
           </select>
         </label>
         <label class="field"><span>Color de acento del estreno</span>
-          <input class="input" type="color" name="premiereAccent" value="${esc(r.premiereAccent || '#5ff0ff')}" style="height:42px;padding:4px 8px">
+          <input class="input" type="color" name="premiereAccent" value="${esc(premiereStyle(r).accent)}" style="height:42px;padding:4px 8px">
         </label>
       </div>
       <label class="field"><span>Nota del artista en la tarjeta de estreno <small class="muted">opcional · hasta 160 caracteres</small></span>
@@ -471,8 +471,8 @@ function readRelease(form, r) {
   for (const k of ['title', 'primaryArtist', 'featuring', 'genre', 'language', 'label', 'copyright']) if (form[k]) r[k] = form[k].value.trim();
   if (form.releaseMode) r.releaseMode = form.releaseMode.value;
   if (form.premiereAt) { r.premiereAt = fromLocalInput(form.premiereAt.value); r.premiereTz = Intl.DateTimeFormat().resolvedOptions().timeZone; }
-  if (form.premiereTheme) r.premiereTheme = form.premiereTheme.value || 'obsidian';
-  if (form.premiereAccent) r.premiereAccent = form.premiereAccent.value || '#5ff0ff';
+  if (form.premiereTheme) r.premiereTheme = premiereStyle({ premiereTheme: form.premiereTheme.value }).theme;
+  if (form.premiereAccent) r.premiereAccent = premiereStyle({ premiereTheme: r.premiereTheme, premiereAccent: form.premiereAccent.value }).accent;
   if (form.premiereNote) r.premiereNote = form.premiereNote.value.trim().slice(0, 160);
   if (form.postAuto) r.postMode = form.postAuto.checked ? 'auto' : 'none';
   if (form.postText) r.postText = form.postText.value.trim().slice(0, 280);

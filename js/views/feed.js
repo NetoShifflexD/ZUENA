@@ -10,7 +10,7 @@ import { esc } from '../ui/format.js';
 import { confirmModal, openModal } from '../ui/modal.js';
 import { openMenu } from '../ui/menu.js';
 import { POST_MAX, richText, timeAgo, mixCatalog } from '../data/posts.js';
-import { isLive, isUpcoming, countdown, countdownParts, premiereLabel, PREMIERE_THEMES } from '../data/releases.js';
+import { isLive, isUpcoming, countdown, countdownParts, premiereLabel, PREMIERE_THEMES, PREMIERE_LAYOUTS, PREMIERE_ACCENTS, PREMIERE_NOTE_MAX, premiereStyle, accentWarning } from '../data/releases.js';
 import { tierOf, tierName, canView } from '../data/subs.js';
 import { TEST_CATALOG } from '../config.js';
 import { db } from '../store/db.js';
@@ -133,7 +133,7 @@ const fmtN = (n) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).repla
 
 function profileBtn(a, uid, inner, cls = '') {
   return a.role === 'artist'
-    ? `<button class="${cls}" data-action="open-artist" data-id="zu:${esc(uid)}" aria-label="Ver el perfil de ${esc(a.displayName || '')}">${inner}</button>`
+    ? `<button class="${cls}" data-action="open-artist" data-id="zu:${esc(uid)}" aria-label="${esc(a.displayName || 'Artista')}" title="Ver el perfil de ${esc(a.displayName || '')}">${inner}</button>`
     : uid === app.user?.uid ? `<button class="${cls}" data-action="nav" data-view="profile" aria-label="Ver tu perfil">${inner}</button>`
       : `<span class="${cls}">${inner}</span>`;
 }
@@ -204,7 +204,11 @@ function tierBadge(post, root) {
   return `<span class="pill tier-badge t${t}">${tierName(t)}</span>${post.sim ? '' : simTag}`;
 }
 
-export function postCard(post, i = 0, { detail = false, compact = false } = {}) {
+// pinLabel: «Anclado» sólo en el perfil, donde la publicación anclada va primero (en el feed confundía, 2026-11-20)
+// dirección del sitio para compartir (la app todavía no tiene enlaces directos a una publicación)
+export const postUrl = () => `${location.origin}${location.pathname}`;
+
+export function postCard(post, i = 0, { detail = false, compact = false, pinLabel = false } = {}) {
   // un repost se muestra como la publicación original con la línea "X reposteó"
   let by = null;
   if (post.repostOf && !post.text) {
@@ -229,6 +233,7 @@ export function postCard(post, i = 0, { detail = false, compact = false } = {}) 
     ? `<p class="post-aud"><span class="pill tier">Sólo ${esc(tierName(acc.need))} o superior</span><span class="muted">${app.subs?.countFor(acc.root.uid, acc.need) || 0} con acceso</span>${simTag}</p>`
     : post === acc.root ? `<p class="post-aud"><span class="pill tier on">Exclusivo · ${esc(tierName(acc.need))}</span></p>` : '';
   const noShare = excl ? ' disabled aria-disabled="true" title="El contenido exclusivo no se puede compartir"' : '';
+  const noReply = cat ? ' disabled aria-disabled="true" title="Los lanzamientos del catálogo no admiten respuestas"' : '';
   const noRepost = post.cloud ? ' disabled aria-disabled="true" title="Repostear todavía no está disponible para publicaciones de la nube"' : noShare;
   const replying = parent && !detail
     ? parent.kind === 'catalog'
@@ -236,7 +241,7 @@ export function postCard(post, i = 0, { detail = false, compact = false } = {}) 
       : `<p class="post-replying">Respondiendo a <b>@${esc(authorOf(parent).username || '')}</b></p>`
     : '';
   return `<article class="post fx-post community-post enter ${cat ? 'catalog' : ''} ${excl ? 'exclusive' : ''} ${post.pinned ? 'pinned' : ''} ${detail ? 'detail' : ''} ${compact ? 'compact' : ''}" style="--i:${Math.min(i, 12)}" data-post="${esc(post.id)}" data-flip="${esc(post.id)}" ${detail ? '' : `data-open="${esc(post.id)}"`}>
-    ${by ? `<p class="post-context">${icon('repeat')}${esc(by.displayName || 'Alguien')} reposteó</p>` : post.pinned && !detail ? `<p class="post-context">${icon('star')}Anclado</p>` : ''}
+    ${by ? `<p class="post-context">${icon('repeat')}${esc(by.displayName || 'Alguien')} reposteó</p>` : post.pinned && pinLabel && !detail ? `<p class="post-context">${icon('star')}Anclado</p>` : ''}
     ${cat ? ce.avatar : profileBtn(a, post.uid, avatar(a, 'md'), 'post-avatar')}
     <div class="post-body">
       <header class="post-head">
@@ -249,7 +254,7 @@ export function postCard(post, i = 0, { detail = false, compact = false } = {}) 
       ${cat ? ce.body : `${post.text ? `<p class="post-text">${richText(post.text, esc)}</p>` : ''}${attachHtml(post)}`}
       ${detail ? `<p class="post-when">${new Date(post.created).toLocaleString('es', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short', year: 'numeric' })}</p>` : ''}
       <footer class="post-actions" role="group" aria-label="Acciones">
-        <button class="pa pa-reply" data-action="post-reply" data-id="${esc(post.id)}" aria-label="Responder${replies ? `, ${replies} respuestas` : ''}">${icon('feed')}<span data-n="replies">${fmtN(replies)}</span></button>
+        <button class="pa pa-reply" data-action="post-reply" data-id="${esc(post.id)}" aria-label="Responder${replies ? `, ${replies} respuestas` : ''}"${noReply}>${icon('feed')}<span data-n="replies">${fmtN(replies)}</span></button>
         <button class="pa pa-repost ${reposted ? 'on' : ''}" data-action="post-repost" data-id="${esc(post.id)}" aria-pressed="${reposted}" aria-label="Repostear"${noRepost}>${icon('repeat')}<span data-n="reposts">${fmtN(post.reposts?.length || 0)}</span></button>
         <button class="pa pa-like ${liked ? 'on' : ''}" data-action="post-like" data-id="${esc(post.id)}" aria-pressed="${liked}" aria-label="Me gusta">${icon(liked ? 'heartFill' : 'heart')}<span data-n="likes">${fmtN(post.likes.length)}</span></button>
         <button class="pa pa-share" data-action="post-share" data-id="${esc(post.id)}" aria-label="Compartir"${noShare}>${icon('upload')}</button>
@@ -275,10 +280,9 @@ function releaseAttach(a) {
   const title = esc(r?.title || a.title), artist = esc(r?.primaryArtist || a.artist || '');
   if (r && isUpcoming(r)) {
     const parts = countdownParts(r.premiereAt);
-    const theme = esc(r.premiereTheme || 'obsidian');
-    const accent = esc(r.premiereAccent || '#5ff0ff');
+    const st = premiereStyle(r);
     const reminded = isPremiereReminded(r.id);
-    return `<div class="post-attach release-teaser premiere-inline" data-p-theme="${theme}" style="--p-accent:${accent}">
+    return `<div class="post-attach release-teaser premiere-inline" data-p-theme="${st.theme}" style="--p-accent:${st.accent};--p-on-accent:${st.onAccent}">
       <div class="pi-top">
         <span class="fx-live soon">Estreno programado</span>
         ${app.prefs.advanced && r.audioQuality ? `<span class="pi-quality">Informado por artista · Sin validar: ${esc(r.audioQuality)}</span>` : ''}
@@ -424,8 +428,13 @@ export function viewFeed() {
   if (rest.length) {
     app.ui.mount = (root) => {
       const box = root.querySelector('.fx-main > .fx-list');
+      // apilada debajo (pantallas angostas), la columna lateral se correría al llegar el resto: se oculta
+      // hasta entonces sin cambiar su lugar (CLS 0,69 medido por el cazador, 2026-11-20)
+      const side = root.querySelector('.fx-side');
+      side?.classList.add('fx-side-wait');
       const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 16));
       idle(() => {
+        side?.classList.remove('fx-side-wait');
         if (!box?.isConnected) return; // se volvió a dibujar o se cambió de vista
         box.insertAdjacentHTML('beforeend', rest.map((p, i) => postCard(p, i + FIRST_CARDS)).join(''));
         app.afterFill?.(box);
@@ -486,12 +495,12 @@ export function viewPost() {
     chain.unshift(p);
   }
   const replies = orderReplies(post, app.posts.repliesOf(post.id), acc);
-  const placeholder = post.kind === 'catalog' ? 'Respondé al lanzamiento' : `Respondé a @${authorOf(post).username || ''}`;
+  const placeholder = `Respondé a @${authorOf(post).username || ''}`;
   return `<div class="fx fx-thread community-feed"><section class="fx-main">
     <header class="fx-head enter">${backBtn()}<h1>Publicación</h1></header>
     ${chain.map((p) => postCard(p, 0, { compact: true })).join('')}
     ${postCard(post, 0, { detail: true })}
-    ${app.user ? composer({ replyTo: post.id, placeholder }) : ''}
+    ${app.user && post.kind !== 'catalog' ? composer({ replyTo: post.id, placeholder }) : ''}
     <div class="fx-list">${replies.map((p, i) => postCard(p, i)).join('') || '<p class="muted fx-noreplies">Todavía no hay respuestas.</p>'}</div>
   </section><aside class="fx-side">${sideHtml()}</aside></div>`;
 }
@@ -586,7 +595,8 @@ function upcomingPremieresShowcase() {
 }
 
 // ---------- tarjeta de lanzamiento para estantes (Inicio, Feed -> Estrenos, Perfil) ----------
-export function releaseCard(r, i = 0) {
+// preview: vista previa del personalizador (sin animación de entrada ni acciones activas)
+export function releaseCard(r, i = 0, { preview = false } = {}) {
   const soon = isUpcoming(r);
   const cover = r.coverUrl || r.coverThumb || '';
   if (!soon) {
@@ -597,8 +607,7 @@ export function releaseCard(r, i = 0) {
       <div class="card-sub">${esc(r.primaryArtist)} · ${esc(r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Álbum')}</div></div>`;
   }
   const parts = countdownParts(r.premiereAt);
-  const theme = esc(r.premiereTheme || 'obsidian');
-  const accent = esc(r.premiereAccent || '#5ff0ff');
+  const st = premiereStyle(r);
   const artistName = r.primaryArtist || r.artistName || r.artist || 'Artista';
   const prof = app.posts?.author?.(r.uid) || (r.uid === app.user?.uid ? app.profile : null) || {
     uid: r.uid,
@@ -608,13 +617,14 @@ export function releaseCard(r, i = 0) {
     isOfficialTeam: r.uid === 'zuena-official',
     isOwnerProfile: r.uid === 'bf3b1550-da87-4443-a8ba-0ae542fed5dd',
   };
-  const canEdit = Boolean(app.user && (r.uid === app.user.uid || app.auth?.isOwner || app.auth?.isAdmin));
+  const canEdit = !preview && Boolean(app.user && (r.uid === app.user.uid || app.auth?.isOwner || app.auth?.isAdmin));
   const reminded = isPremiereReminded(r.id);
   const tracksCount = r.tracksCount || r.tracks?.length || 1;
   const kindLabel = r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Álbum';
-  const note = r.premiereNote || r.postText || '';
+  const note = premiereStyle({ premiereNote: r.premiereNote ?? r.postText }).note;
+  const inert = preview ? ' tabindex="-1" aria-hidden="true"' : '';
 
-  return `<article class="premiere-card premiere-editorial lit enter ${i === 0 ? 'premiere-featured' : ''}" data-p-theme="${theme}" data-release-id="${esc(r.id)}" style="--i:${Math.min(i, 8)};--p-accent:${accent}">
+  return `<article class="premiere-card premiere-editorial ${preview ? 'is-preview' : 'lit enter'} ${i === 0 ? 'premiere-featured' : ''}" data-p-theme="${st.theme}" data-p-layout="${st.layout}" data-release-id="${esc(r.id)}" style="--i:${Math.min(i, 8)};--p-accent:${st.accent};--p-on-accent:${st.onAccent}"${preview ? ' inert' : ''}>
     <div class="p-card-backdrop" aria-hidden="true">
       ${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" decoding="async">` : ''}
       <span class="p-card-glow"></span>
@@ -652,77 +662,117 @@ export function releaseCard(r, i = 0) {
       </div>
     </div>
     <footer class="p-card-actions">
-      <button type="button" class="btn-primary lit p-remind-btn ${reminded ? 'on' : ''}" data-action="premiere-remind" data-id="${esc(r.id)}" aria-pressed="${reminded}">
-        ${icon(reminded ? 'check' : 'bell')}<span>${reminded ? 'Aviso activado' : 'Recordarme estreno'}</span>
+      <button type="button" class="btn-primary lit p-remind-btn ${reminded ? 'on' : ''}" ${preview ? '' : 'data-action="premiere-remind"'} data-id="${esc(r.id)}" aria-pressed="${reminded}"${inert}>
+        ${icon(reminded ? 'check' : 'bell')}<span>${reminded ? 'Aviso activo' : 'Recordarme'}</span>
       </button>
       ${canEdit ? `<button type="button" class="btn-glass lit p-customize-btn" data-action="premiere-customize" data-id="${esc(r.id)}" title="Personalizar tarjeta de estreno">${icon('sparkle')}<span>Personalizar</span></button>` : `<button type="button" class="btn-glass lit" data-action="open-artist" data-id="zu:${esc(r.uid)}">${icon('user')}<span>Ver artista</span></button>`}
     </footer>
   </article>`;
 }
 
+// Personalizador de la tarjeta de estreno v2 (2026-11-20): atmósfera, formato, acento con sugeridos y color libre,
+// nota con contador y vista previa en vivo de la tarjeta real. Opciones accesibles con teclado (radios reales).
 function openPremiereCustomizer(releaseId) {
   const r = app.releases.get(releaseId);
   if (!r) return;
-  const curTheme = r.premiereTheme || 'obsidian';
-  const curAccent = r.premiereAccent || '#5ff0ff';
-  const curNote = r.premiereNote || r.postText || '';
+  const canEdit = Boolean(app.user && (r.uid === app.user.uid || app.auth?.isOwner || app.auth?.isAdmin));
+  if (!canEdit) { app.toast('Sólo el artista puede personalizar esta tarjeta.'); return; }
+  const start = premiereStyle({ ...r, premiereNote: r.premiereNote ?? r.postText ?? '' });
   const curQuality = r.audioQuality || '';
   const qualities = ['24-BIT · 96 KHZ MASTER', '24-BIT · 48 KHZ LOSSLESS', '16-BIT · 44.1 KHZ CD LOSSLESS', 'DOLBY ATMOS · ESPACIAL'];
   if (curQuality && !qualities.includes(curQuality)) qualities.unshift(curQuality);
+  const radio = (name, value, checked, body) => `<label class="p-opt ${checked ? 'on' : ''}">
+      <input class="p-opt-input" type="radio" name="${name}" value="${esc(value)}" ${checked ? 'checked' : ''}>${body}</label>`;
 
   openModal(`<form class="confirm p-customizer-form" novalidate>
       <p class="eyebrow">Tarjeta de estreno</p>
       <h3>Personalizar «${esc(r.title)}»</h3>
-      <p class="hint">Elegí la atmósfera visual, el color de acento y la nota de autor que verán los oyentes durante la cuenta regresiva.</p>
-      <div class="field">
-        <span>Atmósfera de la tarjeta</span>
-        <div class="p-theme-grid">
-          ${PREMIERE_THEMES.map((t) => `<label class="p-theme-opt ${curTheme === t.id ? 'on' : ''}" style="--opt-accent:${t.accent}">
-            <input type="radio" name="premiereTheme" value="${t.id}" data-accent="${t.accent}" ${curTheme === t.id ? 'checked' : ''} hidden>
-            <i class="p-theme-swatch"></i>
-            <span>${esc(t.label)}</span>
-          </label>`).join('')}
+      <div class="p-customizer">
+        <div class="p-customizer-preview" aria-label="Vista previa de la tarjeta" data-p-preview></div>
+        <div class="p-customizer-controls">
+          <fieldset class="field p-fieldset">
+            <legend>Atmósfera</legend>
+            <div class="p-theme-grid">${PREMIERE_THEMES.map((t) => radio('premiereTheme', t.id, start.theme === t.id,
+              `<i class="p-theme-swatch" data-p-theme="${t.id}" aria-hidden="true"></i><span>${esc(t.label)}</span>`)).join('')}</div>
+          </fieldset>
+          <fieldset class="field p-fieldset">
+            <legend>Formato</legend>
+            <div class="p-layout-grid">${PREMIERE_LAYOUTS.map((l) => radio('premiereLayout', l.id, start.layout === l.id,
+              `<span><b>${esc(l.label)}</b><small>${esc(l.hint)}</small></span>`)).join('')}</div>
+          </fieldset>
+          <fieldset class="field p-fieldset">
+            <legend>Color de acento</legend>
+            <div class="p-accent-row">
+              ${PREMIERE_ACCENTS.map((c) => `<button type="button" class="p-accent-chip ${c === start.accent ? 'on' : ''}" data-accent="${c}" style="--c:${c}" aria-label="Acento ${c}" aria-pressed="${c === start.accent}"></button>`).join('')}
+              <label class="p-accent-custom" title="Elegir otro color"><input type="color" name="premiereAccent" value="${esc(start.accent)}" aria-label="Elegir otro color de acento"></label>
+            </div>
+            <small class="hint warn" data-p-warn role="status"></small>
+          </fieldset>
+          <label class="field">
+            <span>Nota del artista <small class="muted" data-p-count></small></span>
+            <textarea class="input" name="premiereNote" rows="2" maxlength="${PREMIERE_NOTE_MAX}" placeholder="Contá qué hace especial a este lanzamiento">${esc(start.note)}</textarea>
+          </label>
+          ${app.prefs.advanced ? `<label class="field">
+            <span>Formato de audio · Informado por artista</span>
+            <select class="select lit" name="audioQuality">
+              <option value="" ${!curQuality ? 'selected' : ''}>Sin informar</option>
+              ${qualities.map((q) => `<option value="${esc(q)}" ${curQuality === q ? 'selected' : ''}>${esc(q)}</option>`).join('')}
+            </select>
+            <small class="hint">Sin validar. Esta declaración no certifica el archivo ni la reproducción en ese formato.</small>
+          </label>` : ''}
         </div>
       </div>
-      <div class="form-grid tight">
-        <label class="field">
-          <span>Color de acento</span>
-          <input class="input" type="color" name="premiereAccent" value="${esc(curAccent)}" style="height:42px;padding:4px 8px">
-        </label>
-        ${app.prefs.advanced ? `<label class="field">
-          <span>Formato de audio · Informado por artista</span>
-          <select class="select lit" name="audioQuality">
-            <option value="" ${!curQuality ? 'selected' : ''}>Sin informar</option>
-            ${qualities.map((q) => `<option value="${esc(q)}" ${curQuality === q ? 'selected' : ''}>${esc(q)}</option>`).join('')}
-          </select>
-          <small class="hint">Sin validar. Esta declaración no certifica el archivo ni la reproducción en ese formato.</small>
-        </label>` : ''}
-      </div>
-      <label class="field">
-        <span>Nota del artista en la tarjeta <small class="muted">hasta 160 caracteres</small></span>
-        <textarea class="input" name="premiereNote" rows="2" maxlength="160" placeholder="Contá qué hace especial a este lanzamiento…">${esc(curNote)}</textarea>
-      </label>
       <div class="confirm-actions">
+        <button type="button" class="btn-glass lit" data-p-reset>Restablecer</button>
         <button type="button" class="btn-glass lit" data-modal="cancel">Cancelar</button>
-        <button class="btn-primary lit" data-press>${icon('check')}Guardar diseño</button>
+        <button class="btn-primary lit" data-press>${icon('check')}Guardar</button>
       </div>
     </form>`, {
     onMount: (box, close) => {
       const form = box.querySelector('form');
-      form.querySelectorAll('input[name="premiereTheme"]').forEach((radio) => {
-        radio.addEventListener('change', () => {
-          form.querySelectorAll('.p-theme-opt').forEach((l) => l.classList.toggle('on', l.contains(radio)));
-          if (radio.dataset.accent) form.premiereAccent.value = radio.dataset.accent;
-        });
+      const preview = form.querySelector('[data-p-preview]');
+      const draft = () => ({
+        premiereTheme: form.premiereTheme.value,
+        premiereLayout: form.premiereLayout.value,
+        premiereAccent: form.premiereAccent.value,
+        premiereNote: form.premiereNote.value,
       });
+      const paint = () => {
+        const d = draft();
+        form.querySelectorAll('.p-opt').forEach((l) => l.classList.toggle('on', l.querySelector('input').checked));
+        form.querySelectorAll('.p-accent-chip').forEach((b) => { const on = b.dataset.accent === d.premiereAccent.toLowerCase(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+        form.querySelector('[data-p-count]').textContent = `${d.premiereNote.length} de ${PREMIERE_NOTE_MAX}`;
+        form.querySelector('[data-p-warn]').textContent = accentWarning(d.premiereTheme, d.premiereAccent);
+        preview.innerHTML = releaseCard({ ...r, ...d }, 0, { preview: true });
+      };
+      // al cambiar de atmósfera se propone su acento (se puede cambiar después)
+      form.addEventListener('change', (e) => {
+        if (e.target.name === 'premiereTheme') form.premiereAccent.value = PREMIERE_THEMES.find((t) => t.id === e.target.value)?.accent || form.premiereAccent.value;
+        paint();
+      });
+      form.addEventListener('input', paint);
+      form.addEventListener('click', (e) => {
+        const chip = e.target.closest('.p-accent-chip');
+        if (chip) { form.premiereAccent.value = chip.dataset.accent; paint(); return; }
+        if (e.target.closest('[data-p-reset]')) {
+          const d = premiereStyle({});
+          form.querySelector(`input[name=premiereTheme][value="${d.theme}"]`).checked = true;
+          form.querySelector(`input[name=premiereLayout][value="${d.layout}"]`).checked = true;
+          form.premiereAccent.value = d.accent;
+          form.premiereNote.value = '';
+          paint();
+        }
+      });
+      paint();
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        r.premiereTheme = form.premiereTheme.value || 'obsidian';
-        r.premiereAccent = form.premiereAccent.value || '#5ff0ff';
+        const st = premiereStyle(draft());
+        const prev = { premiereTheme: r.premiereTheme, premiereLayout: r.premiereLayout, premiereAccent: r.premiereAccent, premiereNote: r.premiereNote, audioQuality: r.audioQuality };
+        Object.assign(r, { premiereTheme: st.theme, premiereLayout: st.layout, premiereAccent: st.accent, premiereNote: st.note });
         const qualityField = form.elements.namedItem('audioQuality');
         if (app.prefs.advanced && qualityField && qualityField.value !== curQuality) r.audioQuality = qualityField.value;
-        r.premiereNote = form.premiereNote.value.trim().slice(0, 160);
-        await db.put('releases', r);
+        try { await db.put('releases', r); }
+        catch { Object.assign(r, prev); app.toast('No se pudo guardar el diseño. Probá de nuevo.'); return; }
         const ownRel = app.artist?.getRelease?.(r.id);
         if (ownRel) Object.assign(ownRel, r);
         app.releases.emit();
@@ -762,7 +812,7 @@ registerActions({
     for (const b of document.querySelectorAll(`[data-action="premiere-remind"][data-id="${CSS.escape(id)}"]`)) {
       b.classList.toggle('on', on);
       b.setAttribute('aria-pressed', String(on));
-      b.innerHTML = `${icon(on ? 'check' : 'bell')}<span>${on ? 'Aviso activado' : 'Recordarme estreno'}</span>`;
+      b.innerHTML = `${icon(on ? 'check' : 'bell')}<span>${on ? 'Aviso activo' : 'Recordarme'}</span>`;
     }
     const r = app.releases.get(id);
     app.toast(on ? `Te vamos a avisar cuando se estrene «${r?.title || 'el lanzamiento'}»` : 'Aviso de estreno desactivado');
@@ -796,7 +846,7 @@ registerActions({
     if (el.disabled) return;
     el.disabled = true;
     try { await app.posts.toggleRepost(el.dataset.id, app.profile); }
-    catch { app.toast('No se pudo compartir. Probá de nuevo.'); return; }
+    catch (err) { app.toast(err?.cloudMessage || 'No se pudo repostear. Probá de nuevo.'); return; }
     finally { el.disabled = false; }
     syncPostButtons(el.dataset.id);
     app.toast((app.posts.get(el.dataset.id)?.reposts || []).includes(app.user.uid) ? 'Reposteado' : 'Repost quitado');
@@ -817,10 +867,14 @@ registerActions({
     const text = !p ? '' : p.kind === 'catalog'
       ? `Nuevo lanzamiento: ${c.title} · ${c.artist} (Apple Music)${c.url ? ` ${c.url}` : ''}`
       : `${a.displayName} (@${a.username}) en ZUENA: ${p.text}`;
-    try {
-      if (navigator.share) await navigator.share({ title: 'ZUENA', text });
-      else { await navigator.clipboard.writeText(text); app.toast('Copiado para compartir'); }
-    } catch (err) { if (err.name !== 'AbortError') app.toast('No se pudo compartir. Probá de nuevo.'); }
+    const url = p && p.kind !== 'catalog' ? postUrl() : (c?.url || '');
+    const copy = async () => {
+      try { await navigator.clipboard.writeText(url && !text.includes(url) ? `${text} ${url}` : text); app.toast('Copiado para compartir'); }
+      catch { app.toast('No se pudo copiar. Probá de nuevo.'); }
+    };
+    if (!navigator.share) { await copy(); return; }
+    try { await navigator.share({ title: 'ZUENA', text, ...(url && p?.kind !== 'catalog' ? { url } : {}) }); }
+    catch (err) { if (err?.name !== 'AbortError') await copy(); } // escritorio sin destino para compartir: se copia
   },
   'post-open': (el) => app.go('post', el.dataset.id),
   'feed-tab': (el) => { app.ui.feedTab = el.dataset.tab; app.ui.feedLimit = PAGE; rerender(); },

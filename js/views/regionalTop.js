@@ -73,7 +73,7 @@ async function load(panel, st, region) {
     box.innerHTML = rowsHtml(rows) + `<p class="regional-date">${updated == null ? 'Consultado en la app' : 'Fecha de Apple'}: <time datetime="${date.toISOString()}">${esc(date.toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' }))}</time>. Métrica: canciones más reproducidas. Período: ranking actual de la fuente; Apple no informa el intervalo.</p>`;
   } catch {
     if (!current()) return;
-    box.innerHTML = '<p class="regional-status" role="status">Todavía no hay un top disponible para esta región.</p><p class="regional-status">No pudimos obtener cinco posiciones de Apple Music. Cambiá de región o probá de nuevo.</p><button type="button" class="btn-glass lit" data-regional-retry>Reintentar</button>';
+    box.innerHTML = '<p class="regional-status" role="status">No pudimos cargar el top de Apple Music para esta región. Probá de nuevo o elegí otra región.</p><button type="button" class="btn-glass lit" data-regional-retry>Reintentar</button>';
   } finally {
     if (current()) box.setAttribute('aria-busy', 'false');
   }

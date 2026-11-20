@@ -14,6 +14,19 @@ export function see(item) {
 // en miniaturas (filas, píldoras: ≤ 56 px) la carátula de Apple se pide a 160 px en vez de 600: ~14 veces menos para decodificar
 const thumb = (u, cls) => (u && /\b(xs|sm)\b/.test(cls) && u.includes('mzstatic.com') ? u.replace(/\/\d+x\d+(bb)?\./, '/160x160bb.') : u);
 
+// Portadas que no cargan → marcador con ícono. Un solo detector en captura (los eventos "error" de <img> no
+// burbujean) en vez de onerror en línea, que la CSP de index.html bloquea (2026-11-20).
+export function swapBrokenArt(img) {
+  const box = img?.parentElement;
+  if (!box?.dataset?.fallback || !box.isConnected) return false;
+  box.outerHTML = box.dataset.fallback;
+  return true;
+}
+if (typeof document !== 'undefined' && !globalThis.__zuenaArtFallback) {
+  globalThis.__zuenaArtFallback = true;
+  document.addEventListener('error', (e) => { if (e.target?.tagName === 'IMG') swapBrokenArt(e.target); }, true);
+}
+
 export function art(t, cls = '') {
   const url = thumb(app.library.coverUrl(t), cls);
   const ic = t?.type === 'radio' ? 'radio' : t?.type === 'podcast' || t?.type === 'episode' ? 'mic' : 'music';
@@ -21,7 +34,7 @@ export function art(t, cls = '') {
   if (url) {
     // si la carátula no carga, se reemplaza por el marcador con ícono (mismo degradado que sin portada)
     const fb = `<div class="art ph ${cls}" style="${h}">${icon(ic)}</div>`;
-    return `<div class="art ${cls}" data-fallback="${esc(fb)}"><img src="${esc(url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML=this.parentNode.dataset.fallback"></div>`;
+    return `<div class="art ${cls}" data-fallback="${esc(fb)}"><img src="${esc(url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></div>`;
   }
   return `<div class="art ph ${cls}" style="${h}">${icon(ic)}</div>`;
 }
@@ -30,7 +43,7 @@ export function avatar(p, cls = '') {
   const url = p?.avatar;
   if (url) return `<div class="avatar ${cls}"><img src="${esc(url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></div>`;
   const ch = (p?.displayName || p?.name || '?').trim().charAt(0).toUpperCase();
-  return `<div class="avatar ph ${cls}" style="--h:${hueOf(p?.uid || p?.id || 'x')}"><span>${esc(ch)}</span></div>`;
+  return `<div class="avatar ph ${cls}" style="--h:${hueOf(p?.uid || p?.id || 'x')}"><span class="avatar-ch" data-ch="${esc(ch)}" aria-hidden="true"></span></div>`;
 }
 
 export const tick = (on, title = 'Verificado') => (on ? `<span class="tick" title="${title}">${icon('verified')}</span>` : '');
@@ -53,7 +66,9 @@ export function roleBadges(entity, { compact = false } = {}) {
   if (isAdmin) {
     pills.push(`<span class="z-badge z-badge-admin${compact ? ' sm' : ''}" title="Permisos de administración">${icon('shield', 'z-badge-ico')}<span>Administración</span></span>`);
   }
-  return pills.length ? `<span class="z-badges${compact ? ' sm' : ''}">${pills.join('')}</span>` : '';
+  // en listas (feed, menús) sólo la insignia principal: apiladas empujaban el usuario a otra línea (2026-11-20)
+  const shown = compact ? pills.slice(0, 1) : pills;
+  return shown.length ? `<span class="z-badges${compact ? ' sm' : ''}">${shown.join('')}</span>` : '';
 }
 
 export function playlistArt(p, cls = '') {
